@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { LandingNav } from "@/components/layout/landing-nav";
 import { APP_NAME, ROUTES } from "@/lib/constants";
 
 export default async function HomePage() {
@@ -31,8 +30,6 @@ export default async function HomePage() {
 
       {/* Gradient overlay for text readability */}
       <div className="fixed inset-0 -z-[5] bg-gradient-to-b from-white/30 via-transparent to-white/60 dark:from-black/30 dark:via-transparent dark:to-black/60" />
-
-      <LandingNav signInLabel={t("signIn")} />
 
       <main className="relative flex flex-1 items-center justify-center px-6">
         <div className="mx-auto max-w-3xl text-center">
