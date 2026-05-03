@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof BackendApiError) {
       const detail =
-        (error.data as { detail?: string })?.detail || "Login failed";
+        (error.data as any)?.error?.message || (error.data as any)?.detail || "Login failed";
       return NextResponse.json({ detail }, { status: error.status });
     }
     return NextResponse.json(
