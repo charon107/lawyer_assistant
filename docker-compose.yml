@@ -1,0 +1,50 @@
+# LPA Review App — Docker Compose deployment
+#
+# Backend runs in Docker. Frontend runs directly on host (built with bun).
+# Nginx in Docker proxies to both.
+#
+# Start:
+#   1. Backend:  docker compose up -d
+#   2. Frontend: cd frontend && bun install && bun run build && bun start &
+#   3. App at http://<server-ip>
+
+services:
+  backend:
+    build: ./backend
+    container_name: lpa-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    volumes:
+      - backend_data:/app/data
+      - backend_media:/app/media
+    networks:
+      - lpa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    container_name: lpa-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - lpa-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - backend
+
+networks:
+  lpa-network:
+    driver: bridge
+
+volumes:
+  backend_data:
+  backend_media:

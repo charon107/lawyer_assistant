@@ -1,0 +1,64 @@
+# LPA Review App — Production deployment (uses pre-built GHCR images)
+#
+# This file is used ON THE SERVER at /opt/lpa_review_app/
+# Images are built by GitHub Actions and pushed to GHCR.
+# Server just pulls and runs — no local build needed.
+#
+# Required files on server:
+#   docker-compose.prod.yml  (this file)
+#   nginx.conf
+#   backend/.env             (with real secrets — NEVER committed to git)
+
+services:
+  backend:
+    image: ghcr.io/charon107/lpa-backend:latest
+    container_name: lpa-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    volumes:
+      - backend_data:/app/data
+      - backend_media:/app/media
+    networks:
+      - lpa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    image: ghcr.io/charon107/lpa-frontend:latest
+    container_name: lpa-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - BACKEND_URL=http://backend:8000
+    networks:
+      - lpa-network
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    container_name: lpa-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - lpa-network
+    depends_on:
+      - backend
+      - frontend
+
+networks:
+  lpa-network:
+    driver: bridge
+
+volumes:
+  backend_data:
+  backend_media:
