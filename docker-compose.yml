@@ -1,13 +1,11 @@
-# LPA Review App — Production Docker Compose
+# LPA Review App — Docker Compose (local build)
 #
-# All three services run in Docker. Images are built by GitHub Actions
-# and pushed to GHCR. Server just pulls and runs.
-#
-# Deploy: docker compose pull && docker compose up -d
+# All three services built locally. CI/CD pushes to GHCR but
+# server builds from source until registry auth is configured.
 
 services:
   backend:
-    image: ghcr.io/charon107/lpa-backend:latest
+    build: ./backend
     container_name: lpa-backend
     restart: unless-stopped
     env_file:
@@ -24,7 +22,7 @@ services:
       retries: 3
 
   frontend:
-    image: ghcr.io/charon107/lpa-frontend:latest
+    build: ./frontend
     container_name: lpa-frontend
     restart: unless-stopped
     environment:
