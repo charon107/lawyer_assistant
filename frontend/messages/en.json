@@ -159,34 +159,8 @@
     "copyright": "All rights reserved"
   },
   "landing": {
-    "heroTitle": "Build Intelligent",
-    "heroHighlight": "Applications",
-    "heroTitleEnd": "with Confidence",
-    "heroSubtitle": "A production-ready full-stack platform with AI-powered chat, knowledge base retrieval, secure authentication, and a modern dashboard.",
-    "getStarted": "Get Started",
-    "signIn": "Sign In",
-    "featureAiChat": "AI-Powered Chat",
-    "featureAiChatDesc": "Conversational AI assistant with real-time streaming, conversation history, and tool-calling capabilities.",
-    "featureRag": "Knowledge Base",
-    "featureRagDesc": "Vector search across your documents with retrieval-augmented generation. Ingest PDFs, DOCX, and more.",
-    "featureAuth": "Secure Authentication",
-    "featureAuthDesc": "JWT-based auth with refresh tokens, OAuth integration, session management, and role-based access control.",
-    "featureDashboard": "Dashboard",
-    "featureDashboardDesc": "System health monitoring, user management, and collection statistics at a glance.",
-    "featureApi": "REST API",
-    "featureApiDesc": "Auto-documented FastAPI backend with OpenAPI specs, versioned endpoints, and async database access.",
-    "featureRealtime": "Real-time",
-    "featureRealtimeDesc": "WebSocket-powered streaming for instant AI responses and live updates across the application.",
-    "techStackTitle": "Built with modern technologies",
-    "ctaTitle": "Ready to get started?",
-    "ctaSubtitle": "Create your account and start exploring the platform.",
-    "createAccount": "Create Account",
-    "exploreApi": "Explore API",
-    "footerDesc": "Full-stack AI application platform with enterprise-grade features.",
-    "footerProduct": "Product",
-    "footerResources": "Resources",
-    "apiDocs": "API Documentation",
-    "learnMore": "Learn More",
-    "copyright": "All rights reserved."
+    "heroTagline": "Your AI Legal Assistant",
+    "heroSubtitle": "AI-powered LPA contract review. Identify risk clauses intelligently and assist legal professionals efficiently.",
+    "signIn": "Sign In"
   }
 }

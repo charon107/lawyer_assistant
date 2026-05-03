@@ -159,34 +159,8 @@
     "copyright": "版权所有"
   },
   "landing": {
-    "heroTitle": "智能建造",
-    "heroHighlight": "应用",
-    "heroTitleEnd": "尽在掌握",
-    "heroSubtitle": "一个生产级全栈平台，集成 AI 对话、知识库检索、安全认证和现代化工作台。",
-    "getStarted": "开始使用",
-    "signIn": "登录",
-    "featureAiChat": "AI 驱动对话",
-    "featureAiChatDesc": "对话式 AI 助手，支持实时流式输出、对话历史和工具调用。",
-    "featureRag": "知识库",
-    "featureRagDesc": "基于文档的向量搜索和检索增强生成，支持 PDF、DOCX 等格式。",
-    "featureAuth": "安全认证",
-    "featureAuthDesc": "基于 JWT 的认证系统，支持刷新令牌、OAuth 集成和角色权限控制。",
-    "featureDashboard": "工作台",
-    "featureDashboardDesc": "系统健康监控、用户管理和统计数据一目了然。",
-    "featureApi": "REST API",
-    "featureApiDesc": "自动文档化的 FastAPI 后端，OpenAPI 规范、版本化端点和异步数据库。",
-    "featureRealtime": "实时通信",
-    "featureRealtimeDesc": "WebSocket 驱动的实时流式传输，AI 即时响应和应用内实时更新。",
-    "techStackTitle": "采用现代技术栈",
-    "ctaTitle": "准备好开始了吗？",
-    "ctaSubtitle": "创建账号，开始探索平台。",
-    "createAccount": "创建账号",
-    "exploreApi": "浏览 API",
-    "footerDesc": "全栈 AI 应用平台，企业级功能。",
-    "footerProduct": "产品",
-    "footerResources": "资源",
-    "apiDocs": "API 文档",
-    "learnMore": "了解更多",
-    "copyright": "版权所有。"
+    "heroTagline": "您的 AI 法律助手",
+    "heroSubtitle": "AI 驱动 LPA 合同审查，智能分析风险条款，高效辅助律师工作。",
+    "signIn": "登录"
   }
 }

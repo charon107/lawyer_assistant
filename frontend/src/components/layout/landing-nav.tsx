@@ -2,65 +2,48 @@
 
 import Link from "next/link";
 import { useAuth } from "@/hooks";
-import { ThemeToggle } from "@/components/theme";
-import { LanguageSwitcherCompact } from "@/components/language-switcher";
 import { APP_NAME, ROUTES } from "@/lib/constants";
-import { LogOut, User } from "lucide-react";
 
 interface LandingNavProps {
   signInLabel: string;
-  getStartedLabel: string;
-  dashboardLabel: string;
 }
 
-export function LandingNav({ signInLabel, getStartedLabel, dashboardLabel }: LandingNavProps) {
+export function LandingNav({ signInLabel }: LandingNavProps) {
   const { user, isAuthenticated, logout } = useAuth();
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4">
-      <nav className="navbar-beam relative flex h-12 w-full max-w-3xl items-center justify-between rounded-full px-4 sm:px-6">
-        <Link href={ROUTES.HOME} className="text-sm font-bold tracking-tight text-foreground">
+    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-6">
+      <nav className="flex h-11 w-full max-w-2xl items-center justify-between rounded-full border border-white/[0.08] bg-white/[0.03] px-5 backdrop-blur-xl">
+        <Link
+          href={ROUTES.HOME}
+          className="text-sm font-semibold tracking-tight text-white"
+        >
           {APP_NAME}
         </Link>
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <LanguageSwitcherCompact />
-          <ThemeToggle />
+        <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
               <Link
                 href={ROUTES.DASHBOARD}
-                className="rounded-full bg-brand px-4 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-brand-hover"
+                className="rounded-full bg-white px-4 py-1.5 text-xs font-medium text-black transition-opacity hover:opacity-80"
               >
-                {dashboardLabel}
+                Dashboard
               </Link>
-              <span className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex">
-                <User className="h-3 w-3" />
-                {user?.email?.split("@")[0]}
-              </span>
               <button
                 onClick={logout}
-                className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground"
-                title="退出登录"
+                className="text-xs text-white/50 transition-colors hover:text-white/80"
               >
-                <LogOut className="h-3.5 w-3.5" />
+                Logout
               </button>
             </>
           ) : (
-            <>
-              <Link
-                href={ROUTES.LOGIN}
-                className="rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {signInLabel}
-              </Link>
-              <Link
-                href={ROUTES.REGISTER}
-                className="hidden rounded-full bg-brand px-4 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-brand-hover sm:inline-flex"
-              >
-                {getStartedLabel}
-              </Link>
-            </>
+            <Link
+              href={ROUTES.LOGIN}
+              className="rounded-full bg-white px-4 py-1.5 text-xs font-medium text-black transition-opacity hover:opacity-80"
+            >
+              {signInLabel}
+            </Link>
           )}
         </div>
       </nav>
