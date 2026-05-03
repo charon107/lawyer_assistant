@@ -65,6 +65,6 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /opt/lpa_review_app
-            docker compose pull
-            docker compose up -d --remove-orphans
-            docker image prune -f  # Clean up old images
+            git pull
+            docker compose up -d --build --remove-orphans
+            docker image prune -f
