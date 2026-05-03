@@ -8,7 +8,7 @@ import { ToolApprovalDialog } from "./tool-approval-dialog";
 import { Bot, ChevronDown, Check } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui";
 import type { PendingApproval, Decision } from "@/types";
-import { useConversationStore, useChatStore } from "@/stores";
+import { useConversationStore, useChatStore, useAuthStore } from "@/stores";
 import { useConversations } from "@/hooks";
 
 export function ChatContainer() {
@@ -100,9 +100,19 @@ function AuthenticatedChatContainer() {
   }, [currentMessages, addChatMessage, clearMessages]);
 
   useEffect(() => {
-    connect();
-    return () => disconnect();
+    // Only connect WebSocket once we have an auth token (prevents 4001 errors)
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+      connect();
+      return () => disconnect();
+    }
   }, [connect, disconnect]);
+
+  // When auth token becomes available after initial load, connect
+  const hasToken = useAuthStore((s) => !!s.accessToken);
+  useEffect(() => {
+    if (hasToken) connect();
+  }, [hasToken, connect]);
 
   useEffect(() => {
     const container = scrollContainerRef.current;

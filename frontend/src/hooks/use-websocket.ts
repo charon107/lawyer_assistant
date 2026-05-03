@@ -93,6 +93,11 @@ export function useWebSocket({
     }
   }, []);
 
+  // Reset connection when url or protocols change (e.g. auth token becomes available)
+  useEffect(() => {
+    disconnect();
+  }, [url, JSON.stringify(protocols)]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     return () => {
       disconnect();
