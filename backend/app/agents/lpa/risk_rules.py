@@ -1,0 +1,177 @@
+"""LPA contract review rule definitions — 18 rules across 3 categories."""
+
+LPA_RULES = {
+    # A. 基金基本要素提取
+    "A1": {
+        "id": "A1",
+        "category": "基本要素",
+        "title": "基金名称、类型、注册地",
+        "level": "中风险",
+        "check": "注册地是否涉及跨境合规冲突；名称是否含误导性表述",
+        "suggestion_template": "确认基金名称与备案名称一致；如涉及跨境（如开曼注册+中国运营），需增加跨境合规说明"
+    },
+    "A2": {
+        "id": "A2",
+        "category": "基本要素",
+        "title": "存续期（投资期+退出期+延长期）",
+        "level": "中风险",
+        "check": "延长期是否 GP 单方决定（缺少 LP 同意门槛）；延长期是否影响 LP 退出选择权",
+        "suggestion_template": "延长期决策应经 LP 或 LPAC 同意（建议 ≥50% 出资比例）；明确延长期内 LP 是否可单独退出"
+    },
+    "A3": {
+        "id": "A3",
+        "category": "基本要素",
+        "title": "GP/管理人名称及角色",
+        "level": "中风险",
+        "check": "GP 与管理人权责是否清晰划分；管理人是否为第三方（独立管理人）",
+        "suggestion_template": "明确区分 GP（执行事务）与管理人（投资管理）的职责；第三方管理人应单独签署管理协议"
+    },
+    "A4": {
+        "id": "A4",
+        "category": "基本要素",
+        "title": "基金规模（总承诺出资额）",
+        "level": "低风险",
+        "check": "首次/最终交割期限是否过长；是否有 LP 不同轮次出资的不平等安排",
+        "suggestion_template": "首次交割与最终交割间隔不宜超过 12 个月；不同轮次 LP 应享有同等权利"
+    },
+    "A5": {
+        "id": "A5",
+        "category": "基本要素",
+        "title": "LP 最低出资额",
+        "level": "低风险",
+        "check": "不同 LP 类别是否存在歧视性条件；优先权 LP 与普通 LP 差异",
+        "suggestion_template": "LP 类别之间的差异应在 PPM 中充分披露；确保不违反公平对待义务"
+    },
+
+    # B. 费用结构审查
+    "B1": {
+        "id": "B1",
+        "category": "费用结构",
+        "title": "管理费率",
+        "level": "高风险",
+        "check": "是否超过 2%（行业上限）；与市场平均水平对比是否显著偏高",
+        "suggestion_template": "建议管理费率不超过 2%；如因特殊策略需要更高费率，应在 PPM 中充分披露理由"
+    },
+    "B2": {
+        "id": "B2",
+        "category": "费用结构",
+        "title": "管理费计算基数",
+        "level": "高风险",
+        "check": "committed capital / called capital / net invested capital 定义是否清晰；GP 是否有权单方选择最有利基数",
+        "suggestion_template": "明确管理费基数定义；建议投资期按 committed capital、退出期按 net invested capital；GP 不应有权单方切换基数"
+    },
+    "B3": {
+        "id": "B3",
+        "category": "费用结构",
+        "title": "管理费减免（step-down）",
+        "level": "中风险",
+        "check": "投资期结束后费率是否自动下调；是否有触发机制（如第一个退出后）",
+        "suggestion_template": "建议投资期结束后管理费自动减半或按 net invested capital 计算；明确 step-down 的触发时间点"
+    },
+    "B4": {
+        "id": "B4",
+        "category": "费用结构",
+        "title": "费用分担",
+        "level": "中风险",
+        "check": "GP 承担 vs 基金承担的费用分类是否明确；是否存在 GP 向基金转嫁运营成本的模糊条款；费用种类是否详细列明",
+        "suggestion_template": "明确列举 GP 承担的费用（组织费、办公费、人员薪酬等）和基金承担的费用（托管费、审计费、法律费等）"
+    },
+    "B5": {
+        "id": "B5",
+        "category": "费用结构",
+        "title": "关联方费用",
+        "level": "中风险",
+        "check": "GP 关联方向基金收取的服务费是否豁免管理费；关联方收费是否透明并经独立审核（LPAC 审批）",
+        "suggestion_template": "关联方服务费应在管理费之外单独披露并经 LPAC 审批；或采用管理费全额覆盖模式（不另收关联方费用）"
+    },
+
+    # D. GP/LP 权利义务
+    "D1": {
+        "id": "D1",
+        "category": "GP/LP权利义务",
+        "title": "Key man 条款",
+        "level": "高风险",
+        "check": "是否有 key man 事件明确定义；触发后投资期是否自动暂停；是否有替代 key man 的提名程序",
+        "suggestion_template": "明确 key man 事件（如主要人员离职/无法履职 ≥90 日）；触发后自动暂停投资期；替代人选需 LPAC 批准"
+    },
+    "D2": {
+        "id": "D2",
+        "category": "GP/LP权利义务",
+        "title": "GP 除名机制",
+        "level": "高风险",
+        "check": "for cause 除名门槛是否清晰；no-fault removal 投票比例（<75% 有利 GP，≥75% 有利 LP）；除名后管理费处理",
+        "suggestion_template": "for cause 门槛应明确列举（欺诈、重大过失、违反信义义务等）；no-fault removal 建议 ≥75% LP 出资比例；除名后管理费按 net invested capital 计算直至清算"
+    },
+    "D3": {
+        "id": "D3",
+        "category": "GP/LP权利义务",
+        "title": "关联交易",
+        "level": "中风险",
+        "check": "审批是否仅需 GP 同意（缺少 LPAC 或独立委员会审议）；利益冲突披露义务是否充分",
+        "suggestion_template": "关联交易需经 LPAC 或独立第三方审议；GP 应在交易前充分披露利益冲突"
+    },
+    "D4": {
+        "id": "D4",
+        "category": "GP/LP权利义务",
+        "title": "投资限制",
+        "level": "中风险",
+        "check": "单一项目/行业集中度上限是否合理；是否允许后续基金共同投资（需豁免 GP 利益冲突）；风险控制措施是否充足",
+        "suggestion_template": "单一项目不超过基金总规模的 20-25%；后续基金共同投资需 LPAC 豁免；设定杠杆上限"
+    },
+    "D5": {
+        "id": "D5",
+        "category": "GP/LP权利义务",
+        "title": "LP 转让/退伙",
+        "level": "中风险",
+        "check": "转让限制是否过于严苛；是否存在 LP 违约强制转让条款（惩罚性转让折扣）；退伙后未出资承诺的清算处理",
+        "suggestion_template": "GP 不应不合理拒绝 LP 转让；取消或限制惩罚性转让折扣；退伙 LP 的未出资承诺应予豁免"
+    },
+    "D6": {
+        "id": "D6",
+        "category": "GP/LP权利义务",
+        "title": "报告义务",
+        "level": "低风险",
+        "check": "季度/年度报告内容是否明确；LP 是否可查阅底层资产详情；报告延迟是否有罚则",
+        "suggestion_template": "明确季度和年度报告的最低内容要求；LP 有权在合理通知后查阅底层资产信息和账册"
+    },
+    "D7": {
+        "id": "D7",
+        "category": "GP/LP权利义务",
+        "title": "风险管理框架",
+        "level": "中风险",
+        "check": "是否建立风险评估和监控机制",
+        "suggestion_template": "建议增加风险管理条款，建立定期风险评估、风险限额和风险报告机制；明确风险事件的应对程序"
+    },
+    "D8": {
+        "id": "D8",
+        "category": "GP/LP权利义务",
+        "title": "GP/LP 退出机制",
+        "level": "中风险",
+        "check": "双方退出路径是否对等；GP 退出后管理费/收益分成处理",
+        "suggestion_template": "确保 GP 和 LP 退出路径基本对等；GP 退出后已产生但未分配的 carry 应合理处理；清算期间管理费计算方式应明确"
+    },
+}
+
+LPA_RULE_IDS_BY_CATEGORY = {
+    "基本要素": ["A1", "A2", "A3", "A4", "A5"],
+    "费用结构": ["B1", "B2", "B3", "B4", "B5"],
+    "GP/LP权利义务": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"],
+}
+
+
+def get_lpa_rule(rule_id: str) -> dict:
+    """Look up a single LPA rule definition."""
+    return LPA_RULES.get(rule_id, {})
+
+
+def get_all_lpa_rules() -> list:
+    """Return all LPA rules sorted by category."""
+    result = []
+    for category in ["基本要素", "费用结构", "GP/LP权利义务"]:
+        for rule_id in LPA_RULE_IDS_BY_CATEGORY[category]:
+            result.append(LPA_RULES[rule_id])
+    return result
+
+
+def get_lpa_rule_ids_by_category() -> dict:
+    return LPA_RULE_IDS_BY_CATEGORY
