@@ -38,8 +38,14 @@ export const ROUTES = {
   ADMIN_CONVERSATIONS: "/admin/conversations",
 } as const;
 
-// WebSocket URL (for chat - direct to backend, use wss:// in production)
-export const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
+// WebSocket URL — auto-detect from browser location in production
+export function getWsUrl(): string {
+  if (typeof window !== "undefined") {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${protocol}//${window.location.host}`;
+  }
+  return process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
+}
 
 // Backend API URL (public, for direct links like API docs)
 export const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";

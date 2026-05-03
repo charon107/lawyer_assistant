@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 import { useWebSocket } from "./use-websocket";
 import { useChatStore, useAuthStore } from "@/stores";
 import type { ChatMessage, ToolCall, WSEvent, PendingApproval, Decision } from "@/types";
-import { WS_URL } from "@/lib/constants";
+import { getWsUrl } from "@/lib/constants";
 import { useConversationStore } from "@/stores";
 interface UseChatOptions {
   conversationId?: string | null;
@@ -358,7 +358,7 @@ export function useChat(options: UseChatOptions = {}) {
   // string so it does not end up in access logs or Referer headers.
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  const wsUrl = `${WS_URL}/api/v1/ws/agent`;
+  const wsUrl = `${getWsUrl()}/api/v1/ws/agent`;
   const wsProtocols = useMemo(
     () => (accessToken ? [`access_token.${accessToken}`, "chat"] : undefined),
     [accessToken],
