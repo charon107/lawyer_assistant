@@ -74,7 +74,7 @@ export function MessageItem({ message, groupPosition }: MessageItemProps) {
               >
                 <Image
                   src={getFileUrl(fileId)}
-                  alt="Attached file"
+                  alt="已附加文件"
                   width={320}
                   height={256}
                   className="h-auto w-auto max-h-64 max-w-xs object-contain"
@@ -96,7 +96,7 @@ export function MessageItem({ message, groupPosition }: MessageItemProps) {
               <span className="bg-muted-foreground/40 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:150ms]" />
               <span className="bg-muted-foreground/40 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:300ms]" />
             </div>
-            <span className="text-muted-foreground text-xs">Thinking...</span>
+            <span className="text-muted-foreground text-xs">思考中...</span>
           </div>
         )}
 

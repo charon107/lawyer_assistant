@@ -6,10 +6,10 @@ import { ChevronRight } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 
 const ROUTE_LABELS: Record<string, string> = {
-  [ROUTES.DASHBOARD]: "Dashboard",
-  [ROUTES.CHAT]: "Chat",
-  [ROUTES.PROFILE]: "Profile",
-  "/settings": "Settings",
+  [ROUTES.DASHBOARD]: "工作台",
+  [ROUTES.CHAT]: "对话",
+  [ROUTES.PROFILE]: "个人中心",
+  "/settings": "设置",
 };
 
 export function Breadcrumb() {
@@ -30,7 +30,7 @@ export function Breadcrumb() {
   });
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1 text-sm">
+    <nav aria-label="面包屑导航" className="mb-4 flex items-center gap-1 text-sm">
       {crumbs.map((crumb, i) => (
         <span key={crumb.path} className="flex items-center gap-1">
           {i > 0 && <ChevronRight className="text-muted-foreground h-3 w-3" />}

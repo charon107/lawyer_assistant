@@ -6,8 +6,8 @@ import { defaultLocale } from "@/i18n";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "lpa_review_app",
-  description: "A FastAPI project",
+  title: "LPA 合同审查",
+  description: "AI 驱动的 LPA 金融法律合同智能审查系统",
 };
 
 export default function RootLayout({

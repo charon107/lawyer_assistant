@@ -23,9 +23,9 @@ import {
 
 function getGreeting(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+  if (hour < 12) return "早上好";
+  if (hour < 18) return "下午好";
+  return "晚上好";
 }
 
 export default function DashboardPage() {
@@ -57,7 +57,7 @@ export default function DashboardPage() {
           {getGreeting()}{user?.name ? `, ${user.name}` : user?.email ? `, ${user.email.split("@")[0]}` : ""}
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground">
-          Here&apos;s what&apos;s happening with your project.
+          以下是您的项目动态。
         </p>
       </div>
 
@@ -65,7 +65,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">API Status</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">API 状态</CardTitle>
             {healthLoading ? (
               <Skeleton className="h-4 w-4 rounded-full" />
             ) : healthError ? (
@@ -76,7 +76,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {healthLoading ? <Skeleton className="h-8 w-16 rounded" /> : (
-              <p className="text-2xl font-bold">{healthError ? "Offline" : health?.status || "OK"}</p>
+              <p className="text-2xl font-bold">{healthError ? "离线" : health?.status || "正常"}</p>
             )}
             {health?.version && (
               <p className="text-xs text-muted-foreground">v{health.version}</p>
@@ -86,7 +86,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Account</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">账户</CardTitle>
             <User className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -96,35 +96,35 @@ export default function DashboardPage() {
               <Skeleton className="h-5 w-40 rounded" />
             )}
             <p className="text-xs text-muted-foreground">
-              {user?.role === "admin" ? "Admin" : "User"}
-              {user?.created_at && ` · Since ${new Date(user.created_at).toLocaleDateString()}`}
+              {user?.role === "admin" ? "管理员" : "用户"}
+              {user?.created_at && ` · 注册于 ${new Date(user.created_at).toLocaleDateString()}`}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">AI Agent</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">AI 智能体</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">pydantic_ai</p>
-            <p className="text-xs text-muted-foreground">openai provider</p>
+            <p className="text-xs text-muted-foreground">OpenAI 提供商</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Quick actions */}
       <div>
-        <h2 className="mb-3 text-lg font-semibold">Quick Actions</h2>
+        <h2 className="mb-3 text-lg font-semibold">快捷操作</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Link href={ROUTES.CHAT}>
             <Card className="cursor-pointer transition-colors hover:bg-accent">
               <CardContent className="flex items-center gap-3 p-4">
                 <MessageSquare className="h-5 w-5 text-primary" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Start a Chat</p>
-                  <p className="text-xs text-muted-foreground">Talk to the AI agent</p>
+                  <p className="text-sm font-medium">开始对话</p>
+                  <p className="text-xs text-muted-foreground">与 AI 智能体交流</p>
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </CardContent>
@@ -136,8 +136,8 @@ export default function DashboardPage() {
               <CardContent className="flex items-center gap-3 p-4">
                 <Settings className="h-5 w-5 text-primary" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Profile & Settings</p>
-                  <p className="text-xs text-muted-foreground">Manage your account</p>
+                  <p className="text-sm font-medium">个人中心与设置</p>
+                  <p className="text-xs text-muted-foreground">管理您的账户</p>
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </CardContent>
@@ -149,8 +149,8 @@ export default function DashboardPage() {
               <CardContent className="flex items-center gap-3 p-4">
                 <BookOpen className="h-5 w-5 text-primary" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium">API Documentation</p>
-                  <p className="text-xs text-muted-foreground">OpenAPI / Swagger docs</p>
+                  <p className="text-sm font-medium">API 文档</p>
+                  <p className="text-xs text-muted-foreground">OpenAPI / Swagger 接口文档</p>
                 </div>
                 <ExternalLink className="h-4 w-4 text-muted-foreground" />
               </CardContent>
@@ -162,8 +162,8 @@ export default function DashboardPage() {
               <CardContent className="flex items-center gap-3 p-4">
                 <ArrowRight className="h-5 w-5 text-primary" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Export Conversations</p>
-                  <p className="text-xs text-muted-foreground">Download all chats as JSON</p>
+                  <p className="text-sm font-medium">导出对话</p>
+                  <p className="text-xs text-muted-foreground">以 JSON 格式下载所有对话记录</p>
                 </div>
                 <ExternalLink className="h-4 w-4 text-muted-foreground" />
               </CardContent>
@@ -174,15 +174,15 @@ export default function DashboardPage() {
       {/* Admin Actions */}
       {user?.role === "admin" && (
         <div>
-          <h2 className="mb-3 text-lg font-semibold">Admin Actions</h2>
+          <h2 className="mb-3 text-lg font-semibold">管理员操作</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Link href={ROUTES.ADMIN_RATINGS}>
               <Card className="cursor-pointer transition-colors hover:bg-accent">
                 <CardContent className="flex items-center gap-3 p-4">
                   <Star className="h-5 w-5 text-primary" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Response Ratings</p>
-                    <p className="text-xs text-muted-foreground">View and manage ratings</p>
+                    <p className="text-sm font-medium">回复评分</p>
+                    <p className="text-xs text-muted-foreground">查看和管理评分</p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
                 </CardContent>
@@ -194,8 +194,8 @@ export default function DashboardPage() {
                 <CardContent className="flex items-center gap-3 p-4">
                   <List className="h-5 w-5 text-primary" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium">All Conversations</p>
-                    <p className="text-xs text-muted-foreground">View all user conversations</p>
+                    <p className="text-sm font-medium">全部对话</p>
+                    <p className="text-xs text-muted-foreground">查看所有用户的对话</p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
                 </CardContent>

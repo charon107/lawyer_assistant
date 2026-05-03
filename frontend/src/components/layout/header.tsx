@@ -13,9 +13,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui";
 import { useSidebarStore } from "@/stores";
 
 const adminNavItems = [
-  { name: "Dashboard", href: ROUTES.DASHBOARD, icon: LayoutDashboard, adminOnly: true },
-  { name: "Chat", href: ROUTES.CHAT, icon: MessageSquare, adminOnly: false },
-  { name: "Profile", href: ROUTES.PROFILE, icon: UserCircle, adminOnly: false },
+  { name: "工作台", href: ROUTES.DASHBOARD, icon: LayoutDashboard, adminOnly: true },
+  { name: "对话", href: ROUTES.CHAT, icon: MessageSquare, adminOnly: false },
+  { name: "个人中心", href: ROUTES.PROFILE, icon: UserCircle, adminOnly: false },
 ];
 
 export function Header() {
@@ -30,7 +30,7 @@ export function Header() {
         <div className="flex items-center gap-1 sm:gap-4">
           <Button variant="ghost" size="sm" className="h-10 w-10 p-0 md:hidden" onClick={toggle}>
             <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle menu</span>
+            <span className="sr-only">切换菜单</span>
           </Button>
 
           <Link href={ROUTES.DASHBOARD} className="text-sm font-bold tracking-tight sm:text-base">
@@ -85,16 +85,16 @@ export function Header() {
                 className="h-10 w-10 p-0 sm:w-auto sm:px-3"
               >
                 <LogOut className="h-4 w-4" />
-                <span className="sr-only sm:not-sr-only sm:ml-2">Logout</span>
+                <span className="sr-only sm:not-sr-only sm:ml-2">退出登录</span>
               </Button>
             </>
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild className="h-10">
-                <Link href={ROUTES.LOGIN}>Login</Link>
+                <Link href={ROUTES.LOGIN}>登录</Link>
               </Button>
               <Button size="sm" asChild className="h-10">
-                <Link href={ROUTES.REGISTER}>Register</Link>
+                <Link href={ROUTES.REGISTER}>注册</Link>
               </Button>
             </>
           )}

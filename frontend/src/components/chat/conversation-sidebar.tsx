@@ -321,7 +321,7 @@ export function ConversationSidebar({ className }: ConversationSidebarProps) {
           size="sm"
           className="h-10 w-10 p-0"
           onClick={startNewChat}
-          title="New Chat"
+          title="新建对话"
         >
           <MessageSquarePlus className="h-4 w-4" />
         </Button>

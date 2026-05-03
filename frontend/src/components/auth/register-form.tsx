@@ -22,10 +22,10 @@ function getPasswordStrength(pw: string): { score: number; label: string; color:
   if (/\d/.test(pw)) score++;
   if (/[^a-zA-Z0-9]/.test(pw)) score++;
 
-  if (score <= 1) return { score: 1, label: "Weak", color: "bg-red-500" };
-  if (score <= 2) return { score: 2, label: "Fair", color: "bg-orange-500" };
-  if (score <= 3) return { score: 3, label: "Good", color: "bg-yellow-500" };
-  return { score: 4, label: "Strong", color: "bg-green-500" };
+  if (score <= 1) return { score: 1, label: "弱", color: "bg-red-500" };
+  if (score <= 2) return { score: 2, label: "一般", color: "bg-orange-500" };
+  if (score <= 3) return { score: 3, label: "良好", color: "bg-yellow-500" };
+  return { score: 4, label: "强", color: "bg-green-500" };
 }
 
 export function RegisterForm() {
@@ -50,18 +50,18 @@ export function RegisterForm() {
     setError("");
 
     if (!EMAIL_RE.test(email)) {
-      setError("Please enter a valid email address");
+      setError("请输入有效的邮箱地址");
       return;
     }
 
     if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+      setError("密码至少需要 8 个字符");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      toast.error("Passwords do not match");
+      setError("两次输入的密码不一致");
+      toast.error("两次输入的密码不一致");
       return;
     }
 
@@ -72,7 +72,7 @@ export function RegisterForm() {
       toast.success(t("registerSuccess"));
       router.push(ROUTES.LOGIN + "?registered=true");
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : "Registration failed. Please try again.";
+      const message = err instanceof ApiError ? err.message : "注册失败，请重试。";
       setError(message);
       toast.error(message);
     } finally {
@@ -93,7 +93,7 @@ export function RegisterForm() {
             <Input
               id="name"
               type="text"
-              placeholder="John Doe"
+              placeholder="张三"
               value={name}
               onChange={(e) => setName(e.target.value)}
               disabled={isLoading}
@@ -104,7 +104,7 @@ export function RegisterForm() {
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="your@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onBlur={() => setEmailTouched(true)}
@@ -143,9 +143,9 @@ export function RegisterForm() {
                   <p className="text-muted-foreground text-xs">{strength.label}</p>
                   <div className="flex items-center gap-1.5 text-xs">
                     {password.length >= 8 ? (
-                      <span className="flex items-center gap-0.5 text-green-500"><Check className="h-3 w-3" />8+ chars</span>
+                      <span className="flex items-center gap-0.5 text-green-500"><Check className="h-3 w-3" />8+ 字符</span>
                     ) : (
-                      <span className="flex items-center gap-0.5 text-muted-foreground"><X className="h-3 w-3" />8+ chars</span>
+                      <span className="flex items-center gap-0.5 text-muted-foreground"><X className="h-3 w-3" />8+ 字符</span>
                     )}
                   </div>
                 </div>

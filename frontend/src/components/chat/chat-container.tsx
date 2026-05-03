@@ -131,9 +131,9 @@ function AuthenticatedChatContainer() {
 
 function ModelSelector({ onChange }: { onChange: (model: string | null) => void }) {
   const [availableModels, setAvailableModels] = useState<{value: string; label: string}[]>([
-    { value: "", label: "Default" },
+    { value: "", label: "默认" },
   ]);
-  const [selected, setSelected] = useState<{value: string; label: string}>(availableModels[0] ?? { value: "", label: "Default" });
+  const [selected, setSelected] = useState<{value: string; label: string}>(availableModels[0] ?? { value: "", label: "默认" });
 
   useEffect(() => {
     fetch("/api/v1/agent/models", { credentials: "include" })
@@ -141,7 +141,7 @@ function ModelSelector({ onChange }: { onChange: (model: string | null) => void 
       .then(data => {
         if (data?.models) {
           const models = [
-            { value: "", label: `Default (${data.default})` },
+            { value: "", label: `默认 (${data.default})` },
             ...data.models.map((m: string) => ({ value: m, label: m })),
           ];
           setAvailableModels(models);
@@ -203,8 +203,8 @@ function ChatUI({
               <Bot className="h-7 w-7 sm:h-8 sm:w-8" />
             </div>
             <div className="text-center px-4">
-              <p className="text-base sm:text-lg font-medium text-foreground">AI Assistant</p>
-              <p className="text-sm">Start a conversation to get help</p>
+              <p className="text-base sm:text-lg font-medium text-foreground">AI 助手</p>
+              <p className="text-sm">开始对话以获取帮助</p>
             </div>
           </div>
         ) : (

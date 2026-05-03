@@ -34,10 +34,10 @@ export default function ProfilePage() {
     try {
       const updated = await apiClient.patch<User>("/users/me", { email: editEmail });
       setUser(updated);
-      toast.success("Profile updated");
+      toast.success("个人资料已更新");
       setIsEditing(false);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Failed to update profile");
+      toast.error(err instanceof ApiError ? err.message : "更新个人资料失败");
     } finally { setIsSaving(false); }
   };
 
@@ -45,17 +45,17 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = "";
-    if (file.size > 2 * 1024 * 1024) { toast.error("Avatar too large. Maximum 2MB."); return; }
+    if (file.size > 2 * 1024 * 1024) { toast.error("头像文件过大，最大 2MB。"); return; }
     setAvatarUploading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
       const res = await fetch("/api/users/me/avatar", { method: "POST", body: formData });
-      if (!res.ok) { const err = await res.json().catch(() => ({ detail: "Upload failed" })); throw new Error(err.detail || "Upload failed"); }
+      if (!res.ok) { const err = await res.json().catch(() => ({ detail: "上传失败" })); throw new Error(err.detail || "上传失败"); }
       const updated = await res.json();
       setUser(updated);
-      toast.success("Avatar updated");
-    } catch (err) { toast.error(err instanceof Error ? err.message : "Failed to upload avatar"); }
+      toast.success("头像已更新");
+    } catch (err) { toast.error(err instanceof Error ? err.message : "上传头像失败"); }
     finally { setAvatarUploading(false); }
   };
 
@@ -63,7 +63,7 @@ export default function ProfilePage() {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Card className="p-6 sm:p-8 text-center mx-4">
-          <p className="text-muted-foreground">Please log in to view your profile.</p>
+          <p className="text-muted-foreground">请登录后查看个人中心。</p>
         </Card>
       </div>
     );
@@ -90,17 +90,17 @@ export default function ProfilePage() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{user.email}</h1>
             <div className="mt-1 flex items-center gap-2">
-              {user.role === "admin" && <Badge variant="secondary"><Shield className="mr-1 h-3 w-3" />Admin</Badge>}
-              {user.is_active && <Badge variant="outline" className="text-green-600">Active</Badge>}
+              {user.role === "admin" && <Badge variant="secondary"><Shield className="mr-1 h-3 w-3" />管理员</Badge>}
+              {user.is_active && <Badge variant="outline" className="text-green-600">活跃</Badge>}
               {user.created_at && (
-                <span className="text-muted-foreground text-xs">Since {new Date(user.created_at).toLocaleDateString()}</span>
+                <span className="text-muted-foreground text-xs">注册于 {new Date(user.created_at).toLocaleDateString()}</span>
               )}
             </div>
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={handleEdit} className="h-10 self-start">
           <Settings className="mr-2 h-4 w-4" />
-          {isEditing ? "Cancel" : "Edit Profile"}
+          {isEditing ? "取消" : "编辑资料"}
         </Button>
       </div>
 
@@ -112,22 +112,22 @@ export default function ProfilePage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Mail className="h-4 w-4" /> Account Information
+                <Mail className="h-4 w-4" /> 账户信息
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="email" className="text-sm">Email Address</Label>
+                  <Label htmlFor="email" className="text-sm">邮箱地址</Label>
                   <Input id="email" type="email" value={isEditing ? editEmail : user.email}
                     onChange={(e) => setEditEmail(e.target.value)} disabled={!isEditing}
                     className={!isEditing ? "bg-muted" : ""} />
                 </div>
                 {isEditing && (
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={handleEdit} size="sm">Cancel</Button>
+                    <Button variant="outline" onClick={handleEdit} size="sm">取消</Button>
                     <Button onClick={handleSave} disabled={isSaving} size="sm">
-                      {isSaving ? "Saving..." : "Save Changes"}
+                      {isSaving ? "保存中..." : "保存修改"}
                     </Button>
                   </div>
                 )}
@@ -143,14 +143,14 @@ export default function ProfilePage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Palette className="h-4 w-4" /> Preferences
+                <Palette className="h-4 w-4" /> 偏好设置
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Theme</p>
-                  <p className="text-muted-foreground text-xs">Color scheme</p>
+                  <p className="text-sm font-medium">主题</p>
+                  <p className="text-muted-foreground text-xs">配色方案</p>
                 </div>
                 <ThemeToggle variant="dropdown" />
               </div>
@@ -161,16 +161,16 @@ export default function ProfilePage() {
           <Card className="border-destructive/50">
             <CardHeader className="pb-3">
               <CardTitle className="text-destructive flex items-center gap-2 text-sm font-semibold">
-                <LogOut className="h-4 w-4" /> Danger Zone
+                <LogOut className="h-4 w-4" /> 危险区域
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium">Sign out</p>
-                  <p className="text-muted-foreground text-xs">Sign out from this device</p>
+                  <p className="text-sm font-medium">退出登录</p>
+                  <p className="text-muted-foreground text-xs">从当前设备退出登录</p>
                 </div>
-                <Button variant="destructive" size="sm" onClick={logout}>Sign Out</Button>
+                <Button variant="destructive" size="sm" onClick={logout}>退出登录</Button>
               </div>
             </CardContent>
           </Card>

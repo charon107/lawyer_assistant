@@ -9,10 +9,10 @@ import { useSidebarStore } from "@/stores";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui";
 
 const navigation = [
-  { name: "Dashboard", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
-  { name: "LPA Review", href: ROUTES.REVIEW, icon: FileSearch },
-  { name: "Chat", href: ROUTES.CHAT, icon: MessageSquare },
-  { name: "Profile", href: ROUTES.PROFILE, icon: UserCircle },
+  { name: "工作台", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
+  { name: "LPA 审查", href: ROUTES.REVIEW, icon: FileSearch },
+  { name: "对话", href: ROUTES.CHAT, icon: MessageSquare },
+  { name: "个人中心", href: ROUTES.PROFILE, icon: UserCircle },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -53,7 +53,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           className="flex items-center gap-2 font-semibold"
           onClick={onNavigate}
         >
-          <span>{"lpa_review_app"}</span>
+          <span>{"LPA 合同审查"}</span>
         </Link>
       </div>
       <NavLinks onNavigate={onNavigate} />
@@ -68,7 +68,7 @@ export function Sidebar() {
     <Sheet open={isOpen} onOpenChange={close}>
       <SheetContent side="left" className="w-72 p-0">
         <SheetHeader className="h-14 px-4">
-          <SheetTitle>{"lpa_review_app"}</SheetTitle>
+          <SheetTitle>{"LPA 合同审查"}</SheetTitle>
           <SheetClose onClick={close} />
         </SheetHeader>
         <NavLinks onNavigate={close} />

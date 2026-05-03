@@ -2,8 +2,8 @@
  * Application constants.
  */
 
-export const APP_NAME = "lpa_review_app";
-export const APP_DESCRIPTION = "A FastAPI project";
+export const APP_NAME = "LPA 合同审查";
+export const APP_DESCRIPTION = "AI 驱动的 LPA 合同审查平台";
 
 // API Routes (Next.js internal routes)
 export const API_ROUTES = {

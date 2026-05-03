@@ -41,7 +41,7 @@ export function LandingNav({ signInLabel, getStartedLabel, dashboardLabel }: Lan
               <button
                 onClick={logout}
                 className="rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground"
-                title="Logout"
+                title="退出登录"
               >
                 <LogOut className="h-3.5 w-3.5" />
               </button>

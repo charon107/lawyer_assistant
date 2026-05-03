@@ -42,7 +42,7 @@ export function ChatInput({ onSend, disabled, isProcessing }: ChatInputProps) {
     if (disabled || isUploading) return;
 
     const fileIds = attachedFiles.length > 0 ? attachedFiles.map((f) => f.id) : undefined;
-    onSend(trimmed || "Analyze the attached file(s)", fileIds);
+    onSend(trimmed || "分析已附加的文件", fileIds);
     setMessage("");
     setAttachedFiles([]);
   };
@@ -65,7 +65,7 @@ export function ChatInput({ onSend, disabled, isProcessing }: ChatInputProps) {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      toast.info("Voice input is only supported in Chrome. Use Chrome for speech-to-text.");
+      toast.info("语音输入仅支持 Chrome 浏览器。请使用 Chrome 进行语音转文字。");
       return;
     }
 
@@ -99,7 +99,7 @@ export function ChatInput({ onSend, disabled, isProcessing }: ChatInputProps) {
 
     recognition.onerror = () => {
       setIsListening(false);
-      toast.error("Speech recognition error");
+      toast.error("语音识别错误");
     };
 
     recognitionRef.current = recognition;
@@ -118,7 +118,7 @@ export function ChatInput({ onSend, disabled, isProcessing }: ChatInputProps) {
       const maxMb = parseInt(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB || "50", 10);
       for (const file of Array.from(files)) {
         if (file.size > maxMb * 1024 * 1024) {
-          toast.error(`${file.name}: File too large. Maximum ${maxMb}MB.`);
+          toast.error(`${file.name}: 文件过大，最大 ${maxMb}MB。`);
           continue;
         }
 
@@ -127,7 +127,7 @@ export function ChatInput({ onSend, disabled, isProcessing }: ChatInputProps) {
           const result = await uploadFile(file);
           setAttachedFiles((prev) => [...prev, result]);
         } catch (err) {
-          const msg = err instanceof Error ? err.message : "Upload failed";
+          const msg = err instanceof Error ? err.message : "上传失败";
           toast.error(`${file.name}: ${msg}`);
         } finally {
           setIsUploading(false);
@@ -197,7 +197,7 @@ export function ChatInput({ onSend, disabled, isProcessing }: ChatInputProps) {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
+          placeholder="输入消息..."
           disabled={disabled}
           rows={1}
           className="scrollbar-thin placeholder:text-muted-foreground min-h-[40px] flex-1 resize-none bg-transparent py-2.5 text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:text-base"
@@ -212,7 +212,7 @@ export function ChatInput({ onSend, disabled, isProcessing }: ChatInputProps) {
             onClick={toggleMic}
             disabled={disabled}
             className="h-9 w-9"
-            title={isListening ? "Stop recording" : "Voice input"}
+            title={isListening ? "停止录音" : "语音输入"}
           >
             {isListening ? (
               <MicOff className="h-4 w-4 animate-pulse text-red-500" />
@@ -229,7 +229,7 @@ export function ChatInput({ onSend, disabled, isProcessing }: ChatInputProps) {
             onClick={() => fileInputRef.current?.click()}
             disabled={disabled || isUploading}
             className="h-9 w-9"
-            title="Attach file"
+            title="附加文件"
           >
             {isUploading ? (
               <Spinner className="text-muted-foreground h-4 w-4" />
@@ -258,7 +258,7 @@ export function ChatInput({ onSend, disabled, isProcessing }: ChatInputProps) {
             ) : (
               <Send className="h-4 w-4" />
             )}
-            <span className="sr-only">Send message</span>
+            <span className="sr-only">发送消息</span>
           </Button>
         </div>
       </div>

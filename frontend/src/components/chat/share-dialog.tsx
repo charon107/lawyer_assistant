@@ -147,8 +147,8 @@ export function ShareDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="view">View</SelectItem>
-                <SelectItem value="edit">Edit</SelectItem>
+                <SelectItem value="view">查看</SelectItem>
+                <SelectItem value="edit">编辑</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={handleShare} disabled={isLoading || isSharing} size="icon">
@@ -187,7 +187,7 @@ export function ShareDialog({
           </div>
           {shareLink && (
             <p className="text-xs text-muted-foreground break-all">
-              {copied ? "Copied!" : shareLink}
+              {copied ? "已复制!" : shareLink}
             </p>
           )}
 
@@ -202,11 +202,11 @@ export function ShareDialog({
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm">
-                      {share.shared_with_email || share.shared_with || "Link"}
+                      {share.shared_with_email || share.shared_with || "链接"}
                     </span>
                     <Badge variant="secondary">{share.permission}</Badge>
                     {share.share_token && (
-                      <Badge variant="outline">Link</Badge>
+                      <Badge variant="outline">链接</Badge>
                     )}
                   </div>
                   <Button

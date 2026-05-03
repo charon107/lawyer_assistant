@@ -37,7 +37,7 @@ function DateTimeResult({ result }: { result: string }) {
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-primary" />
           <div>
-            <p className="text-xs text-muted-foreground">Date</p>
+            <p className="text-xs text-muted-foreground">日期</p>
             <p className="text-sm font-semibold">{dateMatch[1]}</p>
           </div>
         </div>
@@ -46,7 +46,7 @@ function DateTimeResult({ result }: { result: string }) {
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-primary" />
           <div>
-            <p className="text-xs text-muted-foreground">Time</p>
+            <p className="text-xs text-muted-foreground">时间</p>
             <p className="text-sm font-semibold">{timeMatch[1]}</p>
           </div>
         </div>
@@ -96,7 +96,7 @@ function RAGSearchResults({ result }: { result: string }) {
       return (
         <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
           <Search className="h-4 w-4" />
-          No relevant documents found
+          未找到相关文档
         </div>
       );
     }
@@ -107,7 +107,7 @@ function RAGSearchResults({ result }: { result: string }) {
     <div className="space-y-2 py-1">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Search className="h-3.5 w-3.5" />
-        Found {items.length} result{items.length !== 1 ? "s" : ""}
+        找到 {items.length} 条结果
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {items.map((item) => (
@@ -217,7 +217,7 @@ function WebSearchResults({ result }: { result: string }) {
       return (
         <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
           <Globe className="h-4 w-4" />
-          No web results found
+          未找到网络搜索结果
         </div>
       );
     }
@@ -228,7 +228,7 @@ function WebSearchResults({ result }: { result: string }) {
     <div className="space-y-2 py-1">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Globe className="h-3.5 w-3.5" />
-        {items.length} web result{items.length !== 1 ? "s" : ""}
+        {items.length} 条网络结果
       </div>
       {items.map((item) => (
         <div key={item.index} className="rounded-md border bg-background p-2.5">
@@ -306,11 +306,11 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
             )}
             <CardTitle className="text-sm font-medium">
               {isDateTime
-                ? "Current Date & Time"
+                ? "当前日期和时间"
                 : isRAGSearch
-                ? "Knowledge Base Search"
+                ? "知识库检索"
                 : isWebSearch
-                ? "Web Search"
+                ? "网络搜索"
                 : toolCall.name}
             </CardTitle>
             {(isRAGSearch || isWebSearch) && toolCall.args?.query ? (
@@ -326,7 +326,7 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
                 size="icon"
                 className="h-6 w-6"
                 onClick={() => setShowRaw(!showRaw)}
-                title={showRaw ? "Show formatted" : "Show raw"}
+                title={showRaw ? "显示格式化" : "显示原始"}
               >
                 {showRaw ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               </Button>
@@ -355,7 +355,7 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
             {/* Arguments */}
             <div className="group relative">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-xs text-muted-foreground">Arguments:</p>
+                <p className="text-xs text-muted-foreground">参数:</p>
                 <CopyButton
                   text={JSON.stringify(toolCall.args, null, 2)}
                   className="opacity-0 group-hover:opacity-100"
@@ -370,7 +370,7 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
             {toolCall.result !== undefined && (
               <div className="group relative">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs text-muted-foreground">Result:</p>
+                  <p className="text-xs text-muted-foreground">结果:</p>
                   <CopyButton
                     text={resultText}
                     className="opacity-0 group-hover:opacity-100"

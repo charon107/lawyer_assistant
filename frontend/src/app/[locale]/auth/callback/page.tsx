@@ -1,4 +1,4 @@
 
 export default function AuthCallbackPage() {
-  return <div>OAuth not enabled</div>;
+  return <div>OAuth 未启用</div>;
 }

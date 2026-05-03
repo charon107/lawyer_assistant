@@ -31,7 +31,7 @@ export function LoginForm() {
       await login({ email, password });
       toast.success(t("loginSuccess"));
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : "Login failed. Please try again.";
+      const message = err instanceof ApiError ? err.message : "登录失败，请重试。";
       setError(message);
       toast.error(message);
       setIsLoading(false);
@@ -50,7 +50,7 @@ export function LoginForm() {
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="your@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onBlur={() => setEmailTouched(true)}

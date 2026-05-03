@@ -35,7 +35,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex h-screen items-center justify-center" role="status" aria-live="polite">
         <Spinner className="text-muted-foreground h-6 w-6" />
-        <span className="sr-only">Checking authentication...</span>
+        <span className="sr-only">正在验证身份...</span>
       </div>
     );
   }

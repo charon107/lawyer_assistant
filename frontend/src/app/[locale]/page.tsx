@@ -216,8 +216,8 @@ export default async function HomePage() {
                   { t("footerProduct")}
                 </h4>
                 <ul className="space-y-2">
-                  <li><Link href={ROUTES.DASHBOARD} className="text-sm text-muted-foreground transition-colors hover:text-foreground">Dashboard</Link></li>
-                  <li><Link href={ROUTES.CHAT} className="text-sm text-muted-foreground transition-colors hover:text-foreground">Chat</Link></li>
+                  <li><Link href={ROUTES.DASHBOARD} className="text-sm text-muted-foreground transition-colors hover:text-foreground">工作台</Link></li>
+                  <li><Link href={ROUTES.CHAT} className="text-sm text-muted-foreground transition-colors hover:text-foreground">对话</Link></li>
                 </ul>
               </div>
               <div>
@@ -225,8 +225,8 @@ export default async function HomePage() {
                   { t("footerResources")}
                 </h4>
                 <ul className="space-y-2">
-                  <li><a href={ `${BACKEND_URL}/docs`} className="text-sm text-muted-foreground transition-colors hover:text-foreground">API Docs</a></li>
-                  <li><Link href={ROUTES.LOGIN} className="text-sm text-muted-foreground transition-colors hover:text-foreground">Sign In</Link></li>
+                  <li><a href={ `${BACKEND_URL}/docs`} className="text-sm text-muted-foreground transition-colors hover:text-foreground">API 文档</a></li>
+                  <li><Link href={ROUTES.LOGIN} className="text-sm text-muted-foreground transition-colors hover:text-foreground">登录</Link></li>
                 </ul>
               </div>
             </div>
