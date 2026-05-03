@@ -1,8 +1,7 @@
 """Base Pydantic schemas."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
-from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict
 
@@ -13,7 +12,7 @@ def serialize_datetime(dt: datetime) -> str:
     Ensures all datetimes have explicit timezone (defaults to UTC).
     """
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=ZoneInfo("UTC"))
+        dt = dt.replace(tzinfo=timezone.utc)
     return dt.isoformat()
 
 

@@ -16,10 +16,9 @@ from pydantic_ai.messages import (
     TextPart,
     UserPromptPart,
 )
-from pydantic_ai.models.openai import OpenAIResponsesModel
-from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.settings import ModelSettings
 
+from app.agents.model_factory import create_pydantic_model
 from app.agents.prompts import DEFAULT_SYSTEM_PROMPT
 from app.agents.tools import get_current_datetime
 from app.core.config import settings
@@ -58,10 +57,7 @@ class AssistantAgent:
 
     def _create_agent(self) -> Agent[Deps, str]:
         """Create and configure the PydanticAI agent."""
-        model = OpenAIResponsesModel(
-            self.model_name,
-            provider=OpenAIProvider(api_key=settings.OPENAI_API_KEY),
-        )
+        model = create_pydantic_model(model_name=self.model_name)
 
         agent = Agent[Deps, str](
             model=model,

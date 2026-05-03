@@ -85,30 +85,24 @@ class Settings(BaseSettings):
             )
         return v
 
-    # === AI Agent (pydantic_ai, openai) ===
+    # === AI Agent (pydantic_ai) ===
+    # Provider: "openai" (OpenAI-compatible) or "anthropic"
+    LLM_PROVIDER: str = "openai"
     OPENAI_API_KEY: str = ""
-    AI_MODEL: str = "gpt-5-mini"
+    ANTHROPIC_API_KEY: str = ""
+    AI_MODEL: str = "deepseek-v4-pro"
+    LLM_BASE_URL: str = ""  # Custom base URL for OpenAI-compatible APIs
     AI_TEMPERATURE: float = 0.7
     AI_AVAILABLE_MODELS: list[str] = [
-        "gpt-5.4",
-        "gpt-5.4-mini",
-        "gpt-5.4-nano",
-        "gpt-5-mini",
-        "gpt-5-nano",
-        "gpt-5",
-        "gpt-5.1",
-        "gpt-5.2",
-        "o4-mini",
-        "o3",
-        "o3-mini",
-        "gpt-4.1-mini",
-        "gpt-4.1",
-        "gpt-4.1-nano",
+        "deepseek-v4-pro",
+        "deepseek-chat",
+        "deepseek-reasoner",
         "gpt-4o",
         "gpt-4o-mini",
+        "claude-sonnet-4-6",
+        "claude-haiku-4-5",
+        "claude-opus-4-7",
     ]
-    AI_FRAMEWORK: str = "pydantic_ai"
-    LLM_PROVIDER: str = "openai"
 
     # === CORS ===
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8080"]

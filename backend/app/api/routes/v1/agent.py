@@ -48,10 +48,12 @@ router = APIRouter()
 
 @router.get("/agent/models")
 async def list_models() -> dict[str, Any]:
-    """Return available LLM models and the current default."""
+    """Return available LLM models, provider, and the current default."""
     return {
+        "provider": settings.LLM_PROVIDER,
         "default": settings.AI_MODEL,
         "models": settings.AI_AVAILABLE_MODELS,
+        "base_url": settings.LLM_BASE_URL or None,
     }
 
 
