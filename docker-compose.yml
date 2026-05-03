@@ -1,16 +1,13 @@
-# LPA Review App — Docker Compose deployment
+# LPA Review App — Production Docker Compose
 #
-# Backend runs in Docker. Frontend runs directly on host (built with bun).
-# Nginx in Docker proxies to both.
+# All three services run in Docker. Images are built by GitHub Actions
+# and pushed to GHCR. Server just pulls and runs.
 #
-# Start:
-#   1. Backend:  docker compose up -d
-#   2. Frontend: cd frontend && bun install && bun run build && bun start &
-#   3. App at http://<server-ip>
+# Deploy: docker compose pull && docker compose up -d
 
 services:
   backend:
-    build: ./backend
+    image: ghcr.io/charon107/lpa-backend:latest
     container_name: lpa-backend
     restart: unless-stopped
     env_file:
@@ -18,8 +15,6 @@ services:
     volumes:
       - backend_data:/app/data
       - backend_media:/app/media
-    ports:
-      - "127.0.0.1:8000:8000"
     networks:
       - lpa-network
     healthcheck:
@@ -27,6 +22,20 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+  frontend:
+    image: ghcr.io/charon107/lpa-frontend:latest
+    container_name: lpa-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - BACKEND_URL=http://backend:8000
+    networks:
+      - lpa-network
+    depends_on:
+      backend:
+        condition: service_healthy
 
   nginx:
     image: nginx:alpine
@@ -38,10 +47,9 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - lpa-network
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       - backend
+      - frontend
 
 networks:
   lpa-network:
