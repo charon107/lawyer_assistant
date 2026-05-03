@@ -38,11 +38,14 @@ export const ROUTES = {
   ADMIN_CONVERSATIONS: "/admin/conversations",
 } as const;
 
-// WebSocket URL — auto-detect from browser location in production
+// WebSocket URL — auto-detect from browser location, or use NEXT_PUBLIC_WS_URL
 export function getWsUrl(): string {
   if (typeof window !== "undefined") {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    return `${protocol}//${window.location.host}`;
+    // In local dev, the Next.js dev server is on :3000 but WebSocket backend is on :8000
+    const port = window.location.port === "3000" ? "8000" : window.location.port;
+    const host = port ? `${window.location.hostname}:${port}` : window.location.host;
+    return `${protocol}//${host}`;
   }
   return process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
 }
