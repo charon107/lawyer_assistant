@@ -18,6 +18,8 @@ services:
     volumes:
       - backend_data:/app/data
       - backend_media:/app/media
+    ports:
+      - "127.0.0.1:8000:8000"
     networks:
       - lpa-network
     healthcheck:
