@@ -10,6 +10,10 @@ env:
   BACKEND_IMAGE: ghcr.io/charon107/lpa-backend
   FRONTEND_IMAGE: ghcr.io/charon107/lpa-frontend
 
+permissions:
+  packages: write
+  contents: read
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
