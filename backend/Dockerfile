@@ -19,7 +19,10 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --index-url https://mirrors.aliyun.com/pypi/simple/
 
 # Copy application code
-COPY . .
+COPY backend/ .
+
+# Copy prompts into the LPA package for reliable path resolution in Docker
+COPY prompts/ /app/app/agents/lpa/prompts/
 
 # Ensure data and media directories exist
 RUN mkdir -p /app/data /app/media

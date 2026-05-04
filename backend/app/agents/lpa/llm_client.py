@@ -30,6 +30,17 @@ class LLMClient:
     def __init__(self, api_key: str, base_url: str = "https://api.deepseek.com"):
         self._api_key = api_key
         self._base_url = base_url
+        self._tools: List[Dict[str, Any]] = []
+        self._tool_handlers: Dict[str, Callable] = {}
+
+    def register_tool(self, name: str, description: str, input_schema: dict, handler: Callable):
+        """Register a tool at instance level."""
+        self._tools.append({
+            "name": name,
+            "description": description,
+            "input_schema": input_schema,
+        })
+        self._tool_handlers[name] = handler
 
     def agent_loop(
         self,
@@ -75,7 +86,7 @@ class LLMClient:
                 messages.append(assistant_msg)
 
                 for tc in choice.message.tool_calls:
-                    handler = TOOL_HANDLERS.get(tc.function.name)
+                    handler = self._tool_handlers.get(tc.function.name) or TOOL_HANDLERS.get(tc.function.name)
                     if handler is None:
                         result = json.dumps({"error": f"Unknown tool: {tc.function.name}"})
                     else:
@@ -122,11 +133,10 @@ class LLMClient:
         )
         return resp.choices[0].message.content or ""
 
-    @staticmethod
-    def _build_openai_tools() -> List[Dict[str, Any]]:
+    def _build_openai_tools(self) -> List[Dict[str, Any]]:
         """Convert Anthropic-style tool schema to OpenAI function-calling format."""
         result = []
-        for tool in TOOLS:
+        for tool in self._tools or TOOLS:
             result.append({
                 "type": "function",
                 "function": {

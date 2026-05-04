@@ -114,7 +114,7 @@ class FactExtractor:
 
     def extract(self, document_text: str, early_chapters: Optional[str] = None) -> Dict[str, Any]:
         raw = self.extract_raw(document_text)
-        source = early_chapters or document_text[:8000]
+        source = early_chapters or document_text
         labeled = self.label_facts(raw, source)
         return {"raw_facts": raw, "labeled_facts": labeled}
 
@@ -154,7 +154,7 @@ class FactExtractor:
             resp = self._llm.agent_loop(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
-                model="deepseek-chat",
+                model="deepseek-v4-flash",
                 temperature=0.1,
                 max_turns=5,
             )
@@ -171,7 +171,7 @@ class FactExtractor:
     def _build_user_prompt(self, raw_facts: Dict[str, Any], source_text: str) -> str:
         return (
             f"## 预扫描原始事实\n\n```json\n{json.dumps(raw_facts, ensure_ascii=False, indent=2)}\n```\n\n"
-            f"## 合同节选\n\n{source_text[:8000]}\n\n"
+            f"## 合同节选\n\n{source_text}\n\n"
             f"请调用 label_lpa_facts 工具标注事实。不存在的字段请省略。"
         )
 

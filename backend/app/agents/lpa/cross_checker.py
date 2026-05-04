@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class CrossChecker:
     """Global cross-chapter checker using DeepSeek-R1."""
 
-    R1_MODEL = "deepseek-reasoner"
+    R1_MODEL = "deepseek-v4-pro"
 
     def __init__(self, llm_client: LLMClient, labeled_facts: Dict[str, Any]):
         self._llm = llm_client

@@ -64,7 +64,7 @@ class LPAChatService:
 
         try:
             resp = client.chat.completions.create(
-                model="deepseek-chat",
+                model="deepseek-v4-flash",
                 messages=messages,
                 temperature=0.3,
                 max_tokens=2000,

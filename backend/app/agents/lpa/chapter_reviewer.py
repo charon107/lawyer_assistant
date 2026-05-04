@@ -39,8 +39,8 @@ COMPLEX_RULE_IDS = {"A2", "A3", "B1", "B2", "B3", "B4", "B5", "D1", "D2", "D3", 
 class ChapterReviewer:
     """Review individual LPA chapters with complexity-aware model selection."""
 
-    V3_MODEL = "deepseek-chat"
-    R1_MODEL = "deepseek-reasoner"
+    V3_MODEL = "deepseek-v4-flash"
+    R1_MODEL = "deepseek-v4-pro"
 
     def __init__(self, llm_client: LLMClient, labeled_facts: Dict[str, Any]):
         self._llm = llm_client
@@ -76,7 +76,7 @@ class ChapterReviewer:
         try:
             resp = self._llm.chat(
                 system_prompt=system_prompt,
-                user_prompt=user_prompt,
+                user_message=user_prompt,
                 model=self.V3_MODEL,
                 temperature=0.1,
             )
@@ -84,7 +84,13 @@ class ChapterReviewer:
             return self._validate_findings(data.get("findings", []), SIMPLE_RULE_IDS)
         except Exception as e:
             logger.error("Simple review failed for '%s': %s", title, e)
-            return []
+            return [{
+                "rule_id": "ERROR",
+                "level": "审查失败",
+                "finding": f"本章节审查过程中出现技术错误: {str(e)[:100]}",
+                "evidence": "",
+                "suggestion": "请人工审查本章节",
+            }]
 
     def _review_complex(self, title: str, text: str) -> List[Dict[str, Any]]:
         """R1 deep review for complex chapters."""
@@ -94,7 +100,7 @@ class ChapterReviewer:
         try:
             resp = self._llm.chat(
                 system_prompt=system_prompt,
-                user_prompt=user_prompt,
+                user_message=user_prompt,
                 model=self.R1_MODEL,
                 temperature=0.1,
                 max_tokens=8192,
@@ -113,8 +119,7 @@ class ChapterReviewer:
         return template.replace("{labeled_facts}", json.dumps(self._labeled_facts, ensure_ascii=False, indent=2))
 
     def _build_chapter_prompt(self, title: str, text: str) -> str:
-        limit = 8000 if len(text) > 8000 else 6000
-        return f"## {title}\n\n{text[:limit]}\n\n请按 JSON schema 输出审查结果。"
+        return f"## {title}\n\n{text}\n\n请按 JSON schema 输出审查结果。"
 
     @staticmethod
     def _parse_json(text: str) -> dict:

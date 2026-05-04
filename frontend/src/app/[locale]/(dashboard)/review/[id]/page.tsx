@@ -19,7 +19,7 @@ export default function ReviewDetailPage() {
   // Fetch full result when page loads (review might already be complete)
   useEffect(() => {
     if (reviewId) {
-      review.fetchFullResult(API_BASE);
+      review.fetchFullResult(API_BASE, reviewId);
     }
   }, [reviewId]);
 

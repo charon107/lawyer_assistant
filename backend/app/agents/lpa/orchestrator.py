@@ -134,7 +134,7 @@ class LPAReviewOrchestrator:
         return self._llm.chat(
             system_prompt="You are a document structure expert. Output JSON only.",
             user_message=prompt,
-            model="deepseek-chat",
+            model="deepseek-v4-flash",
         )
 
     def _mock_chapter_reviews(self, chapters, labeled_facts):

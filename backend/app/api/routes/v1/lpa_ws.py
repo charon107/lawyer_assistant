@@ -9,6 +9,7 @@ import asyncio
 import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
+from app.api.deps import get_current_user_ws
 from app.services.lpa_service import _sessions
 
 logger = logging.getLogger(__name__)
@@ -29,6 +30,11 @@ async def lpa_review_websocket(websocket: WebSocket, review_id: str):
       {event: "complete", report_url: "/api/v1/lpa/review/{id}/report"}
       {event: "error", message: "..."}
     """
+    # Authenticate via token in Sec-WebSocket-Protocol header
+    user = await get_current_user_ws(websocket)
+    if user is None:
+        return
+
     await websocket.accept()
 
     last_progress = -1.0

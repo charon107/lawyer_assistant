@@ -95,8 +95,7 @@ class Settings(BaseSettings):
     AI_TEMPERATURE: float = 0.7
     AI_AVAILABLE_MODELS: list[str] = [
         "deepseek-v4-pro",
-        "deepseek-chat",
-        "deepseek-reasoner",
+        "deepseek-v4-flash",
     ]
 
     # === CORS ===

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useAuthStore } from "@/stores";
 
 interface ReviewState {
   reviewId: string | null;
@@ -14,6 +15,14 @@ interface ReviewState {
   reportMarkdown: string | null;
   error: string | null;
   awaitingChapters: boolean;
+}
+
+function getAuthHeaders(): Record<string, string> {
+  const token = useAuthStore.getState().accessToken;
+  if (token) {
+    return { Authorization: `Bearer ${token}` };
+  }
+  return {};
 }
 
 export function useLPAReview() {
@@ -38,8 +47,15 @@ export function useLPAReview() {
     const host = window.location.host;
     const url = `${protocol}//${host}${apiBase}/lpa/review/${reviewId}/ws`;
 
-    const ws = new WebSocket(url);
-    wsRef.current = ws;
+    let retryCount = 0;
+    const maxRetries = 5;
+
+    function createWS() {
+      const token = useAuthStore.getState().accessToken;
+      const ws = token
+        ? new WebSocket(url, [token])
+        : new WebSocket(url);
+      wsRef.current = ws;
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -87,16 +103,30 @@ export function useLPAReview() {
     };
 
     ws.onerror = () => {
-      setState((prev) => ({
-        ...prev,
-        status: "error",
-        error: "WebSocket 连接失败",
-      }));
+      if (retryCount < maxRetries) {
+        retryCount++;
+        const delay = 1000 * 2 ** (retryCount - 1);
+        setState((prev) => ({
+          ...prev,
+          progressMsg: `连接中断，${delay / 1000}秒后重试 (${retryCount}/${maxRetries})...`,
+        }));
+        setTimeout(() => createWS(), delay);
+      } else {
+        setState((prev) => ({
+          ...prev,
+          status: "error",
+          error: "WebSocket 连接失败，请刷新页面重试",
+        }));
+      }
     };
 
     ws.onclose = () => {
       wsRef.current = null;
     };
+
+    } // end createWS
+
+    createWS();
   }, []);
 
   const startReview = useCallback(async (file: File, apiBase: string) => {
@@ -120,6 +150,7 @@ export function useLPAReview() {
 
       const res = await fetch(`${apiBase}/lpa/review`, {
         method: "POST",
+        headers: getAuthHeaders(),
         body: formData,
       });
 
@@ -153,11 +184,14 @@ export function useLPAReview() {
     if (!state.reviewId) return;
 
     try {
-      await fetch(`${apiBase}/lpa/review/${state.reviewId}/chapters`, {
+      const res = await fetch(`${apiBase}/lpa/review/${state.reviewId}/chapters`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ chapters }),
       });
+      if (!res.ok) {
+        throw new Error("章节确认失败");
+      }
       setState((prev) => ({ ...prev, awaitingChapters: false }));
     } catch (e: any) {
       setState((prev) => ({
@@ -170,7 +204,9 @@ export function useLPAReview() {
   const fetchReport = useCallback(async (apiBase: string) => {
     if (!state.reviewId) return null;
     try {
-      const res = await fetch(`${apiBase}/lpa/review/${state.reviewId}/report`);
+      const res = await fetch(`${apiBase}/lpa/review/${state.reviewId}/report`, {
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) return null;
       const data = await res.json();
       setState((prev) => ({ ...prev, reportMarkdown: data.report_markdown }));
@@ -180,10 +216,17 @@ export function useLPAReview() {
     }
   }, [state.reviewId]);
 
-  const fetchFullResult = useCallback(async (apiBase: string) => {
-    if (!state.reviewId) return null;
+  const fetchFullResult = useCallback(async (apiBase: string, id?: string) => {
+    const rid = id || state.reviewId;
+    if (!rid) return null;
+    // If an external id is provided, sync it to state
+    if (id && id !== state.reviewId) {
+      setState((prev) => ({ ...prev, reviewId: id }));
+    }
     try {
-      const res = await fetch(`${apiBase}/lpa/review/${state.reviewId}/full`);
+      const res = await fetch(`${apiBase}/lpa/review/${rid}/full`, {
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) return null;
       const data = await res.json();
       setState((prev) => ({
@@ -208,7 +251,7 @@ export function useLPAReview() {
     try {
       const res = await fetch(`${apiBase}/lpa/review/${state.reviewId}/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ question, history }),
       });
       if (!res.ok) return "对话服务不可用";

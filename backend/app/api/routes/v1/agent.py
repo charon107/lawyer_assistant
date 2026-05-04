@@ -27,7 +27,7 @@ from pydantic_ai.messages import (
 )
 
 from app.agents.assistant import Deps, get_agent
-from app.api.deps import get_conversation_service, get_current_user_ws
+from app.api.deps import CurrentUser, get_conversation_service, get_current_user_ws
 from app.core.config import settings
 from app.db.models.user import User
 from app.db.session import get_db_session
