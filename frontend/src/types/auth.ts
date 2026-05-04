@@ -10,6 +10,11 @@ export interface User {
   role?: string;
   created_at: string;
   avatar_url?: string | null;
+  llm_provider?: string | null;
+  ai_model?: string | null;
+  llm_base_url?: string | null;
+  has_openai_key?: boolean;
+  has_anthropic_key?: boolean;
 }
 
 export interface LoginRequest {

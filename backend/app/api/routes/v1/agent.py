@@ -47,13 +47,19 @@ router = APIRouter()
 
 
 @router.get("/agent/models")
-async def list_models() -> dict[str, Any]:
-    """Return available LLM models, provider, and the current default."""
+async def list_models(user: CurrentUser) -> dict[str, Any]:
+    """Return available LLM models, provider, and the current default.
+
+    Merges user-specific settings with global defaults.
+    """
+    provider = user.llm_provider or settings.LLM_PROVIDER
+    default_model = user.ai_model or settings.AI_MODEL
+    base_url = user.llm_base_url or settings.LLM_BASE_URL or None
     return {
-        "provider": settings.LLM_PROVIDER,
-        "default": settings.AI_MODEL,
+        "provider": provider,
+        "default": default_model,
         "models": settings.AI_AVAILABLE_MODELS,
-        "base_url": settings.LLM_BASE_URL or None,
+        "base_url": base_url,
     }
 
 
@@ -181,7 +187,23 @@ async def agent_websocket(
 
             try:
                 selected_model = data.get("model")
-                assistant = get_agent(model_name=selected_model)
+
+                # Resolve per-user LLM config (user settings override global defaults)
+                user_provider = user.llm_provider or None
+                user_base_url = user.llm_base_url or None
+                # Pick the API key matching the provider
+                resolved_provider = user_provider or settings.LLM_PROVIDER
+                if resolved_provider == "anthropic":
+                    user_api_key = user.anthropic_api_key or None
+                else:
+                    user_api_key = user.openai_api_key or None
+
+                assistant = get_agent(
+                    model_name=selected_model,
+                    provider=user_provider,
+                    api_key=user_api_key,
+                    base_url=user_base_url,
+                )
                 model_history = build_message_history(conversation_history)
 
                 # Collect tool calls during streaming for persistence

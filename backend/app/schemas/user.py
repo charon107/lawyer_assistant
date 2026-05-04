@@ -1,8 +1,9 @@
 """User schemas."""
 
 from enum import StrEnum
+from typing import Any
 
-from pydantic import EmailStr, Field, field_validator
+from pydantic import EmailStr, Field, field_validator, model_validator
 
 from app.schemas.base import BaseSchema, TimestampSchema
 
@@ -49,6 +50,11 @@ class UserUpdate(BaseSchema):
     full_name: str | None = Field(default=None, max_length=255)
     is_active: bool | None = None
     role: UserRole | None = None
+    llm_provider: str | None = Field(default=None, max_length=50)
+    ai_model: str | None = Field(default=None, max_length=100)
+    openai_api_key: str | None = Field(default=None, max_length=255)
+    anthropic_api_key: str | None = Field(default=None, max_length=255)
+    llm_base_url: str | None = Field(default=None, max_length=500)
 
     @field_validator("email")
     @classmethod
@@ -62,6 +68,26 @@ class UserRead(UserBase, TimestampSchema):
     id: str
     role: UserRole = UserRole.USER
     avatar_url: str | None = None
+    llm_provider: str | None = None
+    ai_model: str | None = None
+    llm_base_url: str | None = None
+    has_openai_key: bool = False
+    has_anthropic_key: bool = False
+
+    @model_validator(mode="before")
+    @classmethod
+    def compute_api_key_flags(cls, data: Any) -> Any:
+        if hasattr(data, "openai_api_key"):
+            data_has = {
+                "has_openai_key": bool(data.openai_api_key),
+                "has_anthropic_key": bool(data.anthropic_api_key),
+            }
+            if isinstance(data, dict):
+                data.update(data_has)
+            else:
+                for k, v in data_has.items():
+                    setattr(data, k, v)
+        return data
 
 
 class UserInDB(UserRead):

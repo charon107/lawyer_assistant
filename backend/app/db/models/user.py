@@ -34,6 +34,13 @@ class User(Base, TimestampMixin):
     role: Mapped[str] = mapped_column(String(50), default=UserRole.USER.value, nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
+    # Per-user LLM configuration (nullable = use global defaults)
+    llm_provider: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    ai_model: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    openai_api_key: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    anthropic_api_key: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    llm_base_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
     @property
     def user_role(self) -> UserRole:
         """Get role as enum."""

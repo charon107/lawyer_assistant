@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks";
 import { useAuthStore } from "@/stores";
@@ -9,9 +9,10 @@ import { apiClient, ApiError } from "@/lib/api-client";
 import type { User } from "@/types";
 import {
   Button, Card, CardHeader, CardTitle, CardContent, Input, Label, Badge,
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui";
 import { ThemeToggle } from "@/components/theme";
-import { User as UserIcon, Mail, Shield, Settings, Palette, LogOut, Camera } from "lucide-react";
+import { User as UserIcon, Mail, Shield, Settings, Palette, LogOut, Camera, Bot, Eye, EyeOff, RotateCcw } from "lucide-react";
 import Image from "next/image";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 
@@ -23,6 +24,77 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // LLM config state
+  const [llmProvider, setLlmProvider] = useState("");
+  const [aiModel, setAiModel] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [llmBaseUrl, setLlmBaseUrl] = useState("");
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [llmSaving, setLlmSaving] = useState(false);
+  const [hasExistingKey, setHasExistingKey] = useState(false);
+
+  // Initialize LLM config from user data
+  useEffect(() => {
+    if (user) {
+      setLlmProvider(user.llm_provider || "");
+      setAiModel(user.ai_model || "");
+      setLlmBaseUrl(user.llm_base_url || "");
+      setHasExistingKey(user.has_openai_key || user.has_anthropic_key || false);
+    }
+  }, [user]);
+
+  const handleLlmSave = async () => {
+    setLlmSaving(true);
+    try {
+      const payload: Record<string, unknown> = {
+        llm_provider: llmProvider || null,
+        ai_model: aiModel || null,
+        llm_base_url: llmBaseUrl || null,
+      };
+      // Only send API key if user typed a new one
+      if (apiKey) {
+        if (llmProvider === "anthropic") {
+          payload.anthropic_api_key = apiKey;
+        } else {
+          payload.openai_api_key = apiKey;
+        }
+      }
+      const updated = await apiClient.patch<User>("/users/me", payload);
+      setUser(updated);
+      setApiKey(""); // Clear the input after save
+      setHasExistingKey(updated.has_openai_key || updated.has_anthropic_key || false);
+      toast.success("模型配置已保存");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "保存模型配置失败");
+    } finally {
+      setLlmSaving(false);
+    }
+  };
+
+  const handleLlmReset = async () => {
+    setLlmSaving(true);
+    try {
+      const updated = await apiClient.patch<User>("/users/me", {
+        llm_provider: null,
+        ai_model: null,
+        openai_api_key: null,
+        anthropic_api_key: null,
+        llm_base_url: null,
+      });
+      setUser(updated);
+      setLlmProvider("");
+      setAiModel("");
+      setApiKey("");
+      setLlmBaseUrl("");
+      setHasExistingKey(false);
+      toast.success("已恢复全局默认配置");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "重置失败");
+    } finally {
+      setLlmSaving(false);
+    }
+  };
 
   const handleEdit = () => {
     if (!isEditing && user) setEditEmail(user.email);
@@ -131,6 +203,61 @@ export default function ProfilePage() {
                     </Button>
                   </div>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Model Configuration */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                <Bot className="h-4 w-4" /> 模型配置
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label className="text-sm">提供商</Label>
+                  <Select value={llmProvider} onValueChange={setLlmProvider}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="使用全局默认" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="openai">OpenAI 兼容</SelectItem>
+                      <SelectItem value="anthropic">Anthropic</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="ai-model" className="text-sm">模型名称</Label>
+                  <Input id="ai-model" value={aiModel} onChange={(e) => setAiModel(e.target.value)}
+                    placeholder="例: deepseek-v4-pro" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="api-key" className="text-sm">API Key</Label>
+                  <div className="relative">
+                    <Input id="api-key" type={showApiKey ? "text" : "password"} value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      placeholder={hasExistingKey ? "已设置（留空保持不变）" : "输入 API Key"} />
+                    <button type="button" onClick={() => setShowApiKey(!showApiKey)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="base-url" className="text-sm">Base URL</Label>
+                  <Input id="base-url" value={llmBaseUrl} onChange={(e) => setLlmBaseUrl(e.target.value)}
+                    placeholder="例: https://api.deepseek.com" />
+                </div>
+                <div className="flex justify-between gap-2">
+                  <Button variant="outline" size="sm" onClick={handleLlmReset} disabled={llmSaving}>
+                    <RotateCcw className="mr-1 h-3 w-3" /> 恢复默认
+                  </Button>
+                  <Button size="sm" onClick={handleLlmSave} disabled={llmSaving}>
+                    {llmSaving ? "保存中..." : "保存配置"}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

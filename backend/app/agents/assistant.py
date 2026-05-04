@@ -49,15 +49,27 @@ class AssistantAgent:
         model_name: str | None = None,
         temperature: float | None = None,
         system_prompt: str | None = None,
+        provider: str | None = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
     ):
         self.model_name = model_name or settings.AI_MODEL
         self.temperature = temperature or settings.AI_TEMPERATURE
         self.system_prompt = system_prompt or DEFAULT_SYSTEM_PROMPT
+        self.provider = provider
+        self.api_key = api_key
+        self.base_url = base_url
         self._agent: Agent[Deps, str] | None = None
 
     def _create_agent(self) -> Agent[Deps, str]:
         """Create and configure the PydanticAI agent."""
-        model = create_pydantic_model(model_name=self.model_name)
+        model = create_pydantic_model(
+            model_name=self.model_name,
+            provider=self.provider,
+            openai_api_key=self.api_key if (self.provider or settings.LLM_PROVIDER) != "anthropic" else None,
+            anthropic_api_key=self.api_key if (self.provider or settings.LLM_PROVIDER) == "anthropic" else None,
+            base_url=self.base_url,
+        )
 
         agent = Agent[Deps, str](
             model=model,
@@ -170,16 +182,29 @@ class AssistantAgent:
                 yield event
 
 
-def get_agent(model_name: str | None = None) -> AssistantAgent:
+def get_agent(
+    model_name: str | None = None,
+    provider: str | None = None,
+    api_key: str | None = None,
+    base_url: str | None = None,
+) -> AssistantAgent:
     """Factory function to create an AssistantAgent.
 
     Args:
         model_name: Override the default AI model.
+        provider: Override the LLM provider ("openai" or "anthropic").
+        api_key: Override the API key.
+        base_url: Override the base URL.
 
     Returns:
         Configured AssistantAgent instance.
     """
-    return AssistantAgent(model_name=model_name)
+    return AssistantAgent(
+        model_name=model_name,
+        provider=provider,
+        api_key=api_key,
+        base_url=base_url,
+    )
 
 
 async def run_agent(
