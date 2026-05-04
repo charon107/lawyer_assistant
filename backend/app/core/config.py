@@ -97,11 +97,6 @@ class Settings(BaseSettings):
         "deepseek-v4-pro",
         "deepseek-chat",
         "deepseek-reasoner",
-        "gpt-4o",
-        "gpt-4o-mini",
-        "claude-sonnet-4-6",
-        "claude-haiku-4-5",
-        "claude-opus-4-7",
     ]
 
     # === CORS ===
