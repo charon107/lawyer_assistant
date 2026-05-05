@@ -13,7 +13,7 @@ RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debia
 RUN pip install --no-cache-dir uv -i https://mirrors.aliyun.com/pypi/simple/
 
 # Copy dependency files first for layer caching
-COPY pyproject.toml uv.lock ./
+COPY backend/pyproject.toml backend/uv.lock ./
 
 # Install dependencies with Aliyun PyPI mirror (no dev deps)
 RUN uv sync --frozen --no-dev --index-url https://mirrors.aliyun.com/pypi/simple/
