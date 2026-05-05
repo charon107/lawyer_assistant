@@ -27,13 +27,14 @@ class MockUser:
         is_active=True,
         role="user",
     ):
-        self.id = id or uuid4()
+        self.id = str(id or uuid4())
         self.email = email
         self.full_name = full_name
         self.is_active = is_active
         self.role = role
         self.hashed_password = "hashed"
         self.avatar_url = None
+        self.llm_configs = []
         self.created_at = datetime.now(UTC)
         self.updated_at = datetime.now(UTC)
 

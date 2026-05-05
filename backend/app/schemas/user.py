@@ -8,6 +8,49 @@ from pydantic import EmailStr, Field, field_validator, model_validator
 from app.schemas.base import BaseSchema, TimestampSchema
 
 
+# === LLM Config schemas ===
+
+
+class LLMConfigCreate(BaseSchema):
+    """Schema for creating an LLM provider config."""
+
+    provider: str = Field(max_length=50)
+    model: str | None = Field(default=None, max_length=100)
+    api_key: str | None = Field(default=None, max_length=500)
+    base_url: str | None = Field(default=None, max_length=500)
+
+
+class LLMConfigUpdate(BaseSchema):
+    """Schema for updating an LLM provider config."""
+
+    provider: str | None = Field(default=None, max_length=50)
+    model: str | None = Field(default=None, max_length=100)
+    api_key: str | None = Field(default=None, max_length=500)
+    base_url: str | None = Field(default=None, max_length=500)
+
+
+class LLMConfigRead(BaseSchema):
+    """Schema for reading an LLM provider config."""
+
+    id: str
+    provider: str
+    model: str | None = None
+    base_url: str | None = None
+    has_api_key: bool = False
+
+    @model_validator(mode="before")
+    @classmethod
+    def compute_key_flag(cls, data: Any) -> Any:
+        if hasattr(data, "api_key"):
+            flag = {"has_api_key": bool(data.api_key)}
+            if isinstance(data, dict):
+                data.update(flag)
+            else:
+                for k, v in flag.items():
+                    setattr(data, k, v)
+        return data
+
+
 class UserRole(StrEnum):
     """User role enumeration for API schemas."""
 
@@ -50,11 +93,6 @@ class UserUpdate(BaseSchema):
     full_name: str | None = Field(default=None, max_length=255)
     is_active: bool | None = None
     role: UserRole | None = None
-    llm_provider: str | None = Field(default=None, max_length=50)
-    ai_model: str | None = Field(default=None, max_length=100)
-    openai_api_key: str | None = Field(default=None, max_length=255)
-    anthropic_api_key: str | None = Field(default=None, max_length=255)
-    llm_base_url: str | None = Field(default=None, max_length=500)
 
     @field_validator("email")
     @classmethod
@@ -68,25 +106,28 @@ class UserRead(UserBase, TimestampSchema):
     id: str
     role: UserRole = UserRole.USER
     avatar_url: str | None = None
-    llm_provider: str | None = None
-    ai_model: str | None = None
-    llm_base_url: str | None = None
-    has_openai_key: bool = False
-    has_anthropic_key: bool = False
+    llm_configs: list[LLMConfigRead] = []
 
     @model_validator(mode="before")
     @classmethod
-    def compute_api_key_flags(cls, data: Any) -> Any:
-        if hasattr(data, "openai_api_key"):
-            data_has = {
-                "has_openai_key": bool(data.openai_api_key),
-                "has_anthropic_key": bool(data.anthropic_api_key),
-            }
+    def compute_llm_configs(cls, data: Any) -> Any:
+        if hasattr(data, "llm_configs"):
+            configs = []
+            for cfg in data.llm_configs:
+                configs.append(LLMConfigRead(
+                    id=cfg.id,
+                    provider=cfg.provider,
+                    model=cfg.model,
+                    base_url=cfg.base_url,
+                    has_api_key=bool(cfg.api_key),
+                ))
             if isinstance(data, dict):
-                data.update(data_has)
+                data["llm_configs"] = configs
             else:
-                for k, v in data_has.items():
-                    setattr(data, k, v)
+                # Convert ORM object to dict to avoid SQLAlchemy relationship conflict
+                data_dict = {k: v for k, v in data.__dict__.items() if not k.startswith("_")}
+                data_dict["llm_configs"] = configs
+                return data_dict
         return data
 
 

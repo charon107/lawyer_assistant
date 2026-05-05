@@ -199,5 +199,6 @@ class FactExtractor:
             if any(kw in ctx for kw in ["carry", "超额收益", "绩效分成", "业绩报酬"]):
                 result["gp_carry"] = val
 
-        result["dispute_resolution"] = raw_facts.get("law_references", [None])[0]
+        law_refs = raw_facts.get("law_references", [])
+        result["dispute_resolution"] = law_refs[0] if law_refs else None
         return {k: v for k, v in result.items() if v is not None}

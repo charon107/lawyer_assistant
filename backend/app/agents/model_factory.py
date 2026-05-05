@@ -16,17 +16,15 @@ logger = logging.getLogger(__name__)
 def create_pydantic_model(
     provider: str | None = None,
     model_name: str | None = None,
-    openai_api_key: str | None = None,
-    anthropic_api_key: str | None = None,
+    api_key: str | None = None,
     base_url: str | None = None,
 ) -> OpenAIModel | AnthropicModel:
     """Create a PydanticAI model based on provider configuration.
 
     Args:
-        provider: "openai" (OpenAI-compatible) or "anthropic". Defaults to settings.LLM_PROVIDER.
+        provider: "openai", "anthropic", "google", etc. Defaults to settings.LLM_PROVIDER.
         model_name: Model name. Defaults to settings.AI_MODEL.
-        openai_api_key: API key for OpenAI-compatible services. Defaults to settings.OPENAI_API_KEY.
-        anthropic_api_key: API key for Anthropic. Defaults to settings.ANTHROPIC_API_KEY.
+        api_key: API key for the provider. Defaults to settings.OPENAI_API_KEY or settings.ANTHROPIC_API_KEY.
         base_url: Custom base URL for OpenAI-compatible APIs. Defaults to settings.LLM_BASE_URL.
 
     Returns:
@@ -34,20 +32,25 @@ def create_pydantic_model(
     """
     provider = provider or settings.LLM_PROVIDER
     model_name = model_name or settings.AI_MODEL
-    openai_api_key = openai_api_key or settings.OPENAI_API_KEY
-    anthropic_api_key = anthropic_api_key or settings.ANTHROPIC_API_KEY
+    api_key = api_key or (settings.ANTHROPIC_API_KEY if provider == "anthropic" else settings.OPENAI_API_KEY)
     base_url = base_url or settings.LLM_BASE_URL
 
     if provider == "anthropic":
-        logger.info(f"Creating Anthropic model: {model_name}")
+        logger.info("Creating Anthropic model: %s", model_name)
         return AnthropicModel(
             model_name,
-            provider=AnthropicProvider(api_key=anthropic_api_key),
+            provider=AnthropicProvider(api_key=api_key),
         )
 
-    # OpenAI-compatible (covers OpenAI, DeepSeek, Groq, etc.)
-    logger.info(f"Creating OpenAI-compatible model: {model_name}" + (f" (base_url={base_url})" if base_url else ""))
-    provider_kwargs: dict[str, Any] = {"api_key": openai_api_key}
+    # Google AI Studio: use OpenAI-compatible endpoint
+    if provider == "google":
+        if not base_url or "generativelanguage.googleapis.com" in (base_url or ""):
+            base_url = "https://generativelanguage.googleapis.com/v1beta/openai"
+        logger.info("Creating Google model (OpenAI-compat): %s", model_name)
+
+    # OpenAI-compatible (covers OpenAI, DeepSeek, Moonshot, Xiaomi, etc.)
+    logger.info("Creating OpenAI-compatible model: %s%s", model_name, f" (base_url={base_url})" if base_url else "")
+    provider_kwargs: dict[str, Any] = {"api_key": api_key}
     if base_url:
         provider_kwargs["base_url"] = base_url
     return OpenAIModel(model_name, provider=OpenAIProvider(**provider_kwargs))

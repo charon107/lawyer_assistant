@@ -6,13 +6,17 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks";
 import { useAuthStore } from "@/stores";
 import { apiClient, ApiError } from "@/lib/api-client";
-import type { User } from "@/types";
+import { PROVIDERS, getProvider } from "@/lib/providers";
+import type { User, LLMConfig } from "@/types";
 import {
   Button, Card, CardHeader, CardTitle, CardContent, Input, Label, Badge,
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui";
 import { ThemeToggle } from "@/components/theme";
-import { User as UserIcon, Mail, Shield, Settings, Palette, LogOut, Camera, Bot, Eye, EyeOff, RotateCcw } from "lucide-react";
+import {
+  User as UserIcon, Mail, Shield, Settings, Palette, LogOut, Camera, Bot,
+  Eye, EyeOff, RotateCcw, CheckCircle, XCircle, Loader2, Plus, Trash2, Pencil,
+} from "lucide-react";
 import Image from "next/image";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 
@@ -25,75 +29,24 @@ export default function ProfilePage() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  // LLM config state
-  const [llmProvider, setLlmProvider] = useState("");
-  const [aiModel, setAiModel] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [llmBaseUrl, setLlmBaseUrl] = useState("");
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [llmSaving, setLlmSaving] = useState(false);
-  const [hasExistingKey, setHasExistingKey] = useState(false);
+  // LLM configs state
+  const [configs, setConfigs] = useState<LLMConfig[]>([]);
+  const [editingConfig, setEditingConfig] = useState<LLMConfig | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
 
-  // Initialize LLM config from user data
+  // Load configs on mount
   useEffect(() => {
-    if (user) {
-      setLlmProvider(user.llm_provider || "");
-      setAiModel(user.ai_model || "");
-      setLlmBaseUrl(user.llm_base_url || "");
-      setHasExistingKey(user.has_openai_key || user.has_anthropic_key || false);
+    if (user?.llm_configs) {
+      setConfigs(user.llm_configs);
     }
   }, [user]);
 
-  const handleLlmSave = async () => {
-    setLlmSaving(true);
+  const refreshUser = async () => {
     try {
-      const payload: Record<string, unknown> = {
-        llm_provider: llmProvider || null,
-        ai_model: aiModel || null,
-        llm_base_url: llmBaseUrl || null,
-      };
-      // Only send API key if user typed a new one
-      if (apiKey) {
-        if (llmProvider === "anthropic") {
-          payload.anthropic_api_key = apiKey;
-        } else {
-          payload.openai_api_key = apiKey;
-        }
-      }
-      const updated = await apiClient.patch<User>("/users/me", payload);
+      const updated = await apiClient.get<User>("/users/me");
       setUser(updated);
-      setApiKey(""); // Clear the input after save
-      setHasExistingKey(updated.has_openai_key || updated.has_anthropic_key || false);
-      toast.success("模型配置已保存");
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "保存模型配置失败");
-    } finally {
-      setLlmSaving(false);
-    }
-  };
-
-  const handleLlmReset = async () => {
-    setLlmSaving(true);
-    try {
-      const updated = await apiClient.patch<User>("/users/me", {
-        llm_provider: null,
-        ai_model: null,
-        openai_api_key: null,
-        anthropic_api_key: null,
-        llm_base_url: null,
-      });
-      setUser(updated);
-      setLlmProvider("");
-      setAiModel("");
-      setApiKey("");
-      setLlmBaseUrl("");
-      setHasExistingKey(false);
-      toast.success("已恢复全局默认配置");
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "重置失败");
-    } finally {
-      setLlmSaving(false);
-    }
+      setConfigs(updated.llm_configs || []);
+    } catch { /* ignore */ }
   };
 
   const handleEdit = () => {
@@ -129,6 +82,16 @@ export default function ProfilePage() {
       toast.success("头像已更新");
     } catch (err) { toast.error(err instanceof Error ? err.message : "上传头像失败"); }
     finally { setAvatarUploading(false); }
+  };
+
+  const handleDeleteConfig = async (configId: string) => {
+    try {
+      await apiClient.delete(`/users/me/llm-configs/${configId}`);
+      toast.success("已删除");
+      await refreshUser();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "删除失败");
+    }
   };
 
   if (!isAuthenticated || !user) {
@@ -210,63 +173,55 @@ export default function ProfilePage() {
           {/* Model Configuration */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Bot className="h-4 w-4" /> 模型配置
+              <CardTitle className="flex items-center justify-between text-sm font-semibold">
+                <span className="flex items-center gap-2"><Bot className="h-4 w-4" /> 模型配置</span>
+                {!showAddForm && !editingConfig && (
+                  <Button variant="outline" size="sm" onClick={() => setShowAddForm(true)}>
+                    <Plus className="mr-1 h-3 w-3" /> 添加
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label className="text-sm">提供商</Label>
-                  <Select value={llmProvider} onValueChange={setLlmProvider}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="使用全局默认" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="openai">OpenAI 兼容</SelectItem>
-                      <SelectItem value="anthropic">Anthropic</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {/* Existing configs */}
+              {configs.length > 0 && !showAddForm && !editingConfig && (
+                <div className="space-y-3">
+                  {configs.map((cfg) => (
+                    <ConfigCard
+                      key={cfg.id}
+                      config={cfg}
+                      onEdit={() => setEditingConfig(cfg)}
+                      onDelete={() => handleDeleteConfig(cfg.id)}
+                    />
+                  ))}
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="ai-model" className="text-sm">模型名称</Label>
-                  <Input id="ai-model" value={aiModel} onChange={(e) => setAiModel(e.target.value)}
-                    placeholder="例: deepseek-v4-pro" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="api-key" className="text-sm">API Key</Label>
-                  <div className="relative">
-                    <Input id="api-key" type={showApiKey ? "text" : "password"} value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      placeholder={hasExistingKey ? "已设置（留空保持不变）" : "输入 API Key"} />
-                    <button type="button" onClick={() => setShowApiKey(!showApiKey)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                      {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="base-url" className="text-sm">Base URL</Label>
-                  <Input id="base-url" value={llmBaseUrl} onChange={(e) => setLlmBaseUrl(e.target.value)}
-                    placeholder="例: https://api.deepseek.com" />
-                </div>
-                <div className="flex justify-between gap-2">
-                  <Button variant="outline" size="sm" onClick={handleLlmReset} disabled={llmSaving}>
-                    <RotateCcw className="mr-1 h-3 w-3" /> 恢复默认
-                  </Button>
-                  <Button size="sm" onClick={handleLlmSave} disabled={llmSaving}>
-                    {llmSaving ? "保存中..." : "保存配置"}
-                  </Button>
-                </div>
-              </div>
+              )}
+
+              {configs.length === 0 && !showAddForm && !editingConfig && (
+                <p className="text-muted-foreground text-sm">尚未配置任何模型提供商。点击"添加"开始。</p>
+              )}
+
+              {/* Add/Edit form */}
+              {(showAddForm || editingConfig) && (
+                <LLMConfigForm
+                  config={editingConfig}
+                  onSave={async () => {
+                    setShowAddForm(false);
+                    setEditingConfig(null);
+                    await refreshUser();
+                  }}
+                  onCancel={() => {
+                    setShowAddForm(false);
+                    setEditingConfig(null);
+                  }}
+                />
+              )}
             </CardContent>
           </Card>
         </div>
 
         {/* Right column */}
         <div className="space-y-4 lg:col-span-2 sm:space-y-6">
-
-          {/* Preferences */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
@@ -284,7 +239,6 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          {/* Danger Zone */}
           <Card className="border-destructive/50">
             <CardHeader className="pb-3">
               <CardTitle className="text-destructive flex items-center gap-2 text-sm font-semibold">
@@ -302,6 +256,201 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </div>
+      </div>
+    </div>
+  );
+}
+
+
+function ConfigCard({ config, onEdit, onDelete }: { config: LLMConfig; onEdit: () => void; onDelete: () => void }) {
+  const provider = getProvider(config.provider);
+  return (
+    <div className="flex items-center justify-between rounded-md border px-3 py-2">
+      <div className="flex items-center gap-3">
+        <Bot className="h-4 w-4 text-muted-foreground" />
+        <div>
+          <p className="text-sm font-medium">{provider?.name || config.provider}</p>
+          <p className="text-muted-foreground text-xs">
+            {config.model || "未选模型"} {config.has_api_key ? <span className="text-green-600">Key OK</span> : <span className="text-destructive">无 Key</span>}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="sm" onClick={onEdit}><Pencil className="h-3 w-3" /></Button>
+        <Button variant="ghost" size="sm" onClick={onDelete}><Trash2 className="h-3 w-3 text-destructive" /></Button>
+      </div>
+    </div>
+  );
+}
+
+
+function LLMConfigForm({ config, onSave, onCancel }: { config: LLMConfig | null; onSave: () => void; onCancel: () => void }) {
+  const [provider, setProvider] = useState(config?.provider || "");
+  const [model, setModel] = useState(config?.model || "");
+  const [apiKey, setApiKey] = useState("");
+  const [baseUrl, setBaseUrl] = useState(config?.base_url || "");
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
+  const [connectionMessage, setConnectionMessage] = useState("");
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [configId, setConfigId] = useState<string | null>(config?.id || null);
+
+  const selectedProvider = getProvider(provider);
+
+  // If editing an existing config with API key, auto-test to load models
+  useEffect(() => {
+    if (config?.has_api_key && config.id) {
+      handleTestConnection(config.id);
+    }
+  }, []);
+
+  const handleProviderChange = (p: string) => {
+    setProvider(p);
+    const prov = getProvider(p);
+    if (prov) setBaseUrl(prov.defaultBaseUrl);
+    setModel("");
+    setAvailableModels([]);
+    setConnectionStatus("idle");
+    setConfigId(null);
+  };
+
+  const handleTestConnection = async (existingConfigId?: string) => {
+    if (!provider) { toast.error("请先选择提供商"); return; }
+    if (!apiKey && !existingConfigId) { toast.error("请输入 API Key"); return; }
+
+    setTesting(true);
+    setConnectionStatus("testing");
+    setConnectionMessage("");
+    setAvailableModels([]);
+
+    try {
+      // Step 1: Create or use existing config
+      let cid = existingConfigId || configId;
+      if (!cid) {
+        const payload: Record<string, unknown> = { provider, base_url: baseUrl || null };
+        if (apiKey) payload.api_key = apiKey;
+        const created = await apiClient.post<LLMConfig>("/users/me/llm-configs", payload);
+        cid = created.id;
+        setConfigId(cid);
+      } else if (apiKey) {
+        // Update API key if user typed a new one
+        await apiClient.patch(`/users/me/llm-configs/${cid}`, { api_key: apiKey });
+      }
+
+      // Step 2: Test connection + fetch models (single endpoint)
+      const result = await apiClient.post<{ success: boolean; message: string; models: string[] }>(
+        `/users/me/llm-configs/${cid}/test-connection`, {}
+      );
+
+      if (result.success) {
+        setConnectionStatus("success");
+        setConnectionMessage(result.message);
+        setAvailableModels(result.models || []);
+        // For Anthropic, use hardcoded models if API didn't return any
+        if ((!result.models || result.models.length === 0) && selectedProvider?.models?.length) {
+          setAvailableModels(selectedProvider.models);
+        }
+      } else {
+        setConnectionStatus("error");
+        setConnectionMessage(result.message);
+        setAvailableModels([]);
+      }
+    } catch {
+      setConnectionStatus("error");
+      setConnectionMessage("测试请求失败");
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!configId) return;
+    setSaving(true);
+    try {
+      await apiClient.patch(`/users/me/llm-configs/${configId}`, { model: model || null });
+      toast.success(config ? "配置已更新" : "配置已保存");
+      await onSave();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "保存失败");
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="space-y-4 rounded-md border p-4">
+      {/* Provider */}
+      <div className="grid gap-2">
+        <Label className="text-sm">提供商</Label>
+        <Select value={provider} onValueChange={handleProviderChange}>
+          <SelectTrigger><SelectValue placeholder="选择提供商" /></SelectTrigger>
+          <SelectContent>
+            {PROVIDERS.map((p) => (
+              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* API Key */}
+      <div className="grid gap-2">
+        <Label className="text-sm">API Key</Label>
+        <div className="relative">
+          <Input type={showApiKey ? "text" : "password"} value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder={config?.has_api_key ? "已设置（留空保持不变）" : (selectedProvider?.apiKeyPlaceholder || "输入 API Key")} />
+          <button type="button" onClick={() => setShowApiKey(!showApiKey)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Base URL */}
+      <div className="grid gap-2">
+        <Label className="text-sm">Base URL</Label>
+        <Input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)}
+          placeholder={selectedProvider?.defaultBaseUrl || "https://..."} />
+      </div>
+
+      {/* Test Connection button — only show when models not yet loaded */}
+      {availableModels.length === 0 && connectionStatus !== "success" && (
+        <Button size="sm" onClick={() => handleTestConnection()} disabled={testing || !provider}
+          className="w-full" variant="outline">
+          {testing ? <><Loader2 className="mr-1 h-3 w-3 animate-spin" /> 测试连接中...</> : "测试连接"}
+        </Button>
+      )}
+
+      {/* Connection status */}
+      {connectionStatus !== "idle" && (
+        <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
+          {connectionStatus === "testing" && <><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> 测试连接中...</>}
+          {connectionStatus === "success" && <><CheckCircle className="h-4 w-4 text-green-600" /> <span className="text-green-600">{connectionMessage}</span></>}
+          {connectionStatus === "error" && <><XCircle className="h-4 w-4 text-destructive" /> <span className="text-destructive">{connectionMessage}</span></>}
+        </div>
+      )}
+
+      {/* Model selection — only after successful connection */}
+      {availableModels.length > 0 && connectionStatus === "success" && (
+        <div className="grid gap-2">
+          <Label className="text-sm">模型</Label>
+          <Select value={model} onValueChange={setModel}>
+            <SelectTrigger><SelectValue placeholder="选择模型" /></SelectTrigger>
+            <SelectContent>
+              {availableModels.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* Save / Cancel — only show save after connection success */}
+      <div className="flex justify-between gap-2">
+        <Button variant="outline" size="sm" onClick={onCancel}>取消</Button>
+        {connectionStatus === "success" && (
+          <Button size="sm" onClick={handleSave} disabled={saving}>
+            {saving ? <><Loader2 className="mr-1 h-3 w-3 animate-spin" /> 保存中...</> : "保存"}
+          </Button>
+        )}
       </div>
     </div>
   );

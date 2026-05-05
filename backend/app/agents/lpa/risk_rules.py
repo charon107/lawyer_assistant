@@ -85,6 +85,48 @@ LPA_RULES = {
         "suggestion_template": "关联方服务费应在管理费之外单独披露并经 LPAC 审批；或采用管理费全额覆盖模式（不另收关联方费用）"
     },
 
+    # C. 分配/瀑布
+    "C1": {
+        "id": "C1",
+        "category": "分配/瀑布",
+        "title": "分配瀑布结构",
+        "level": "高风险",
+        "check": "是 European waterfall 还是 American waterfall；LP 是否优先回收全部出资+优先回报后再分配 carry",
+        "suggestion_template": "建议采用 European waterfall，LP 优先回收全部出资+优先回报后再分配 carry；避免 American waterfall 下 GP 过早获得分配"
+    },
+    "C2": {
+        "id": "C2",
+        "category": "分配/瀑布",
+        "title": "优先回报率 (Preferred Return / Hurdle)",
+        "level": "高风险",
+        "check": "hurdle rate 是否 ≥ 8%（行业标准）；是单利还是复利；计算基准是否明确",
+        "suggestion_template": "建议 hurdle rate 不低于 8%，按复利计算；明确以实际出资日为起算基准"
+    },
+    "C3": {
+        "id": "C3",
+        "category": "分配/瀑布",
+        "title": "Carry 计算与分配",
+        "level": "高风险",
+        "check": "carry 比例是否超过 20%；是否有 catch-up 条款及其速度；carry 是否与业绩挂钩",
+        "suggestion_template": "carry 比例建议不超过 20%；catch-up 速度不应超过 100%；建议设置 clawback 机制"
+    },
+    "C4": {
+        "id": "C4",
+        "category": "分配/瀑布",
+        "title": "Clawback 条款",
+        "level": "高风险",
+        "check": "是否有 clawback 机制；clawback 触发条件是否明确；GP 是否提供担保",
+        "suggestion_template": "建议设置 clawback 条款，GP 应就超额分配提供银行保函或 escrow 担保；明确 clawback 计算方式和期限"
+    },
+    "C5": {
+        "id": "C5",
+        "category": "分配/瀑布",
+        "title": "GP 共同投资",
+        "level": "中风险",
+        "check": "GP 是否有共同投资义务（skin in the game）；共同投资比例是否合理；共同投资是否享有优先权",
+        "suggestion_template": "建议 GP 出资不低于基金总规模的 1-2%；共同投资不应享有优于 LP 的条款"
+    },
+
     # D. GP/LP 权利义务
     "D1": {
         "id": "D1",
@@ -150,12 +192,83 @@ LPA_RULES = {
         "check": "双方退出路径是否对等；GP 退出后管理费/收益分成处理",
         "suggestion_template": "确保 GP 和 LP 退出路径基本对等；GP 退出后已产生但未分配的 carry 应合理处理；清算期间管理费计算方式应明确"
     },
+
+    # E. 投资条款
+    "E1": {
+        "id": "E1",
+        "category": "投资条款",
+        "title": "投资集中度限制",
+        "level": "中风险",
+        "check": "单一项目/行业/地区集中度上限是否合理；是否有分散投资的硬性约束",
+        "suggestion_template": "单一项目不超过基金总规模的 20-25%；单一行业不超过 30%；建议设置地域分散要求"
+    },
+    "E2": {
+        "id": "E2",
+        "category": "投资条款",
+        "title": "共同投资权",
+        "level": "中风险",
+        "check": "GP 是否有义务向 LP 提供共同投资机会；共同投资的费用分担是否公平",
+        "suggestion_template": "共同投资机会应平等提供给所有 LP；共同投资不应另行收取管理费或 carry"
+    },
+    "E3": {
+        "id": "E3",
+        "category": "投资条款",
+        "title": "跟投权与后续基金限制",
+        "level": "中风险",
+        "check": "GP 对已投项目的跟投权是否受限；后续基金是否受投资限制约束以避免利益冲突",
+        "suggestion_template": "后续基金投资同一家公司应经 LPAC 审批；GP 的跟投权不应优先于 LP 的跟投机会"
+    },
+    "E4": {
+        "id": "E4",
+        "category": "投资条款",
+        "title": "杠杆与担保限制",
+        "level": "中风险",
+        "check": "基金层面是否设置杠杆上限；GP 是否有权以基金资产提供担保",
+        "suggestion_template": "基金层面杠杆不应超过承诺出资的 50%；以基金资产提供担保需经 LPAC 批准"
+    },
+
+    # F. 清算/解散/争议
+    "F1": {
+        "id": "F1",
+        "category": "清算/解散/争议",
+        "title": "清算优先级",
+        "level": "高风险",
+        "check": "清算时 LP 是否优先回收出资；清算分配顺序是否明确",
+        "suggestion_template": "清算分配应按以下顺序：(1) LP 出资回收 (2) 优先回报 (3) GP catch-up (4) carry 分配；建议在 LPA 中明确列明"
+    },
+    "F2": {
+        "id": "F2",
+        "category": "清算/解散/争议",
+        "title": "解散触发条件",
+        "level": "中风险",
+        "check": "解散触发条件是否明确；GP 违约/除名后基金是否自动进入清算",
+        "suggestion_template": "明确解散触发条件：(1) GP 除名 (2) LP 超级多数投票 (3) 基金目的无法实现 (4) 法律要求"
+    },
+    "F3": {
+        "id": "F3",
+        "category": "清算/解散/争议",
+        "title": "争议解决机制",
+        "level": "中风险",
+        "check": "争议解决方式（仲裁/诉讼）是否明确；仲裁机构和适用法律是否指定；LP 是否有集体诉讼权",
+        "suggestion_template": "建议约定仲裁作为争议解决方式（如 HKIAC 或 SIAC）；明确适用法律和仲裁地"
+    },
+    "F4": {
+        "id": "F4",
+        "category": "清算/解散/争议",
+        "title": "清算期限与管理费",
+        "level": "中风险",
+        "check": "清算期是否设置上限；清算期间管理费是否减免",
+        "suggestion_template": "清算期建议不超过 2-3 年；清算期间管理费应减半或按实际管理资产计算"
+    },
 }
 
 LPA_RULE_IDS_BY_CATEGORY = {
     "基本要素": ["A1", "A2", "A3", "A4", "A5"],
     "费用结构": ["B1", "B2", "B3", "B4", "B5"],
+    "分配/瀑布": ["C1", "C2", "C3", "C4", "C5"],
     "GP/LP权利义务": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8"],
+    "投资条款": ["E1", "E2", "E3", "E4"],
+    "清算/解散/争议": ["F1", "F2", "F3", "F4"],
 }
 
 
@@ -167,7 +280,7 @@ def get_lpa_rule(rule_id: str) -> dict:
 def get_all_lpa_rules() -> list:
     """Return all LPA rules sorted by category."""
     result = []
-    for category in ["基本要素", "费用结构", "GP/LP权利义务"]:
+    for category in ["基本要素", "费用结构", "分配/瀑布", "GP/LP权利义务", "投资条款", "清算/解散/争议"]:
         for rule_id in LPA_RULE_IDS_BY_CATEGORY[category]:
             result.append(LPA_RULES[rule_id])
     return result

@@ -66,8 +66,7 @@ class AssistantAgent:
         model = create_pydantic_model(
             model_name=self.model_name,
             provider=self.provider,
-            openai_api_key=self.api_key if (self.provider or settings.LLM_PROVIDER) != "anthropic" else None,
-            anthropic_api_key=self.api_key if (self.provider or settings.LLM_PROVIDER) == "anthropic" else None,
+            api_key=self.api_key,
             base_url=self.base_url,
         )
 

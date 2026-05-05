@@ -26,6 +26,13 @@ except ImportError:
     logger.info("MinerU not installed — falling back to pypdf for PDF extraction")
 
 try:
+    import tabula
+    HAS_TABULA = True
+except ImportError:
+    HAS_TABULA = False
+    logger.info("tabula-py not installed — PDF table extraction unavailable in pypdf fallback")
+
+try:
     from paddleocr import PaddleOCR
     HAS_PADDLEOCR = True
 except ImportError:
@@ -115,7 +122,31 @@ class DocumentPreprocessor:
             full_text = self._ocr_pdf(reader)
 
         fmt = "scanned_pdf" if is_scanned else "digital_pdf"
-        return self._build_output(full_text, [], fmt, "pypdf")
+        tables = self._extract_tables_tabula(stream) if HAS_TABULA else []
+        return self._build_output(full_text, tables, fmt, "pypdf")
+
+    def _extract_tables_tabula(self, stream: BytesIO) -> List[List[List[str]]]:
+        """Extract tables from PDF using tabula-py."""
+        import tempfile
+
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+                tmp.write(stream.getvalue())
+                tmp_path = tmp.name
+
+            try:
+                dfs = tabula.read_pdf(tmp_path, pages="all", silent=True)
+                tables = []
+                for df in dfs:
+                    if not df.empty:
+                        rows = [df.columns.tolist()] + df.values.tolist()
+                        tables.append([[str(cell) for cell in row] for row in rows])
+                return tables
+            finally:
+                Path(tmp_path).unlink(missing_ok=True)
+        except Exception as e:
+            logger.warning("tabula table extraction failed: %s", e)
+            return []
 
     def _detect_scanned(self, text: str) -> bool:
         """Heuristic: if extracted text is nearly empty, the PDF is likely scanned."""

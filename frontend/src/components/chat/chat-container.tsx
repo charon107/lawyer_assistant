@@ -5,8 +5,10 @@ import { useChat } from "@/hooks";
 import { MessageList } from "./message-list";
 import { ChatInput } from "./chat-input";
 import { ToolApprovalDialog } from "./tool-approval-dialog";
-import { Bot, ChevronDown, Check } from "lucide-react";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui";
+import { Bot, ChevronDown, Check, Settings, Cpu } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui";
+import Link from "next/link";
+import { getProvider } from "@/lib/providers";
 import type { PendingApproval, Decision } from "@/types";
 import { useConversationStore, useChatStore, useAuthStore } from "@/stores";
 import { useConversations } from "@/hooks";
@@ -139,45 +141,115 @@ function AuthenticatedChatContainer() {
   );
 }
 
+interface ProviderModels {
+  provider: string;
+  providerName: string;
+  models: string[];
+}
+
 function ModelSelector({ onChange }: { onChange: (model: string | null) => void }) {
-  const [availableModels, setAvailableModels] = useState<{value: string; label: string}[]>([
-    { value: "", label: "默认" },
-  ]);
-  const [selected, setSelected] = useState<{value: string; label: string}>(availableModels[0] ?? { value: "", label: "默认" });
+  const [providers, setProviders] = useState<ProviderModels[]>([]);
+  const [selected, setSelected] = useState<{value: string; label: string}>({ value: "", label: "选择模型" });
+  const [configured, setConfigured] = useState(true);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/v1/agent/models", { credentials: "include" })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data?.models) {
-          const models = [
-            { value: "", label: `默认 (${data.default})` },
-            ...data.models.map((m: string) => ({ value: m, label: m })),
-          ];
-          setAvailableModels(models);
-          setSelected(models[0]);
+        if (data) {
+          setConfigured(data.configured !== false);
+          if (data.configured !== false) {
+            const grouped: ProviderModels[] = [];
+            if (data.providers?.length) {
+              for (const p of data.providers) {
+                const meta = getProvider(p.provider);
+                grouped.push({
+                  provider: p.provider,
+                  providerName: meta?.name || p.provider,
+                  models: p.models || [],
+                });
+              }
+            } else if (data.models?.length) {
+              grouped.push({
+                provider: data.provider,
+                providerName: getProvider(data.provider)?.name || data.provider,
+                models: data.models,
+              });
+            }
+            setProviders(grouped);
+          }
         }
       })
       .catch(() => {});
   }, []);
 
+  if (!configured) {
+    return (
+      <Link
+        href="/profile"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
+      >
+        <Settings className="h-3 w-3" />
+        配置模型
+      </Link>
+    );
+  }
+
+  const handleSelect = (model: string) => {
+    setSelected({ value: model, label: model });
+    onChange(model || null);
+    setOpen(false);
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <button className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors">
+          <Cpu className="h-3 w-3" />
           {selected.label}
           <ChevronDown className="h-3 w-3" />
         </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        {availableModels.map((m) => (
-          <DropdownMenuItem key={m.value} onClick={() => { setSelected(m); onChange(m.value || null); }} className="flex items-center justify-between text-xs">
-            {m.label}
-            {selected.value === m.value && <Check className="h-3.5 w-3.5" />}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg max-h-[70vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>选择模型</DialogTitle>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto -mx-6 px-6 pb-4">
+          {providers.length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground py-8">暂无可用模型</p>
+          ) : (
+            <Accordion type="multiple" className="w-full">
+              {providers.map((p) => (
+                <AccordionItem key={p.provider} value={p.provider} className="border-b">
+                  <AccordionTrigger className="py-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Bot className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">{p.providerName}</span>
+                      <span className="text-muted-foreground text-xs">({p.models.length})</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-0.5 pb-1">
+                      {p.models.map((model) => (
+                        <button
+                          key={model}
+                          onClick={() => handleSelect(model)}
+                          className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-accent transition-colors"
+                        >
+                          <span className="truncate">{model}</span>
+                          {selected.value === model && <Check className="h-4 w-4 text-primary shrink-0" />}
+                        </button>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

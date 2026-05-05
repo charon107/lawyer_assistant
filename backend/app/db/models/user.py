@@ -2,11 +2,15 @@
 
 import uuid
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.db.models.user_llm_config import UserLLMConfig
 
 
 class UserRole(StrEnum):
@@ -34,12 +38,10 @@ class User(Base, TimestampMixin):
     role: Mapped[str] = mapped_column(String(50), default=UserRole.USER.value, nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
-    # Per-user LLM configuration (nullable = use global defaults)
-    llm_provider: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    ai_model: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    openai_api_key: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    anthropic_api_key: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    llm_base_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # LLM provider configs (one-to-many)
+    llm_configs: Mapped[list["UserLLMConfig"]] = relationship(
+        "UserLLMConfig", back_populates="user", cascade="all, delete-orphan"
+    )
 
     @property
     def user_role(self) -> UserRole:

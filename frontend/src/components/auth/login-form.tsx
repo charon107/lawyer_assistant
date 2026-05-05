@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks";
-import { Button, Input, Label, Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui";
+import { Button, Input, Label } from "@/components/ui";
 import { ApiError } from "@/lib/api-client";
 import { ROUTES } from "@/lib/constants";
 
@@ -39,56 +39,63 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl text-center">{t("login")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">{t("email")}</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="your@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onBlur={() => setEmailTouched(true)}
-              required
-              disabled={isLoading}
-              className={emailTouched && email && !emailValid ? "border-destructive" : ""}
-            />
-            {emailTouched && email && !emailValid && (
-              <p className="text-destructive text-xs">{t("emailRequired")}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">{t("password")}</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-          </div>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? t("loggingIn") : t("login")}
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter className="justify-center">
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold tracking-tight">{t("login")}</h1>
         <p className="text-sm text-muted-foreground">
-          {t("noAccount")}{" "}
-          <Link href={ROUTES.REGISTER} className="text-primary hover:underline">
-            {t("register")}
-          </Link>
+          输入您的邮箱和密码登录系统
         </p>
-      </CardFooter>
-    </Card>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-sm font-medium">{t("email")}</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="your@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => setEmailTouched(true)}
+            required
+            disabled={isLoading}
+            className="h-11"
+          />
+          {emailTouched && email && !emailValid && (
+            <p className="text-destructive text-xs">{t("emailRequired")}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="text-sm font-medium">{t("password")}</Label>
+          </div>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={isLoading}
+            className="h-11"
+          />
+        </div>
+
+        {error && (
+          <p className="text-sm text-destructive">{error}</p>
+        )}
+
+        <Button type="submit" className="h-11 w-full" disabled={isLoading}>
+          {isLoading ? t("loggingIn") : t("login")}
+        </Button>
+      </form>
+
+      <p className="text-center text-sm text-muted-foreground">
+        {t("noAccount")}{" "}
+        <Link href={ROUTES.REGISTER} className="font-medium text-primary hover:underline">
+          {t("register")}
+        </Link>
+      </p>
+    </div>
   );
 }

@@ -85,13 +85,4 @@ def refresh_token(
 @router.get("/me", response_model=UserRead)
 def get_current_user_info(current_user: CurrentUser) -> Any:
     """Get current authenticated user information."""
-    return UserRead(
-        id=str(current_user.id),
-        email=current_user.email,
-        full_name=current_user.full_name,
-        is_active=current_user.is_active,
-        role=UserRole(current_user.role),
-        avatar_url=current_user.avatar_url,
-        created_at=current_user.created_at,
-        updated_at=current_user.updated_at,
-    )
+    return current_user

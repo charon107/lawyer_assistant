@@ -242,9 +242,9 @@ async def get_current_user_ws(
             await websocket.close(code=4001, reason="User account is disabled")
             raise AuthenticationError(message="User account is disabled")
 
-        # Eagerly load all columns, then detach from session for
-        # consistency with async behavior
+        # Eagerly load all columns and relationships, then detach from session
         db.refresh(user)
+        _ = user.llm_configs  # Force lazy load before expunge
         db.expunge(user)
         return user
 

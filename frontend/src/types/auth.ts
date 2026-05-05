@@ -2,6 +2,14 @@
  * Authentication types.
  */
 
+export interface LLMConfig {
+  id: string;
+  provider: string;
+  model?: string | null;
+  base_url?: string | null;
+  has_api_key?: boolean;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -10,11 +18,7 @@ export interface User {
   role?: string;
   created_at: string;
   avatar_url?: string | null;
-  llm_provider?: string | null;
-  ai_model?: string | null;
-  llm_base_url?: string | null;
-  has_openai_key?: boolean;
-  has_anthropic_key?: boolean;
+  llm_configs?: LLMConfig[];
 }
 
 export interface LoginRequest {

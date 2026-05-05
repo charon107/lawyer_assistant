@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from datetime import UTC, datetime
 from typing import Any
 
+import httpx
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from pydantic_ai import (
     Agent,
@@ -48,19 +49,77 @@ router = APIRouter()
 
 @router.get("/agent/models")
 async def list_models(user: CurrentUser) -> dict[str, Any]:
-    """Return available LLM models, provider, and the current default.
+    """Return available LLM models grouped by provider.
 
-    Merges user-specific settings with global defaults.
+    If user has configured providers, fetch models from each.
+    Otherwise return global defaults with configured=false.
     """
-    provider = user.llm_provider or settings.LLM_PROVIDER
-    default_model = user.ai_model or settings.AI_MODEL
-    base_url = user.llm_base_url or settings.LLM_BASE_URL or None
+    configs = user.llm_configs
+    if not configs:
+        return {
+            "provider": settings.LLM_PROVIDER,
+            "default": settings.AI_MODEL,
+            "models": settings.AI_AVAILABLE_MODELS,
+            "base_url": settings.LLM_BASE_URL or None,
+            "configured": False,
+        }
+
+    # Aggregate models from all configured providers
+    providers = []
+    all_models = []
+    for cfg in configs:
+        models = _fetch_provider_models(cfg.provider, cfg.api_key, cfg.base_url)
+        provider_entry = {
+            "id": cfg.id,
+            "provider": cfg.provider,
+            "model": cfg.model,
+            "models": models,
+        }
+        providers.append(provider_entry)
+        for m in models:
+            all_models.append({"provider": cfg.provider, "model": m, "config_id": cfg.id})
+
+    # Default: first config's selected model, or first available
+    first = configs[0]
+    default_model = first.model or settings.AI_MODEL
+
     return {
-        "provider": provider,
+        "provider": first.provider,
         "default": default_model,
-        "models": settings.AI_AVAILABLE_MODELS,
-        "base_url": base_url,
+        "providers": providers,
+        "models": [m["model"] for m in all_models],
+        "configured": True,
     }
+
+
+def _fetch_provider_models(provider: str, api_key: str, base_url: str | None) -> list[str]:
+    """Fetch available models from a provider's API."""
+    # Anthropic: hardcoded list
+    if provider == "anthropic":
+        return ["claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5"]
+
+    # Google AI Studio
+    if provider == "google":
+        try:
+            url = (base_url or "https://generativelanguage.googleapis.com/v1beta").rstrip("/") + "/models"
+            resp = httpx.get(url, params={"key": api_key}, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                return sorted([m["name"].split("/")[-1] for m in data.get("models", [])])
+        except Exception as e:
+            logger.warning("Failed to fetch Google models: %s", e)
+        return []
+
+    # OpenAI-compatible
+    try:
+        url = (base_url or "https://api.openai.com/v1").rstrip("/") + "/models"
+        resp = httpx.get(url, headers={"Authorization": f"Bearer {api_key}"}, timeout=10)
+        if resp.status_code == 200:
+            data = resp.json()
+            return sorted([m["id"] for m in data.get("data", [])])
+    except Exception as e:
+        logger.warning("Failed to fetch models: %s", e)
+    return []
 
 
 manager = AgentConnectionManager()
@@ -188,15 +247,22 @@ async def agent_websocket(
             try:
                 selected_model = data.get("model")
 
-                # Resolve per-user LLM config (user settings override global defaults)
-                user_provider = user.llm_provider or None
-                user_base_url = user.llm_base_url or None
-                # Pick the API key matching the provider
-                resolved_provider = user_provider or settings.LLM_PROVIDER
-                if resolved_provider == "anthropic":
-                    user_api_key = user.anthropic_api_key or None
-                else:
-                    user_api_key = user.openai_api_key or None
+                # Resolve per-user LLM config from user's configured providers
+                user_provider = None
+                user_base_url = None
+                user_api_key = None
+                if user.llm_configs:
+                    # Use first config as default, or find config matching selected model
+                    cfg = user.llm_configs[0]
+                    for c in user.llm_configs:
+                        if selected_model and c.model == selected_model:
+                            cfg = c
+                            break
+                    user_provider = cfg.provider
+                    user_base_url = cfg.base_url or None
+                    user_api_key = cfg.api_key or None
+                    if not selected_model:
+                        selected_model = cfg.model
 
                 assistant = get_agent(
                     model_name=selected_model,

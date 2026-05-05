@@ -33,8 +33,8 @@ def _get_chat_service() -> LPAChatService:
 
 @router.post("/review")
 async def start_review(
+    current_user: CurrentUser,
     file: UploadFile = File(...),
-    current_user: CurrentUser = Depends(),
     service: LPAReviewService = Depends(_get_lpa_service),
 ):
     """Upload an LPA contract and start the review pipeline."""
@@ -60,7 +60,7 @@ async def start_review(
 @router.get("/review/{review_id}")
 async def get_review_status(
     review_id: str,
-    current_user: CurrentUser = Depends(),
+    current_user: CurrentUser,
     service: LPAReviewService = Depends(_get_lpa_service),
 ):
     """Get the current status of a review."""
@@ -74,7 +74,7 @@ async def get_review_status(
 async def update_chapters(
     review_id: str,
     body: ChapterUpdate,
-    current_user: CurrentUser = Depends(),
+    current_user: CurrentUser,
     service: LPAReviewService = Depends(_get_lpa_service),
 ):
     """Submit user-adjusted chapter boundaries."""
@@ -87,7 +87,7 @@ async def update_chapters(
 @router.get("/review/{review_id}/report")
 async def get_report(
     review_id: str,
-    current_user: CurrentUser = Depends(),
+    current_user: CurrentUser,
     service: LPAReviewService = Depends(_get_lpa_service),
 ):
     """Get the final Markdown review report."""
@@ -100,7 +100,7 @@ async def get_report(
 @router.get("/review/{review_id}/full")
 async def get_full_result(
     review_id: str,
-    current_user: CurrentUser = Depends(),
+    current_user: CurrentUser,
     service: LPAReviewService = Depends(_get_lpa_service),
 ):
     """Get the complete review result (all stages)."""
@@ -114,7 +114,7 @@ async def get_full_result(
 async def chat_followup(
     review_id: str,
     body: ChatRequest,
-    current_user: CurrentUser = Depends(),
+    current_user: CurrentUser,
     service: LPAReviewService = Depends(_get_lpa_service),
     chat_service: LPAChatService = Depends(_get_chat_service),
 ):

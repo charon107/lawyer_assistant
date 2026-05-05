@@ -12,7 +12,7 @@ from app.api.exception_handlers import register_exception_handlers
 from app.api.router import api_router
 from app.core.config import settings
 from app.core.logging import setup_logging
-from app.core.middleware import RequestIDMiddleware
+from app.core.middleware import RequestIDMiddleware, SecurityHeadersMiddleware
 
 
 @asynccontextmanager
@@ -110,6 +110,15 @@ A FastAPI project
 
     # Request ID middleware (for request correlation/debugging)
     app.add_middleware(RequestIDMiddleware)
+
+    # Security headers middleware (CSP, X-Frame-Options, etc.)
+    app.add_middleware(
+        SecurityHeadersMiddleware,
+        csp_directives={
+            **SecurityHeadersMiddleware.DEFAULT_CSP_DIRECTIVES,
+            "connect-src": "'self' ws: wss:",
+        },
+    )
 
     # Exception handlers
     register_exception_handlers(app)

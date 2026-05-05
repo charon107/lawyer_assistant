@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme";
 import { APP_NAME, APP_DESCRIPTION, ROUTES } from "@/lib/constants";
-import { Bot, MessageSquare, Database, Shield, Zap, Lock } from "lucide-react";
+import { Bot, MessageSquare, Shield, Zap, Lock } from "lucide-react";
 
 const features = [
   { icon: MessageSquare, label: "AI Chat" },
@@ -69,9 +69,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
       </div>
 
-      {/* Right — form (contrasting background) */}
-      <div className="flex flex-col bg-zinc-50 dark:bg-zinc-900/50">
-        <div className="flex h-14 items-center justify-between px-4 sm:px-8">
+      {/* Right — form */}
+      <div className="flex min-h-screen flex-col">
+        <div className="flex h-14 shrink-0 items-center justify-between px-6 sm:px-10">
           <Link href={ROUTES.HOME} className="text-lg font-bold tracking-tight lg:hidden">
             {APP_NAME}
           </Link>
@@ -80,8 +80,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
 
-        <div className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8">
-          <div className="w-full max-w-md">{children}</div>
+        <div className="flex flex-1 items-center justify-center px-6 sm:px-10">
+          <div className="w-full max-w-sm">{children}</div>
         </div>
       </div>
     </div>
