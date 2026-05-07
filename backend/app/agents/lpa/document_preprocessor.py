@@ -7,14 +7,14 @@ Pipeline:
   Fallback   → pypdf + python-docx (always available)
 """
 
-import re
 import logging
-from pathlib import Path
+import re
 from io import BytesIO
-from typing import Dict, Any, Optional, List
+from pathlib import Path
+from typing import Any
 
-from pypdf import PdfReader
 from docx import Document
+from pypdf import PdfReader
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class DocumentPreprocessor:
         self.use_ocr = use_ocr
         self._ocr = None
 
-    def parse(self, uploaded_file) -> Dict[str, Any]:
+    def parse(self, uploaded_file) -> dict[str, Any]:
         """
         Parse an uploaded file into structured output.
 
@@ -81,7 +81,7 @@ class DocumentPreprocessor:
         else:
             raise ValueError(f"Unsupported file type: {ext}")
 
-    def _parse_pdf(self, stream: BytesIO, name: str) -> Dict[str, Any]:
+    def _parse_pdf(self, stream: BytesIO, name: str) -> dict[str, Any]:
         if HAS_MINERU:
             try:
                 return self._parse_pdf_mineru(stream)
@@ -90,7 +90,7 @@ class DocumentPreprocessor:
 
         return self._parse_pdf_pypdf(stream)
 
-    def _parse_pdf_mineru(self, stream: BytesIO) -> Dict[str, Any]:
+    def _parse_pdf_mineru(self, stream: BytesIO) -> dict[str, Any]:
         """Parse PDF using MinerU for high-fidelity extraction."""
         import tempfile
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
@@ -107,7 +107,7 @@ class DocumentPreprocessor:
 
         return self._build_output(markdown or raw_text, tables, "digital_pdf", "mineru")
 
-    def _parse_pdf_pypdf(self, stream: BytesIO) -> Dict[str, Any]:
+    def _parse_pdf_pypdf(self, stream: BytesIO) -> dict[str, Any]:
         """Fallback PDF parser using pypdf."""
         reader = PdfReader(stream)
         pages = []
@@ -125,7 +125,7 @@ class DocumentPreprocessor:
         tables = self._extract_tables_tabula(stream) if HAS_TABULA else []
         return self._build_output(full_text, tables, fmt, "pypdf")
 
-    def _extract_tables_tabula(self, stream: BytesIO) -> List[List[List[str]]]:
+    def _extract_tables_tabula(self, stream: BytesIO) -> list[list[list[str]]]:
         """Extract tables from PDF using tabula-py."""
         import tempfile
 
@@ -168,7 +168,7 @@ class DocumentPreprocessor:
             pages.append(text)
         return "\n".join(pages)
 
-    def _parse_docx(self, stream: BytesIO) -> Dict[str, Any]:
+    def _parse_docx(self, stream: BytesIO) -> dict[str, Any]:
         doc = Document(stream)
         paragraphs = []
         tables = []
@@ -186,7 +186,7 @@ class DocumentPreprocessor:
         full_text = "\n".join(p for p in paragraphs if p.strip())
         return self._build_output(full_text, tables, "docx", "python-docx")
 
-    def _extract_docx_table(self, tbl_element, doc) -> Optional[List[List[str]]]:
+    def _extract_docx_table(self, tbl_element, doc) -> list[list[str]] | None:
         """Extract a single DOCX table into a list of rows."""
         rows = []
         for row in tbl_element.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tr"):
@@ -198,12 +198,12 @@ class DocumentPreprocessor:
                 rows.append(cells)
         return rows if rows else None
 
-    def _parse_text(self, text: str) -> Dict[str, Any]:
+    def _parse_text(self, text: str) -> dict[str, Any]:
         return self._build_output(text, [], "text", "native")
 
     def _build_output(
-        self, text: str, tables: List[Any], fmt: str, parser: str
-    ) -> Dict[str, Any]:
+        self, text: str, tables: list[Any], fmt: str, parser: str
+    ) -> dict[str, Any]:
         markdown = self._text_to_markdown(text)
         page_count = self._estimate_pages(text)
         return {

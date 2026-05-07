@@ -7,13 +7,11 @@ Complexity-classified review with tool dispatch:
 """
 
 import json
-import re
 import logging
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+import re
+from typing import Any
 
-from .llm_client import LLMClient, register_tool
-from .risk_rules import LPA_RULES, LPA_RULE_IDS_BY_CATEGORY
+from .llm_client import LLMClient
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +40,11 @@ class ChapterReviewer:
     V3_MODEL = "deepseek-v4-flash"
     R1_MODEL = "deepseek-v4-pro"
 
-    def __init__(self, llm_client: LLMClient, labeled_facts: Dict[str, Any]):
+    def __init__(self, llm_client: LLMClient, labeled_facts: dict[str, Any]):
         self._llm = llm_client
         self._labeled_facts = labeled_facts
 
-    def review(self, chapter: Dict[str, Any]) -> Dict[str, Any]:
+    def review(self, chapter: dict[str, Any]) -> dict[str, Any]:
         title = chapter.get("title", "")
         text = chapter.get("text", "")
         complexity = self.classify_complexity(title, text)
@@ -68,7 +66,7 @@ class ChapterReviewer:
                 return "complex"
         return "simple"
 
-    def _review_simple(self, title: str, text: str) -> List[Dict[str, Any]]:
+    def _review_simple(self, title: str, text: str) -> list[dict[str, Any]]:
         """One-shot V3 review for simple chapters."""
         system_prompt = self._build_prompt("simple")
         user_prompt = self._build_chapter_prompt(title, text)
@@ -92,7 +90,7 @@ class ChapterReviewer:
                 "suggestion": "请人工审查本章节",
             }]
 
-    def _review_complex(self, title: str, text: str) -> List[Dict[str, Any]]:
+    def _review_complex(self, title: str, text: str) -> list[dict[str, Any]]:
         """R1 deep review for complex chapters."""
         system_prompt = self._build_prompt("complex")
         user_prompt = self._build_chapter_prompt(title, text)
@@ -131,7 +129,7 @@ class ChapterReviewer:
         return json.loads(text)
 
     @staticmethod
-    def _validate_findings(findings: List[Dict], allowed_ids: set) -> List[Dict[str, Any]]:
+    def _validate_findings(findings: list[dict], allowed_ids: set) -> list[dict[str, Any]]:
         out = []
         for f in findings:
             if not isinstance(f, dict):

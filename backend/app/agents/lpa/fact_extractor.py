@@ -7,10 +7,9 @@ Two-pass extraction:
 """
 
 import json
-import re
 import logging
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+import re
+from typing import Any
 
 from .llm_client import LLMClient, register_tool
 
@@ -47,26 +46,26 @@ GP_MANAGER_PATTERNS = [
 # ── Tool registration (s02 pattern) ───────────────────────────────────────
 
 def _handle_label_facts(
-    fund_name: Optional[str] = None,
-    fund_type: Optional[str] = None,
-    domicile: Optional[str] = None,
-    gp_name: Optional[str] = None,
-    manager_name: Optional[str] = None,
-    gp_is_manager: Optional[bool] = None,
-    committed_capital: Optional[str] = None,
-    management_fee_rate: Optional[float] = None,
-    management_fee_basis: Optional[str] = None,
-    hurdle_rate: Optional[float] = None,
-    gp_carry: Optional[float] = None,
-    investment_period_years: Optional[float] = None,
-    exit_period_years: Optional[float] = None,
-    extension_period_years: Optional[float] = None,
-    lp_min_commitment: Optional[str] = None,
-    gp_removal_for_cause: Optional[str] = None,
-    gp_removal_nofault_threshold: Optional[float] = None,
-    key_persons: Optional[List[str]] = None,
-    dispute_resolution: Optional[str] = None,
-    lpac_approval_threshold: Optional[float] = None,
+    fund_name: str | None = None,
+    fund_type: str | None = None,
+    domicile: str | None = None,
+    gp_name: str | None = None,
+    manager_name: str | None = None,
+    gp_is_manager: bool | None = None,
+    committed_capital: str | None = None,
+    management_fee_rate: float | None = None,
+    management_fee_basis: str | None = None,
+    hurdle_rate: float | None = None,
+    gp_carry: float | None = None,
+    investment_period_years: float | None = None,
+    exit_period_years: float | None = None,
+    extension_period_years: float | None = None,
+    lp_min_commitment: str | None = None,
+    gp_removal_for_cause: str | None = None,
+    gp_removal_nofault_threshold: float | None = None,
+    key_persons: list[str] | None = None,
+    dispute_resolution: str | None = None,
+    lpac_approval_threshold: float | None = None,
 ) -> str:
     """Tool handler: receives labeled facts and returns them as JSON."""
     facts = {k: v for k, v in locals().items() if not k.startswith("_") and v is not None}
@@ -109,16 +108,16 @@ register_tool(
 class FactExtractor:
     """Extract and label hard facts from an LPA — regex scan + LLM tool-call."""
 
-    def __init__(self, llm_client: Optional[LLMClient] = None):
+    def __init__(self, llm_client: LLMClient | None = None):
         self._llm = llm_client
 
-    def extract(self, document_text: str, early_chapters: Optional[str] = None) -> Dict[str, Any]:
+    def extract(self, document_text: str, early_chapters: str | None = None) -> dict[str, Any]:
         raw = self.extract_raw(document_text)
         source = early_chapters or document_text
         labeled = self.label_facts(raw, source)
         return {"raw_facts": raw, "labeled_facts": labeled}
 
-    def extract_raw(self, text: str) -> Dict[str, Any]:
+    def extract_raw(self, text: str) -> dict[str, Any]:
         """Pass 1: regex scan — zero LLM cost."""
         amounts = [m.group(0).strip() for m in AMOUNT_RE.finditer(text)]
         percents = [m.group(0).strip() for m in PERCENT_RE.finditer(text)]
@@ -142,7 +141,7 @@ class FactExtractor:
             "law_references": list(dict.fromkeys(law_refs)),
         }
 
-    def label_facts(self, raw_facts: Dict[str, Any], source_text: str) -> Dict[str, Any]:
+    def label_facts(self, raw_facts: dict[str, Any], source_text: str) -> dict[str, Any]:
         """Pass 2: LLM(V3) agent-loop with registered label_lpa_facts tool."""
         if not self._llm:
             return self._rule_based_label(raw_facts, source_text)
@@ -168,14 +167,14 @@ class FactExtractor:
         path = prompts_dir() / "fact_labeling.md"
         return path.read_text(encoding="utf-8") if path.exists() else ""
 
-    def _build_user_prompt(self, raw_facts: Dict[str, Any], source_text: str) -> str:
+    def _build_user_prompt(self, raw_facts: dict[str, Any], source_text: str) -> str:
         return (
             f"## 预扫描原始事实\n\n```json\n{json.dumps(raw_facts, ensure_ascii=False, indent=2)}\n```\n\n"
             f"## 合同节选\n\n{source_text}\n\n"
             f"请调用 label_lpa_facts 工具标注事实。不存在的字段请省略。"
         )
 
-    def _rule_based_label(self, raw_facts: Dict[str, Any], source_text: str) -> Dict[str, Any]:
+    def _rule_based_label(self, raw_facts: dict[str, Any], source_text: str) -> dict[str, Any]:
         """Zero-cost label extraction when LLM is unavailable."""
         result = {}
         entities = raw_facts.get("entity_names", [])

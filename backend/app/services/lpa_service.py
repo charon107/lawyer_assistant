@@ -4,23 +4,21 @@ LPA Review Service — wraps the LPA agent pipeline as an async service.
 Manages review sessions in memory (migrate to Redis for production).
 """
 
-import uuid
 import asyncio
 import logging
-from typing import Dict, Any, Optional, Callable
-from pathlib import Path
-from io import BytesIO
+import uuid
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 # In-memory session store
-_sessions: Dict[str, Dict[str, Any]] = {}
+_sessions: dict[str, dict[str, Any]] = {}
 
 
 class LPAReviewService:
     """Manages LPA review lifecycle: create, run, poll, retrieve."""
 
-    def __init__(self, deepseek_api_key: Optional[str] = None):
+    def __init__(self, deepseek_api_key: str | None = None):
         self._api_key = deepseek_api_key
 
     async def start_review(self, file_content: bytes, filename: str) -> str:
@@ -60,7 +58,7 @@ class LPAReviewService:
         session["chapter_confirmed"].set()
         return True
 
-    def get_status(self, review_id: str) -> Optional[Dict[str, Any]]:
+    def get_status(self, review_id: str) -> dict[str, Any] | None:
         """Poll current review state."""
         session = _sessions.get(review_id)
         if not session:
@@ -77,19 +75,19 @@ class LPAReviewService:
             "error": session.get("error"),
         }
 
-    def get_chapter_reviews(self, review_id: str) -> Optional[list]:
+    def get_chapter_reviews(self, review_id: str) -> list | None:
         session = _sessions.get(review_id)
         return session.get("chapter_reviews") if session else None
 
-    def get_cross_check(self, review_id: str) -> Optional[dict]:
+    def get_cross_check(self, review_id: str) -> dict | None:
         session = _sessions.get(review_id)
         return session.get("cross_check") if session else None
 
-    def get_report(self, review_id: str) -> Optional[str]:
+    def get_report(self, review_id: str) -> str | None:
         session = _sessions.get(review_id)
         return session.get("report_markdown") if session else None
 
-    def get_full_result(self, review_id: str) -> Optional[Dict[str, Any]]:
+    def get_full_result(self, review_id: str) -> dict[str, Any] | None:
         session = _sessions.get(review_id)
         if not session:
             return None

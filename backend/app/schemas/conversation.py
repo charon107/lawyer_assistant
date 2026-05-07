@@ -128,6 +128,7 @@ class ConversationCreate(ConversationBase):
     """Schema for creating a conversation."""
 
     user_id: str | None = Field(default=None, description="Owner user ID")
+    case_id: str | None = Field(default=None, description="Associated LPA case ID")
 
 
 class ConversationUpdate(BaseSchema):

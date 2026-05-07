@@ -1,8 +1,8 @@
 """Tests for Stage 0: Document Preprocessor."""
 
-import pytest
 from io import BytesIO
-from pathlib import Path
+
+import pytest
 
 from app.agents.lpa.document_preprocessor import DocumentPreprocessor
 
@@ -14,7 +14,7 @@ class TestParseText:
         class FakeFile:
             name = "test.txt"
             def read(self):
-                return "第一章 总则\n这是测试内容。\n第二章 出资\n出资相关内容。".encode("utf-8")
+                return "第一章 总则\n这是测试内容。\n第二章 出资\n出资相关内容。".encode()
 
         result = preprocessor.parse(FakeFile())
         assert result["format"] == "text"
@@ -29,7 +29,7 @@ class TestParseText:
         class FakeFile:
             name = "test.md"
             def read(self):
-                return "# 标题\n\n内容。".encode("utf-8")
+                return "# 标题\n\n内容。".encode()
 
         result = preprocessor.parse(FakeFile())
         assert result["format"] == "text"

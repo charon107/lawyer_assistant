@@ -280,6 +280,7 @@ class ConversationService:
             self.db,
             user_id=data.user_id,
             title=data.title,
+            case_id=data.case_id,
         )
 
     def update_conversation(

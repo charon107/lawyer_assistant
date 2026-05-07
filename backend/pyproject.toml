@@ -73,6 +73,7 @@ ignore = [
     "E402", # module level import not at top (needed for conditional Jinja2 imports)
     "B008", # function call in default argument (needed for FastAPI Depends)
     "B905", # zip() without strict= (Python 3.10+ style, not needed)
+    "RUF001", # ambiguous unicode chars (Chinese fullwidth punctuation intentional)
     "RUF012", # mutable class attribute without ClassVar (used in parser base class)
     "RUF059", # unpacked variable never used (CLI destructuring pattern)
 ]

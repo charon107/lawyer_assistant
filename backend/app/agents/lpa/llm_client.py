@@ -6,12 +6,13 @@ Core pattern:  messages → model → tools → write-back → loop
 
 import json
 import logging
-from typing import Dict, Any, List, Optional, Callable
+from collections.abc import Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
-TOOL_HANDLERS: Dict[str, Callable] = {}
-TOOLS: List[Dict[str, Any]] = []
+TOOL_HANDLERS: dict[str, Callable] = {}
+TOOLS: list[dict[str, Any]] = []
 
 
 def register_tool(name: str, description: str, input_schema: dict, handler: Callable):
@@ -30,8 +31,8 @@ class LLMClient:
     def __init__(self, api_key: str, base_url: str = "https://api.deepseek.com"):
         self._api_key = api_key
         self._base_url = base_url
-        self._tools: List[Dict[str, Any]] = []
-        self._tool_handlers: Dict[str, Callable] = {}
+        self._tools: list[dict[str, Any]] = []
+        self._tool_handlers: dict[str, Callable] = {}
 
     def register_tool(self, name: str, description: str, input_schema: dict, handler: Callable):
         """Register a tool at instance level."""
@@ -58,7 +59,7 @@ class LLMClient:
         from openai import OpenAI
         client = OpenAI(api_key=self._api_key, base_url=self._base_url)
 
-        messages: List[Dict[str, Any]] = [
+        messages: list[dict[str, Any]] = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
         ]
@@ -133,7 +134,7 @@ class LLMClient:
         )
         return resp.choices[0].message.content or ""
 
-    def _build_openai_tools(self) -> List[Dict[str, Any]]:
+    def _build_openai_tools(self) -> list[dict[str, Any]]:
         """Convert Anthropic-style tool schema to OpenAI function-calling format."""
         result = []
         for tool in self._tools or TOOLS:

@@ -7,18 +7,16 @@ Usage:
     # result["report_markdown"] is the final Markdown report.
 """
 
-import os
-import json
 import logging
-from pathlib import Path
-from typing import Dict, Any, Optional
+import os
+from typing import Any
 
-from .document_preprocessor import DocumentPreprocessor
+from .chapter_reviewer import ChapterReviewer
 from .chapter_splitter import ChapterSplitter
+from .cross_checker import CrossChecker
+from .document_preprocessor import DocumentPreprocessor
 from .fact_extractor import FactExtractor
 from .llm_client import LLMClient
-from .chapter_reviewer import ChapterReviewer
-from .cross_checker import CrossChecker
 from .report import build_lpa_report
 
 logger = logging.getLogger(__name__)
@@ -29,7 +27,7 @@ class LPAReviewOrchestrator:
 
     def __init__(
         self,
-        deepseek_api_key: Optional[str] = None,
+        deepseek_api_key: str | None = None,
         deepseek_base_url: str = "https://api.deepseek.com",
     ):
         api_key = deepseek_api_key or os.getenv("DEEPSEEK_API_KEY", "")
@@ -39,9 +37,9 @@ class LPAReviewOrchestrator:
     def review(
         self,
         uploaded_file,
-        config: Optional[Dict[str, Any]] = None,
+        config: dict[str, Any] | None = None,
         progress_callback=None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run the full LPA review pipeline.
 

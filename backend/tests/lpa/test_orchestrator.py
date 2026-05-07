@@ -1,7 +1,5 @@
 """Tests for the LPA Review Orchestrator (offline mode)."""
 
-from io import BytesIO
-from unittest.mock import MagicMock
 
 from app.agents.lpa.orchestrator import LPAReviewOrchestrator
 
@@ -21,7 +19,7 @@ class TestOrchestratorOffline:
                     "第三章 管理费\n管理费率为每年2%。\n"
                     "第四章 分配\n分配相关内容。\n"
                     "第五章 争议解决\n适用《合伙企业法》。\n"
-                ).encode("utf-8")
+                ).encode()
 
         result = orchestrator.review(FakeFile())
         assert "error" not in result, f"Unexpected error: {result.get('error')}"

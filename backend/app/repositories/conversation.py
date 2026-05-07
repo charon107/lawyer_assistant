@@ -196,11 +196,13 @@ def create_conversation(
     *,
     user_id: str | None = None,
     title: str | None = None,
+    case_id: str | None = None,
 ) -> Conversation:
     """Create a new conversation."""
     conversation = Conversation(
         user_id=user_id,
         title=title,
+        case_id=case_id,
     )
     db.add(conversation)
     db.flush()

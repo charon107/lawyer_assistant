@@ -186,6 +186,7 @@ def get_agent(
     provider: str | None = None,
     api_key: str | None = None,
     base_url: str | None = None,
+    system_prompt: str | None = None,
 ) -> AssistantAgent:
     """Factory function to create an AssistantAgent.
 
@@ -194,6 +195,7 @@ def get_agent(
         provider: Override the LLM provider ("openai" or "anthropic").
         api_key: Override the API key.
         base_url: Override the base URL.
+        system_prompt: Override the system prompt.
 
     Returns:
         Configured AssistantAgent instance.
@@ -203,6 +205,7 @@ def get_agent(
         provider=provider,
         api_key=api_key,
         base_url=base_url,
+        system_prompt=system_prompt,
     )
 
 

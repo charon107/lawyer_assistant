@@ -6,15 +6,15 @@ Builds a Markdown review report from the full pipeline output:
 """
 
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 
 def build_lpa_report(
     file_name: str,
-    labeled_facts: Dict[str, Any],
-    chapter_reviews: List[Dict[str, Any]],
-    cross_check: Optional[Dict[str, Any]] = None,
-    config: Optional[Dict[str, Any]] = None,
+    labeled_facts: dict[str, Any],
+    chapter_reviews: list[dict[str, Any]],
+    cross_check: dict[str, Any] | None = None,
+    config: dict[str, Any] | None = None,
 ) -> str:
     """Generate a comprehensive LPA contract review report in Markdown."""
 
@@ -41,7 +41,7 @@ def build_lpa_report(
 
 # ── Header ─────────────────────────────────────────────────────────────────
 
-def _build_header(file_name: str, config: Dict[str, Any]) -> str:
+def _build_header(file_name: str, config: dict[str, Any]) -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return f"""# AI LPA 合同审查报告
 
@@ -56,9 +56,9 @@ def _build_header(file_name: str, config: Dict[str, Any]) -> str:
 # ── Executive Summary ──────────────────────────────────────────────────────
 
 def _summarize_risks(
-    findings: List[Dict[str, Any]],
-    cross_check: Optional[Dict[str, Any]],
-) -> Dict[str, Any]:
+    findings: list[dict[str, Any]],
+    cross_check: dict[str, Any] | None,
+) -> dict[str, Any]:
     high = [f for f in findings if "高风险" in f.get("level", "")]
     mid = [f for f in findings if "中风险" in f.get("level", "")]
     low = [f for f in findings if "低风险" in f.get("level", "")]
@@ -92,7 +92,7 @@ def _summarize_risks(
     }
 
 
-def _build_executive_summary(rs: Dict[str, Any]) -> str:
+def _build_executive_summary(rs: dict[str, Any]) -> str:
     top = "\n".join(f"- {r}" for r in rs["top_risks"]) or "- （无高风险项）"
     return f"""## 一、执行摘要
 
@@ -112,7 +112,7 @@ def _build_executive_summary(rs: Dict[str, Any]) -> str:
 
 # ── Facts Table ────────────────────────────────────────────────────────────
 
-def _format_facts(facts: Dict[str, Any]) -> str:
+def _format_facts(facts: dict[str, Any]) -> str:
     if not facts:
         return "（未能提取到结构化事实信息）\n"
 
@@ -168,11 +168,11 @@ def _format_facts(facts: Dict[str, Any]) -> str:
 
 # ── Risk Matrix ────────────────────────────────────────────────────────────
 
-def _build_risk_matrix(findings: List[Dict[str, Any]]) -> str:
+def _build_risk_matrix(findings: list[dict[str, Any]]) -> str:
     if not findings:
         return "未发现需要标记的风险条款。\n"
 
-    by_category: Dict[str, List[Dict]] = {}
+    by_category: dict[str, list[dict]] = {}
     for f in findings:
         cat = f.get("category", f.get("rule_id", "")[0] if f.get("rule_id") else "其他")
         by_category.setdefault(cat, []).append(f)
@@ -196,7 +196,7 @@ def _build_risk_matrix(findings: List[Dict[str, Any]]) -> str:
 
 # ── Chapter Findings ───────────────────────────────────────────────────────
 
-def _build_chapter_findings(chapter_reviews: List[Dict[str, Any]]) -> str:
+def _build_chapter_findings(chapter_reviews: list[dict[str, Any]]) -> str:
     parts = []
     for review in chapter_reviews:
         chapter_name = review.get("chapter", review.get("chapter_name", "未知章节"))
@@ -230,7 +230,7 @@ def _build_chapter_findings(chapter_reviews: List[Dict[str, Any]]) -> str:
 
 # ── Cross-Check Section ────────────────────────────────────────────────────
 
-def _build_cross_check(cc: Dict[str, Any]) -> str:
+def _build_cross_check(cc: dict[str, Any]) -> str:
     parts = []
 
     contradictions = cc.get("contradictions", [])
@@ -289,7 +289,7 @@ def _build_disclaimer() -> str:
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
-def _flatten_findings(chapter_reviews: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _flatten_findings(chapter_reviews: list[dict[str, Any]]) -> list[dict[str, Any]]:
     from .risk_rules import LPA_RULES
     all_findings = []
     for review in chapter_reviews:
