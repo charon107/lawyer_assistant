@@ -9,12 +9,13 @@ import { ThemeToggle } from "@/components/theme";
 import { LanguageSwitcherCompact } from "@/components/language-switcher";
 import { APP_NAME, ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { LogOut, Menu, LayoutDashboard, MessageSquare, UserCircle } from "lucide-react";
+import { LogOut, Menu, LayoutDashboard, MessageSquare, UserCircle, Briefcase } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui";
 import { useSidebarStore } from "@/stores";
 
 const navItemKeys = [
   { key: "dashboard", href: ROUTES.DASHBOARD, icon: LayoutDashboard, adminOnly: true },
+  { key: "cases", href: ROUTES.CASES, icon: Briefcase, adminOnly: false },
   { key: "conversations", href: ROUTES.CHAT, icon: MessageSquare, adminOnly: false },
   { key: "profile", href: ROUTES.PROFILE, icon: UserCircle, adminOnly: false },
 ];
@@ -57,7 +58,7 @@ export function Header() {
                   )}
                 >
                   <item.icon className="h-3.5 w-3.5" />
-                  {navT(item.key as "dashboard" | "conversations" | "profile")}
+                  {navT(item.key as "dashboard" | "cases" | "conversations" | "profile")}
                 </Link>
               );
             })}

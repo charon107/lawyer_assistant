@@ -43,7 +43,7 @@ export function useAuth() {
         }>("/auth/login", credentials);
         setUser(response.user);
         useAuthStore.getState().setAccessToken(response.access_token);
-        router.push(response.user.role === "admin" ? ROUTES.DASHBOARD : ROUTES.CHAT);
+        router.push(response.user.role === "admin" ? ROUTES.DASHBOARD : ROUTES.CASES);
         return response;
       } catch (error) {
         throw error;

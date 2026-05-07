@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants";
-import { LayoutDashboard, MessageSquare, UserCircle, FileSearch } from "lucide-react";
+import { LayoutDashboard, MessageSquare, UserCircle, FileSearch, Briefcase } from "lucide-react";
 import { useSidebarStore } from "@/stores";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui";
 
 const navigation = [
   { name: "工作台", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
+  { name: "案件", href: ROUTES.CASES, icon: Briefcase },
   { name: "LPA 审查", href: ROUTES.REVIEW, icon: FileSearch },
   { name: "对话", href: ROUTES.CHAT, icon: MessageSquare },
   { name: "个人中心", href: ROUTES.PROFILE, icon: UserCircle },

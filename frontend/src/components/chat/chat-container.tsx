@@ -13,11 +13,15 @@ import type { PendingApproval, Decision } from "@/types";
 import { useConversationStore, useChatStore, useAuthStore } from "@/stores";
 import { useConversations } from "@/hooks";
 
-export function ChatContainer() {
-  return <AuthenticatedChatContainer />;
+interface ChatContainerProps {
+  caseId?: string;
 }
 
-function AuthenticatedChatContainer() {
+export function ChatContainer({ caseId }: ChatContainerProps = {}) {
+  return <AuthenticatedChatContainer caseId={caseId} />;
+}
+
+function AuthenticatedChatContainer({ caseId }: { caseId?: string }) {
   const { currentConversationId, currentMessages } = useConversationStore();
   const { addMessage: addChatMessage } = useChatStore();
   const { fetchConversations } = useConversations();
@@ -40,6 +44,7 @@ function AuthenticatedChatContainer() {
     sendResumeDecisions,
   } = useChat({
     conversationId: currentConversationId,
+    caseId,
     onConversationCreated: handleConversationCreated,
   });
 
