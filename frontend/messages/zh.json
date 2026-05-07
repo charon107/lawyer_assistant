@@ -21,6 +21,7 @@
   "navigation": {
     "home": "首页",
     "dashboard": "工作台",
+    "conversations": "对话",
     "profile": "个人中心",
     "settings": "设置",
     "logout": "退出登录"

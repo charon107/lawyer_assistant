@@ -21,6 +21,7 @@
   "navigation": {
     "home": "Strona główna",
     "dashboard": "Panel",
+    "conversations": "Konwersacje",
     "profile": "Profil",
     "settings": "Ustawienia",
     "logout": "Wyloguj"

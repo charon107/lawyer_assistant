@@ -21,6 +21,7 @@
   "navigation": {
     "home": "Home",
     "dashboard": "Dashboard",
+    "conversations": "Conversations",
     "profile": "Profile",
     "settings": "Settings",
     "logout": "Logout"
