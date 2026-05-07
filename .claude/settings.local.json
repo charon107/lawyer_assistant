@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ssh root@8.156.66.33 \"cd /opt/lpa_review_app/frontend && npm run build 2>&1 | tail -5 && cp -r .next/static .next/standalone/.next/static && systemctl restart lpa-frontend && sleep 3 && curl -s -o /dev/null -w '%{http_code}' https://lawyer-olivia.com\")",
+      "Bash(ssh root@8.156.66.33 \"docker compose -f /opt/lpa_review_app/docker-compose.yml ps --format '{{.Names}} {{.Image}} {{.Status}}' && echo '---' && docker inspect lpa-frontend --format '{{.Created}}' 2>&1 | head -1\")",
+      "Bash(ssh root@8.156.66.33 \"docker ps --format '{{.Names}} {{.Status}}' && echo '---' && cd /opt/lpa_review_app && git log --oneline -1\")"
+    ]
+  }
+}
