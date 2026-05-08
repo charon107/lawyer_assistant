@@ -181,7 +181,7 @@ def get_conversations_by_case(
     query = (
         select(Conversation)
         .where(Conversation.case_id == case_id)
-        .where(Conversation.is_archived == False)  # noqa: E712
+        .where(Conversation.is_archived.is_(False))
         .order_by(Conversation.updated_at.desc().nullslast(), Conversation.created_at.desc())
         .offset(skip)
         .limit(limit)
