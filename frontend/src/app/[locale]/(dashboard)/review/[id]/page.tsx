@@ -55,7 +55,7 @@ export default function ReviewDetailPage() {
     <div className="max-w-5xl mx-auto py-8 px-4">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">&#x1F50D; LPA 审查报告</h1>
+        <h1 className="text-2xl font-bold">&#x1F50D; 文件审查报告</h1>
         <p className="text-sm text-zinc-500 mt-1">Session: {reviewId}</p>
       </div>
 
@@ -275,7 +275,7 @@ export default function ReviewDetailPage() {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
-                    a.download = `lpa_review_${reviewId}.md`;
+                    a.download = `review_${reviewId}.md`;
                     a.click();
                     URL.revokeObjectURL(url);
                   }

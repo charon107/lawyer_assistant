@@ -24,9 +24,9 @@ export default function ReviewPage() {
   return (
     <div className="max-w-2xl mx-auto py-16 px-4">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">&#x1F50D; LPA 合同审查</h1>
+        <h1 className="text-2xl font-bold mb-2">&#x1F50D; 智能文件审查</h1>
         <p className="text-zinc-400">
-          上传有限合伙协议（LPA），AI 将自动完成基本要素提取、费用结构审查和 GP/LP 权利义务分析。
+          上传法律文件（合同、协议、NDA 等），AI 将自动提取关键条款、识别风险点并生成审查报告。
         </p>
       </div>
 

@@ -51,7 +51,7 @@ export function UploadZone({ onUpload, disabled }: UploadZoneProps) {
       <label htmlFor="lpa-upload" className="cursor-pointer">
         <div className="text-5xl mb-4">&#x1F4C4;</div>
         <p className="text-lg font-medium mb-1">
-          拖拽 LPA 文件到此处，或点击上传
+          拖拽法律文件到此处，或点击上传
         </p>
         <p className="text-sm text-zinc-400">
           支持 PDF、Word、Markdown、TXT

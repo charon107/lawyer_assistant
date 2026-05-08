@@ -6,7 +6,7 @@ import { FileText, ShieldCheck, FileSearch, Briefcase, Scale } from "lucide-reac
 const docTypes = [
   { icon: FileText, label: "合同审查", labelEn: "Contract Review" },
   { icon: ShieldCheck, label: "保密协议", labelEn: "NDA Review" },
-  { icon: FileSearch, label: "LPA 审查", labelEn: "LPA Analysis" },
+  { icon: FileSearch, label: "文件分析", labelEn: "Document Analysis" },
   { icon: Briefcase, label: "劳动合同", labelEn: "Employment Review" },
 ];
 
@@ -65,7 +65,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="relative z-10">
           <blockquote className="border-l-2 border-brand/40 pl-4">
             <p className="text-sm italic leading-relaxed text-zinc-400 dark:text-zinc-500">
-              &ldquo;将数小时的合同审查工作缩短至分钟级别，AI 帮助您发现隐藏的法律风险。&rdquo;
+              &ldquo;AI 帮助您解答法律问题、审查合同条款、发现隐藏风险，将数小时的工作缩短至分钟级别。&rdquo;
             </p>
           </blockquote>
         </div>

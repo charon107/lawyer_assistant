@@ -11,7 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/comp
 const navigation = [
   { name: "工作台", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
   { name: "案件", href: ROUTES.CASES, icon: Briefcase },
-  { name: "LPA 审查", href: ROUTES.REVIEW, icon: FileSearch },
+  { name: "文件审查", href: ROUTES.REVIEW, icon: FileSearch },
   { name: "对话", href: ROUTES.CHAT, icon: MessageSquare },
   { name: "个人中心", href: ROUTES.PROFILE, icon: UserCircle },
 ];
@@ -54,7 +54,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           className="flex items-center gap-2 font-semibold"
           onClick={onNavigate}
         >
-          <span>{"LPA 合同审查"}</span>
+          <span>{"AI 法律助手"}</span>
         </Link>
       </div>
       <NavLinks onNavigate={onNavigate} />
@@ -69,7 +69,7 @@ export function Sidebar() {
     <Sheet open={isOpen} onOpenChange={close}>
       <SheetContent side="left" className="w-72 p-0">
         <SheetHeader className="h-14 px-4">
-          <SheetTitle>{"LPA 合同审查"}</SheetTitle>
+          <SheetTitle>{"AI 法律助手"}</SheetTitle>
           <SheetClose onClick={close} />
         </SheetHeader>
         <NavLinks onNavigate={close} />
