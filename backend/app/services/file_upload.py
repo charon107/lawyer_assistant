@@ -74,29 +74,18 @@ class FileUploadService:
 
     @staticmethod
     def _parse_pdf_content(data: bytes) -> str | None:
-        """Extract text from PDF using PyMuPDF."""
+        """Extract text from PDF using pypdf."""
         try:
-            import pymupdf
+            import io
 
-            doc: Any = pymupdf.open(stream=data, filetype="pdf")  # type: ignore[no-untyped-call,unused-ignore]
+            from pypdf import PdfReader
+
+            reader = PdfReader(io.BytesIO(data))
             texts = []
-            for page in doc:
-                blocks = page.get_text("blocks")
-                for b in blocks:
-                    if b[6] == 0:
-                        text = b[4].strip()
-                        if text:
-                            texts.append(text)
-                try:
-                    tables = page.find_tables()
-                    if tables and tables.tables:
-                        for table in tables.tables:
-                            df = table.to_pandas()
-                            if not df.empty:
-                                texts.append(df.to_markdown(index=False))
-                except Exception:
-                    pass
-            doc.close()
+            for page in reader.pages:
+                text = page.extract_text()
+                if text and text.strip():
+                    texts.append(text.strip())
             return "\n\n".join(texts) if texts else None
         except Exception as e:
             logger.warning(f"PDF parsing failed: {e}")
