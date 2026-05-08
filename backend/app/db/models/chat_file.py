@@ -3,7 +3,7 @@
 import uuid
 
 from sqlalchemy import ForeignKey, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
 
@@ -30,3 +30,7 @@ class ChatFile(Base, TimestampMixin):
     file_type: Mapped[str] = mapped_column(String(20), nullable=False)
     parsed_content: Mapped[str | None] = mapped_column(Text, nullable=True)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    analysis: Mapped["DocumentAnalysis | None"] = relationship(
+        "DocumentAnalysis", uselist=False, cascade="all, delete-orphan", back_populates="chat_file"
+    )

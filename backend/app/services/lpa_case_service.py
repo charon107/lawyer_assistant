@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import NotFoundError
 from app.db.models.chat_file import ChatFile
+from app.db.models.document_analysis import DocumentAnalysis
 from app.db.models.lpa_case import LPACase
 from app.repositories import lpa_case_repo
 from app.schemas.lpa_case import LPACaseCreate, LPACaseUpdate
@@ -25,7 +26,10 @@ class LPACaseService:
     def create(self, data: LPACaseCreate, user_id: str) -> LPACase:
         """Create a new LPA case."""
         return lpa_case_repo.create_case(
-            self.db, user_id=user_id, name=data.name, description=data.description,
+            self.db,
+            user_id=user_id,
+            name=data.name,
+            description=data.description,
             document_type=data.document_type,
         )
 
@@ -166,3 +170,28 @@ class LPACaseService:
         """
         self.get_without_docs(case_id, user_id)
         return lpa_case_repo.get_conversations_by_case(self.db, case_id, skip=skip, limit=limit)
+
+    def get_analyses_by_case(self, case_id: str, user_id: str) -> dict[str, DocumentAnalysis]:
+        """Get all document analysis records for a case.
+
+        Returns a dict mapping chat_file_id -> DocumentAnalysis.
+
+        Raises:
+            NotFoundError: If case does not exist or user has no access.
+        """
+        self.get_without_docs(case_id, user_id)
+        return lpa_case_repo.get_analyses_by_case(self.db, case_id)
+
+    def get_document_analysis(
+        self, case_id: str, doc_id: str, user_id: str
+    ) -> DocumentAnalysis | None:
+        """Get analysis for a specific document, verifying ownership.
+
+        Raises:
+            NotFoundError: If case or document does not exist or user has no access.
+        """
+        self.get_without_docs(case_id, user_id)
+        doc = lpa_case_repo.get_document_by_id(self.db, doc_id)
+        if not doc or str(doc.case_id) != str(case_id):
+            raise NotFoundError(message="Document not found", details={"doc_id": doc_id})
+        return lpa_case_repo.get_document_analysis(self.db, doc_id)

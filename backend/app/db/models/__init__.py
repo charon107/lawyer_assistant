@@ -8,6 +8,7 @@ from app.db.models.chat_file import ChatFile
 from app.db.models.message_rating import MessageRating
 from app.db.models.conversation_share import ConversationShare
 from app.db.models.law_metadata import LawMetadata
+from app.db.models.document_analysis import DocumentAnalysis
 
 __all__ = [
     "User",
@@ -19,4 +20,5 @@ __all__ = [
     "MessageRating",
     "ConversationShare",
     "LawMetadata",
+    "DocumentAnalysis",
 ]

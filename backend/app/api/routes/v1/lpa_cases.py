@@ -2,12 +2,12 @@
 
 import asyncio
 import logging
-import weakref
 from typing import Any
 
 from fastapi import APIRouter, File, Query, UploadFile, status
 
 from app.api.deps import CurrentUser, DBSession
+from app.schemas.document_analysis import DocumentAnalysisRead
 from app.schemas.lpa_case import (
     LPACaseCreate,
     LPACaseDetailRead,
@@ -23,8 +23,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Task registry: holds references to background summary tasks to prevent GC
+# Task registry: holds references to background tasks to prevent GC
 _summary_tasks: set[asyncio.Task[None]] = set()  # type: ignore[type-arg]
+_analysis_tasks: set[asyncio.Task[None]] = set()  # type: ignore[type-arg]
 
 
 def _get_service(db: DBSession) -> LPACaseService:
@@ -90,6 +91,7 @@ async def get_case(
     """Get LPA case details with documents."""
     service = _get_service(db)
     case = service.get(case_id, user_id=str(user.id))
+    analyses = service.get_analyses_by_case(case_id, user_id=str(user.id))
     documents = [
         LPADocumentRead(
             id=doc.id,
@@ -99,6 +101,7 @@ async def get_case(
             size=doc.size,
             summary=doc.summary,
             has_parsed_content=bool(doc.parsed_content),
+            analysis_status=analyses[doc.id].status if doc.id in analyses else None,
             created_at=doc.created_at,
         )
         for doc in case.documents
@@ -185,8 +188,9 @@ async def upload_document(
         storage_path=storage_path,
     )
 
-    # Generate summary asynchronously (extract values before task to avoid detached instance)
+    # Generate summary and analysis asynchronously (extract values before task to avoid detached instance)
     _generate_summary_async(doc.id, doc.parsed_content)
+    _generate_analysis_async(doc.id, doc.parsed_content)
 
     return LPADocumentRead(
         id=doc.id,
@@ -245,6 +249,88 @@ def _generate_summary_async(doc_id: str, parsed_content: str | None) -> None:
         logger.warning(f"Failed to schedule summary generation: {e}")
 
 
+def _generate_analysis_async(doc_id: str, parsed_content: str | None) -> None:
+    """Fire-and-forget document analysis via LLM.
+
+    Creates a DocumentAnalysis record, runs the analysis agent, and stores
+    structured results (parties, legal relationships, risks, etc.).
+    """
+    import contextlib
+    import json
+
+    from app.db.session import get_db_session
+
+    async def _analyze() -> None:
+        if not parsed_content:
+            return
+
+        from app.repositories import lpa_case_repo
+
+        # Create analysis record in a dedicated session
+        with contextlib.contextmanager(get_db_session)() as create_db:
+            analysis_record = lpa_case_repo.create_document_analysis(create_db, chat_file_id=doc_id)
+            analysis_id = analysis_record.id
+
+        try:
+            # Update status to processing
+            with contextlib.contextmanager(get_db_session)() as update_db:
+                lpa_case_repo.update_document_analysis_status(
+                    update_db, analysis_id=analysis_id, status="processing"
+                )
+
+            from app.agents.assistant import get_agent
+            from app.agents.prompts import DOCUMENT_ANALYSIS_PROMPT
+
+            truncated = parsed_content[:12000]
+            system_prompt = DOCUMENT_ANALYSIS_PROMPT.format(content=truncated)
+            agent = get_agent(system_prompt=system_prompt)
+            result, _, _ = await agent.run("请分析以上法律文档并输出JSON格式的结构化分析结果。")
+
+            # Parse and validate the JSON output
+            analysis_json = None
+            try:
+                # Try to extract JSON from the response (agent may wrap it in markdown)
+                text = result.strip()
+                if text.startswith("```"):
+                    # Remove markdown code fences
+                    lines = text.split("\n")
+                    text = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
+                parsed = json.loads(text)
+                from app.schemas.document_analysis import DocumentAnalysisResult
+
+                validated = DocumentAnalysisResult.model_validate(parsed)
+                analysis_json = validated.model_dump_json()
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.warning(f"Analysis JSON parse failed for doc {doc_id}, storing raw: {e}")
+                # Store raw text as fallback
+                analysis_json = json.dumps({"summary": result[:2000]}, ensure_ascii=False)
+
+            with contextlib.contextmanager(get_db_session)() as save_db:
+                lpa_case_repo.update_document_analysis_status(
+                    save_db,
+                    analysis_id=analysis_id,
+                    status="completed",
+                    analysis_json=analysis_json,
+                )
+
+        except Exception as e:
+            logger.warning(f"Document analysis failed for doc {doc_id}: {e}")
+            with contextlib.contextmanager(get_db_session)() as err_db:
+                lpa_case_repo.update_document_analysis_status(
+                    err_db,
+                    analysis_id=analysis_id,
+                    status="failed",
+                    error_message=str(e)[:2000],
+                )
+
+    try:
+        task = asyncio.create_task(_analyze())
+        _analysis_tasks.add(task)
+        task.add_done_callback(_analysis_tasks.discard)
+    except Exception as e:
+        logger.warning(f"Failed to schedule document analysis: {e}")
+
+
 @router.get("/{case_id}/documents", response_model=LPADocumentList)
 async def list_documents(
     case_id: str,
@@ -254,6 +340,7 @@ async def list_documents(
     """List documents for an LPA case."""
     service = _get_service(db)
     documents = service.get_documents(case_id, user_id=str(user.id))
+    analyses = service.get_analyses_by_case(case_id, user_id=str(user.id))
     items = [
         LPADocumentRead(
             id=doc.id,
@@ -263,6 +350,7 @@ async def list_documents(
             size=doc.size,
             summary=doc.summary,
             has_parsed_content=bool(doc.parsed_content),
+            analysis_status=analyses[doc.id].status if doc.id in analyses else None,
             created_at=doc.created_at,
         )
         for doc in documents
@@ -284,6 +372,40 @@ async def delete_document(
     """Delete a document from an LPA case."""
     service = _get_service(db)
     service.delete_document(case_id, doc_id, user_id=str(user.id))
+
+
+@router.get("/{case_id}/documents/{doc_id}/analysis", response_model=DocumentAnalysisRead)
+async def get_document_analysis(
+    case_id: str,
+    doc_id: str,
+    db: DBSession,
+    user: CurrentUser,
+) -> Any:
+    """Get the pre-analysis result for a document."""
+    service = _get_service(db)
+    analysis = service.get_document_analysis(case_id, doc_id, user_id=str(user.id))
+    if not analysis:
+        from app.schemas.document_analysis import DocumentAnalysisResult
+
+        return DocumentAnalysisRead(
+            id="",
+            chat_file_id=doc_id,
+            status="not_found",
+        )
+    parsed = None
+    if analysis.status == "completed" and analysis.analysis_json:
+        from app.schemas.document_analysis import DocumentAnalysisResult
+
+        parsed = DocumentAnalysisResult.model_validate_json(analysis.analysis_json)
+    return DocumentAnalysisRead(
+        id=analysis.id,
+        chat_file_id=analysis.chat_file_id,
+        status=analysis.status,
+        analysis=parsed,
+        error_message=analysis.error_message,
+        created_at=analysis.created_at,
+        completed_at=analysis.completed_at,
+    )
 
 
 # --- Case conversations ---

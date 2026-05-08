@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.db.models.chat_file import ChatFile
 from app.db.models.conversation import Conversation
+from app.db.models.document_analysis import DocumentAnalysis
 from app.db.models.lpa_case import LPACase
 
 
@@ -33,11 +34,7 @@ def get_case_by_id(db: Session, case_id: str) -> LPACase | None:
 
 def get_case_by_id_with_documents(db: Session, case_id: str) -> LPACase | None:
     """Get an LPA case by ID with documents eagerly loaded."""
-    query = (
-        select(LPACase)
-        .options(selectinload(LPACase.documents))
-        .where(LPACase.id == case_id)
-    )
+    query = select(LPACase).options(selectinload(LPACase.documents)).where(LPACase.id == case_id)
     result = db.execute(query)
     return result.scalar_one_or_none()
 
@@ -136,11 +133,7 @@ def create_document(
 
 def get_documents_by_case(db: Session, case_id: str) -> list[ChatFile]:
     """Get all documents for a case."""
-    query = (
-        select(ChatFile)
-        .where(ChatFile.case_id == case_id)
-        .order_by(ChatFile.created_at.desc())
-    )
+    query = select(ChatFile).where(ChatFile.case_id == case_id).order_by(ChatFile.created_at.desc())
     result = db.execute(query)
     return list(result.scalars().all())
 
@@ -188,3 +181,58 @@ def get_conversations_by_case(
     )
     result = db.execute(query)
     return list(result.scalars().all())
+
+
+def create_document_analysis(db: Session, *, chat_file_id: str) -> DocumentAnalysis:
+    """Create a pending analysis record for a document."""
+    analysis = DocumentAnalysis(chat_file_id=chat_file_id, status="pending")
+    db.add(analysis)
+    db.flush()
+    db.refresh(analysis)
+    return analysis
+
+
+def update_document_analysis_status(
+    db: Session,
+    *,
+    analysis_id: str,
+    status: str,
+    analysis_json: str | None = None,
+    error_message: str | None = None,
+) -> DocumentAnalysis | None:
+    """Update analysis status and optionally store results."""
+    from datetime import UTC, datetime
+
+    analysis = db.get(DocumentAnalysis, analysis_id)
+    if analysis:
+        analysis.status = status
+        if analysis_json is not None:
+            analysis.analysis_json = analysis_json
+        if error_message is not None:
+            analysis.error_message = error_message
+        if status == "completed":
+            analysis.completed_at = datetime.now(UTC)
+        db.flush()
+        db.refresh(analysis)
+    return analysis
+
+
+def get_document_analysis(db: Session, doc_id: str) -> DocumentAnalysis | None:
+    """Get analysis for a document by document ID."""
+    query = select(DocumentAnalysis).where(DocumentAnalysis.chat_file_id == doc_id)
+    result = db.execute(query)
+    return result.scalar_one_or_none()
+
+
+def get_analyses_by_case(db: Session, case_id: str) -> dict[str, DocumentAnalysis]:
+    """Get all analysis records for documents in a case.
+
+    Returns a dict mapping chat_file_id -> DocumentAnalysis.
+    """
+    query = (
+        select(DocumentAnalysis)
+        .join(ChatFile, DocumentAnalysis.chat_file_id == ChatFile.id)
+        .where(ChatFile.case_id == case_id)
+    )
+    result = db.execute(query)
+    return {a.chat_file_id: a for a in result.scalars().all()}

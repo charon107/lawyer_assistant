@@ -4,7 +4,7 @@ import json
 import logging
 from contextlib import contextmanager
 from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
@@ -42,6 +42,9 @@ from app.schemas.conversation import (
 )
 from app.services.agent import AgentConnectionManager
 from app.services.file_storage import get_file_storage
+
+if TYPE_CHECKING:
+    from app.schemas.document_analysis import DocumentAnalysisResult
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +105,9 @@ def _fetch_provider_models(provider: str, api_key: str, base_url: str | None) ->
     # Google AI Studio
     if provider == "google":
         try:
-            url = (base_url or "https://generativelanguage.googleapis.com/v1beta").rstrip("/") + "/models"
+            url = (base_url or "https://generativelanguage.googleapis.com/v1beta").rstrip(
+                "/"
+            ) + "/models"
             resp = httpx.get(url, params={"key": api_key}, timeout=10)
             if resp.status_code == 200:
                 data = resp.json()
@@ -143,6 +148,7 @@ def _build_case_system_prompt(case_id: str, user_id: str) -> str | None:
                 return None
 
             documents = lpa_case_repo.get_documents_by_case(db, case_id)
+            analyses = lpa_case_repo.get_analyses_by_case(db, case_id)
 
             doc_sections = []
             for doc in documents:
@@ -152,6 +158,21 @@ def _build_case_system_prompt(case_id: str, user_id: str) -> str | None:
                 if doc.parsed_content:
                     truncated = doc.parsed_content[:8000]
                     section += f"\n  内容：\n{truncated}"
+                # Inject analysis if available
+                if doc.id in analyses:
+                    analysis_record = analyses[doc.id]
+                    if analysis_record.status == "completed" and analysis_record.analysis_json:
+                        try:
+                            from app.schemas.document_analysis import DocumentAnalysisResult
+
+                            analysis = DocumentAnalysisResult.model_validate_json(
+                                analysis_record.analysis_json
+                            )
+                            section += (
+                                f"\n  法律关系分析：\n{_format_analysis_for_prompt(analysis)}"
+                            )
+                        except Exception:
+                            pass  # Graceful degradation
                 doc_sections.append(section)
 
             docs_text = "\n".join(doc_sections) if doc_sections else "暂无材料"
@@ -159,7 +180,7 @@ def _build_case_system_prompt(case_id: str, user_id: str) -> str | None:
             return f"""{DEFAULT_SYSTEM_PROMPT}
 
 当前案件：{case.name}
-案件描述：{case.description or '无'}
+案件描述：{case.description or "无"}
 
 相关材料：
 {docs_text}
@@ -168,6 +189,33 @@ def _build_case_system_prompt(case_id: str, user_id: str) -> str | None:
     except Exception as e:
         logger.warning(f"Failed to build case context for case {case_id}: {e}")
         return None
+
+
+def _format_analysis_for_prompt(analysis: "DocumentAnalysisResult") -> str:
+    """Format structured analysis as a readable text block for the system prompt."""
+    parts = []
+    if analysis.parties:
+        parties_str = "、".join(f"{p.name}({p.role})" for p in analysis.parties)
+        parts.append(f"  当事方：{parties_str}")
+    parts.append(f"  文件类型：{analysis.contract_type}")
+    if analysis.legal_relationships:
+        rels = "; ".join(
+            f"{r.relationship_type}（{'、'.join(r.parties)}）" for r in analysis.legal_relationships
+        )
+        parts.append(f"  法律关系：{rels}")
+    if analysis.key_terms:
+        terms = "; ".join(f"{t.term}: {t.content[:50]}" for t in analysis.key_terms[:5])
+        parts.append(f"  关键条款：{terms}")
+    if analysis.applicable_laws:
+        parts.append(f"  适用法律：{'、'.join(analysis.applicable_laws)}")
+    if analysis.risk_points:
+        risks = "; ".join(f"[{r.level}] {r.description[:50]}" for r in analysis.risk_points[:3])
+        parts.append(f"  风险点：{risks}")
+    if analysis.dispute_focal_points:
+        parts.append(f"  争议焦点：{'、'.join(analysis.dispute_focal_points[:3])}")
+    if analysis.summary:
+        parts.append(f"  分析摘要：{analysis.summary[:200]}")
+    return "\n".join(parts)
 
 
 def build_message_history(history: list[dict[str, str]]) -> list[ModelRequest | ModelResponse]:
@@ -317,9 +365,7 @@ async def agent_websocket(
                 # Build system prompt with case context if applicable
                 system_prompt = None
                 if current_case_id:
-                    system_prompt = _build_case_system_prompt(
-                        current_case_id, str(user.id)
-                    )
+                    system_prompt = _build_case_system_prompt(current_case_id, str(user.id))
 
                 assistant = get_agent(
                     model_name=selected_model,

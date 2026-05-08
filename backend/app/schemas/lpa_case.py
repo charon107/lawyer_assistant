@@ -36,6 +36,7 @@ class LPADocumentRead(BaseSchema):
     size: int
     summary: str | None = None
     has_parsed_content: bool = False
+    analysis_status: str | None = None
     created_at: datetime
 
 
