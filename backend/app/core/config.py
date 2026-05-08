@@ -98,6 +98,14 @@ class Settings(BaseSettings):
         "deepseek-v4-flash",
     ]
 
+    # === Law RAG ===
+    QDRANT_URL: str = "http://localhost:6333"
+    QDRANT_API_KEY: str | None = None
+    EMBEDDING_MODEL_NAME: str = "BAAI/bge-base-zh-v1.5"
+    EMBEDDING_CACHE_DIR: str | None = None
+    LAW_SEARCH_TOP_K: int = 5
+    REDIS_URL: str = "redis://localhost:6379/0"
+
     # === CORS ===
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8080"]
     CORS_ALLOW_CREDENTIALS: bool = True

@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from pydantic_ai import Agent, RunContext
-from pydantic_ai.capabilities import WebFetch, WebSearch
 from pydantic_ai.messages import (
     ModelRequest,
     ModelResponse,
@@ -74,10 +73,6 @@ class AssistantAgent:
             model=model,
             model_settings=ModelSettings(temperature=self.temperature),
             system_prompt=self.system_prompt,
-            capabilities=[
-                WebSearch(),
-                WebFetch(),
-            ],
         )
 
         self._register_tools(agent)
@@ -94,6 +89,25 @@ class AssistantAgent:
             Use this tool when you need to know the current date or time.
             """
             return get_current_datetime()
+
+        # Law knowledge retrieval tools
+        from app.agents.tools.law_tools import get_law_article, search_law
+
+        agent.tool(search_law)
+        agent.tool(get_law_article)
+
+        # Domain expertise skill loader
+        @agent.tool
+        async def get_domain_expertise(ctx: RunContext[Deps], domain: str) -> str:
+            """加载特定法律领域的专业思维方法。当用户的提问涉及某一法律领域时，
+            先调用此工具获取该领域资深律师的思考方式、检索策略和常见陷阱。
+
+            Args:
+                domain: 法律领域名称。可选值：民法、劳动法、商法、知识产权、行政法、刑法、保密法、社会法
+            """
+            from app.agents.skills import get_domain_expertise as _get_expertise
+
+            return _get_expertise(domain)
 
     @property
     def agent(self) -> Agent[Deps, str]:

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme";
 import { APP_NAME, APP_DESCRIPTION, ROUTES } from "@/lib/constants";
-import { Bot, MessageSquare, Shield, Zap, Lock } from "lucide-react";
+import { FileText, ShieldCheck, FileSearch, Briefcase, Scale } from "lucide-react";
 
-const features = [
-  { icon: MessageSquare, label: "AI Chat" },
-  { icon: Shield, label: "Secure Auth" },
-  { icon: Zap, label: "Real-time" },
+const docTypes = [
+  { icon: FileText, label: "合同审查", labelEn: "Contract Review" },
+  { icon: ShieldCheck, label: "保密协议", labelEn: "NDA Review" },
+  { icon: FileSearch, label: "LPA 审查", labelEn: "LPA Analysis" },
+  { icon: Briefcase, label: "劳动合同", labelEn: "Employment Review" },
 ];
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -23,7 +24,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="relative z-10">
           <Link href={ROUTES.HOME} className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand">
-              <Lock className="h-4 w-4 text-white" />
+              <Scale className="h-4 w-4 text-white" />
             </div>
             <span className="text-lg font-bold text-zinc-900 dark:text-white">{APP_NAME}</span>
           </Link>
@@ -31,39 +32,40 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative z-10">
           <div className="mb-6 inline-flex items-center rounded-full border border-zinc-200 bg-zinc-200/50 px-3 py-1 text-sm text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">
-            <Bot className="mr-2 h-3.5 w-3.5 text-brand" />
+            <Scale className="mr-2 h-3.5 w-3.5 text-brand" />
             {APP_DESCRIPTION}
           </div>
           <h1 className="mb-4 text-4xl font-bold leading-tight tracking-tight text-zinc-900 dark:text-white xl:text-5xl">
-            Build intelligent{" "}
-            <span className="bg-gradient-to-r from-brand to-brand-hover bg-clip-text text-transparent">
-              applications
-            </span>{" "}
-            faster.
+            AI 驱动的
+            <span className="block bg-gradient-to-r from-brand to-brand-hover bg-clip-text text-transparent">
+              法律文档审查
+            </span>
+            助手
           </h1>
           <p className="max-w-md text-lg leading-relaxed text-zinc-500 dark:text-zinc-400">
-            Production-ready platform with AI agents, vector search, and enterprise-grade authentication.
+            上传合同，AI 自动识别关键条款、权利义务与风险点，快速生成专业审查报告。
           </p>
 
-          {features.length > 0 && (
-            <div className="mt-8 flex flex-wrap gap-3">
-              {features.map((f) => (
-                <div
-                  key={f.label}
-                  className="flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-200/50 px-4 py-2 text-sm text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300"
-                >
-                  <f.icon className="h-4 w-4 text-brand" />
-                  {f.label}
+          <div className="mt-8 grid grid-cols-2 gap-3">
+            {docTypes.map((d) => (
+              <div
+                key={d.label}
+                className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-200/50 px-4 py-3 text-sm text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300"
+              >
+                <d.icon className="h-5 w-5 shrink-0 text-brand" />
+                <div>
+                  <div className="font-medium">{d.label}</div>
+                  <div className="text-xs text-zinc-400 dark:text-zinc-500">{d.labelEn}</div>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="relative z-10">
           <blockquote className="border-l-2 border-brand/40 pl-4">
             <p className="text-sm italic leading-relaxed text-zinc-400 dark:text-zinc-500">
-              &ldquo;Ship AI-powered apps in days, not months. Everything you need from auth to RAG, pre-configured and ready to deploy.&rdquo;
+              &ldquo;将数小时的合同审查工作缩短至分钟级别，AI 帮助您发现隐藏的法律风险。&rdquo;
             </p>
           </blockquote>
         </div>

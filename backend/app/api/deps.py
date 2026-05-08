@@ -66,6 +66,21 @@ def get_file_upload_service(db: DBSession) -> FileUploadService:
 
 
 FileUploadSvc = Annotated[FileUploadService, Depends(get_file_upload_service)]
+
+
+# === Law Search Service ===
+
+from app.services.law_search import LawSearchService
+
+
+def get_law_search_service() -> LawSearchService:
+    """Get law search service singleton. Qdrant client and embedder reused globally."""
+    return LawSearchService.get_instance()
+
+
+LawSearchSvc = Annotated[LawSearchService, Depends(get_law_search_service)]
+
+
 # === Authentication Dependencies ===
 
 from app.core.exceptions import AuthenticationError, AuthorizationError
