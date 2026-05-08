@@ -3,10 +3,9 @@
 from unittest.mock import MagicMock
 
 from app.agents.lpa.chapter_reviewer import (
-    ChapterReviewer,
     COMPLEX_KEYWORDS,
     SIMPLE_RULE_IDS,
-    COMPLEX_RULE_IDS,
+    ChapterReviewer,
 )
 
 

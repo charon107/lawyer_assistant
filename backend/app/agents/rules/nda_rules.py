@@ -1,0 +1,125 @@
+"""NDA (Non-Disclosure Agreement) review rule definitions — 12 rules across 3 categories."""
+
+NDA_RULES = {
+    # A. 基本要素审查
+    "A1": {
+        "id": "A1",
+        "category": "基本要素",
+        "title": "保密信息定义",
+        "level": "高风险",
+        "check": "保密信息定义是否清晰具体；是否存在过度宽泛的定义（如'所有信息'）；是否排除公开信息和独立开发信息",
+        "suggestion_template": "保密信息应具体列举类型（技术资料、商业计划、客户数据等）；明确排除公开信息、独立开发信息和第三方合法获得的信息"
+    },
+    "A2": {
+        "id": "A2",
+        "category": "基本要素",
+        "title": "保密义务范围",
+        "level": "高风险",
+        "check": "接收方的保密义务是否合理；是否限制了接收方正常使用信息的权利；是否允许必要的内部分享（如律师、审计师）",
+        "suggestion_template": "保密义务应限于合理范围；允许向有保密义务的专业顾问（律师、审计师）披露；不应限制接收方的合法经营"
+    },
+    "A3": {
+        "id": "A3",
+        "category": "基本要素",
+        "title": "保密期限",
+        "level": "中风险",
+        "check": "保密期限是否合理（通常2-5年）；是否区分不同类型信息的保密期限；是否存在永久保密义务",
+        "suggestion_template": "一般商业信息保密期限建议2-3年；核心技术秘密可适当延长至5年；避免约定永久保密义务（除法律规定外）"
+    },
+    "A4": {
+        "id": "A4",
+        "category": "基本要素",
+        "title": "合同主体与关联方",
+        "level": "中风险",
+        "check": "NDA是否覆盖关联公司和子公司；是否明确关联方的保密义务；员工和代理人的义务是否纳入",
+        "suggestion_template": "明确NDA约束各方的关联公司、员工和代理人；关联方使用保密信息应经披露方同意"
+    },
+
+    # B. 权利义务与限制
+    "B1": {
+        "id": "B1",
+        "category": "权利义务",
+        "title": "使用限制",
+        "level": "高风险",
+        "check": "是否明确限制保密信息仅用于约定目的；是否禁止用于竞争性目的或反向工程；是否限制接收方的正当业务权利",
+        "suggestion_template": "保密信息仅限于约定目的使用；禁止反向工程和竞争性使用；但不应过度限制接收方的正常业务活动"
+    },
+    "B2": {
+        "id": "B2",
+        "category": "权利义务",
+        "title": "信息披露限制",
+        "level": "中风险",
+        "check": "是否限制向第三方披露；是否有强制披露（法律/监管要求）的例外；强制披露时是否需提前通知",
+        "suggestion_template": "禁止向第三方披露（除法律要求外）；强制披露时应提前通知披露方并仅披露必要范围"
+    },
+    "B3": {
+        "id": "B3",
+        "category": "权利义务",
+        "title": "信息返还与销毁",
+        "level": "中风险",
+        "check": "合同终止后是否有返还或销毁保密信息的义务；是否需要书面确认销毁；备份副本的处理",
+        "suggestion_template": "合同终止后应返还或销毁所有保密信息并书面确认；允许保留法律要求的备份副本（继续受保密义务约束）"
+    },
+    "B4": {
+        "id": "B4",
+        "category": "权利义务",
+        "title": "知识产权归属",
+        "level": "中风险",
+        "check": "NDA是否明确不转让知识产权；保密信息的知识产权归属是否清晰；是否限制接收方的独立开发权利",
+        "suggestion_template": "明确NDA不构成知识产权转让；接收方保留独立开发的权利；披露方保留其保密信息的所有知识产权"
+    },
+    "B5": {
+        "id": "B5",
+        "category": "权利义务",
+        "title": "竞业限制与非招揽",
+        "level": "中风险",
+        "check": "NDA中是否夹带竞业限制或非招揽条款；这些条款是否超出NDA的合理范围；是否有对价支持",
+        "suggestion_template": "NDA不应包含竞业限制条款（应单独约定并支付对价）；非招揽条款如需约定应有合理限制范围"
+    },
+
+    # C. 违约与争议
+    "C1": {
+        "id": "C1",
+        "category": "违约与争议",
+        "title": "违约责任与救济",
+        "level": "高风险",
+        "check": "违约责任是否明确；是否包含禁令救济（injunctive relief）条款；违约金是否合理",
+        "suggestion_template": "明确违约方应承担损害赔偿责任；保密信息泄露可申请禁令救济（无需证明实际损失）；违约金应合理"
+    },
+    "C2": {
+        "id": "C2",
+        "category": "违约与争议",
+        "title": "争议解决",
+        "level": "中风险",
+        "check": "争议解决方式是否明确（仲裁/诉讼）；管辖法院或仲裁机构是否指定；适用法律是否约定",
+        "suggestion_template": "明确约定争议解决方式和管辖机构；选择对双方均便利的管辖地；约定适用法律"
+    },
+    "C3": {
+        "id": "C3",
+        "category": "违约与争议",
+        "title": "合同解除与终止",
+        "level": "低风险",
+        "check": "解除条件是否明确；单方解除权是否对等；终止后保密义务的延续",
+        "suggestion_template": "双方应享有对等的单方解除权（提前书面通知）；合同终止后保密义务应继续有效至保密期限届满"
+    },
+}
+
+NDA_RULE_IDS_BY_CATEGORY = {
+    "基本要素": ["A1", "A2", "A3", "A4"],
+    "权利义务": ["B1", "B2", "B3", "B4", "B5"],
+    "违约与争议": ["C1", "C2", "C3"],
+}
+
+
+def get_nda_rule(rule_id: str) -> dict:
+    """Look up a single NDA rule definition."""
+    return NDA_RULES.get(rule_id, {})
+
+
+def get_all_nda_rules() -> list:
+    """Return all NDA rules sorted by category."""
+    result = []
+    for category in ["基本要素", "权利义务", "违约与争议"]:
+        for rule_id in NDA_RULE_IDS_BY_CATEGORY[category]:
+            result.append(NDA_RULES[rule_id])
+    return result

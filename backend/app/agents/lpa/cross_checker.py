@@ -8,10 +8,9 @@ One R1 call across all chapter findings to detect:
 """
 
 import json
-import re
 import logging
-from pathlib import Path
-from typing import Dict, Any, List
+import re
+from typing import Any
 
 from .llm_client import LLMClient
 
@@ -23,11 +22,11 @@ class CrossChecker:
 
     R1_MODEL = "deepseek-v4-pro"
 
-    def __init__(self, llm_client: LLMClient, labeled_facts: Dict[str, Any]):
+    def __init__(self, llm_client: LLMClient, labeled_facts: dict[str, Any]):
         self._llm = llm_client
         self._labeled_facts = labeled_facts
 
-    def check(self, chapter_reviews: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def check(self, chapter_reviews: list[dict[str, Any]]) -> dict[str, Any]:
         """
         Run cross-chapter consistency analysis.
 
@@ -81,7 +80,7 @@ class CrossChecker:
                 ],
             }
 
-    def _collect_findings(self, chapter_reviews: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _collect_findings(self, chapter_reviews: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Flatten findings with chapter context."""
         all_findings = []
         for review in chapter_reviews:
@@ -100,7 +99,7 @@ class CrossChecker:
         return all_findings
 
     def _build_prompt(
-        self, all_findings: List[Dict], chapter_reviews: List[Dict]
+        self, all_findings: list[dict], chapter_reviews: list[dict]
     ) -> str:
         template = self._load_cross_check_prompt()
         facts_json = json.dumps(self._labeled_facts, ensure_ascii=False, indent=2)

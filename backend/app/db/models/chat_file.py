@@ -20,9 +20,13 @@ class ChatFile(Base, TimestampMixin):
     message_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("messages.id", ondelete="CASCADE"), nullable=True
     )
+    case_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("lpa_cases.id", ondelete="CASCADE"), nullable=True, index=True
+    )
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     mime_type: Mapped[str] = mapped_column(String(100), nullable=False)
     size: Mapped[int] = mapped_column(Integer, nullable=False)
     storage_path: Mapped[str] = mapped_column(String(500), nullable=False)
     file_type: Mapped[str] = mapped_column(String(20), nullable=False)
     parsed_content: Mapped[str | None] = mapped_column(Text, nullable=True)
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)

@@ -1,11 +1,12 @@
 """Tests for LPA API routes."""
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
 from httpx import AsyncClient
 
+from app.api.routes.v1.lpa import _get_chat_service, _get_lpa_service
 from app.main import app
-from app.api.routes.v1.lpa import _get_lpa_service, _get_chat_service
 
 
 @pytest.fixture

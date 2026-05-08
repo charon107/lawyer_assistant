@@ -1,0 +1,149 @@
+"""General contract review rule definitions — 15 rules across 3 categories."""
+
+CONTRACT_RULES = {
+    # A. 基本要素审查
+    "A1": {
+        "id": "A1",
+        "category": "基本要素",
+        "title": "合同主体信息",
+        "level": "中风险",
+        "check": "合同各方名称、地址、法定代表人是否完整准确；营业执照号或统一社会信用代码是否载明",
+        "suggestion_template": "确认合同各方名称与营业执照一致；补充统一社会信用代码和法定代表人信息"
+    },
+    "A2": {
+        "id": "A2",
+        "category": "基本要素",
+        "title": "合同标的与范围",
+        "level": "高风险",
+        "check": "合同标的描述是否清晰具体；服务/商品范围是否有歧义；验收标准是否明确",
+        "suggestion_template": "合同标的应详细描述规格、数量、质量标准；明确验收标准和验收程序"
+    },
+    "A3": {
+        "id": "A3",
+        "category": "基本要素",
+        "title": "合同期限与续期",
+        "level": "中风险",
+        "check": "合同起止日期是否明确；自动续期条款是否存在且合理；提前终止条件是否公平",
+        "suggestion_template": "明确合同起止日期；自动续期应需双方书面确认；提前终止应有合理通知期（建议30-60天）"
+    },
+    "A4": {
+        "id": "A4",
+        "category": "基本要素",
+        "title": "合同金额与付款方式",
+        "level": "高风险",
+        "check": "合同总价是否明确；付款方式、付款节点是否清晰；是否存在隐性费用或调价机制",
+        "suggestion_template": "明确合同总价及币种；分阶段付款应明确各阶段金额和条件；价格调整机制需双方书面同意"
+    },
+    "A5": {
+        "id": "A5",
+        "category": "基本要素",
+        "title": "签署与生效",
+        "level": "低风险",
+        "check": "签署页是否完整；各签署方是否均有签字盖章；生效条件是否明确",
+        "suggestion_template": "确保各方授权代表签字并加盖公章；明确合同生效条件（签署即生效或附条件生效）"
+    },
+
+    # B. 权利义务与风险
+    "B1": {
+        "id": "B1",
+        "category": "权利义务",
+        "title": "违约责任",
+        "level": "高风险",
+        "check": "违约情形是否列举完整；违约金比例是否合理（不超过实际损失的30%）；违约救济措施是否充分",
+        "suggestion_template": "列举主要违约情形及对应救济措施；违约金比例建议不超过合同总额的20-30%；保留要求继续履行的权利"
+    },
+    "B2": {
+        "id": "B2",
+        "category": "权利义务",
+        "title": "保密条款",
+        "level": "中风险",
+        "check": "保密范围是否明确界定；保密期限是否合理（通常2-5年）；违约泄密的责任是否明确",
+        "suggestion_template": "明确保密信息的范围和除外情形；保密期限建议不超过合同终止后3年；明确泄密的违约责任"
+    },
+    "B3": {
+        "id": "B3",
+        "category": "权利义务",
+        "title": "知识产权归属",
+        "level": "高风险",
+        "check": "合同履行中产生的知识产权归属是否明确；是否存在知识产权侵权风险的分担条款",
+        "suggestion_template": "明确约定合同成果的知识产权归属（建议归属委托方或许可使用）；增加知识产权侵权担保条款"
+    },
+    "B4": {
+        "id": "B4",
+        "category": "权利义务",
+        "title": "不可抗力",
+        "level": "中风险",
+        "check": "不可抗力定义是否合理；通知义务和证明义务是否明确；不可抗力持续时间及后果处理",
+        "suggestion_template": "不可抗力应包含自然灾害、战争、政府行为等；明确通知期限（建议15日内）；不可抗力持续超过90天可解除合同"
+    },
+    "B5": {
+        "id": "B5",
+        "category": "权利义务",
+        "title": "竞业限制",
+        "level": "中风险",
+        "check": "竞业限制范围是否合理；限制期限是否合法（不超过2年）；是否有竞业限制补偿金",
+        "suggestion_template": "竞业限制应有合理地域和业务范围；期限不超过2年；须约定竞业限制补偿金（不低于月均工资30%）"
+    },
+
+    # C. 争议解决与终止
+    "C1": {
+        "id": "C1",
+        "category": "争议解决",
+        "title": "争议解决方式",
+        "level": "中风险",
+        "check": "争议解决方式（仲裁/诉讼）是否明确；仲裁机构是否指定；适用法律是否约定",
+        "suggestion_template": "建议明确约定仲裁或诉讼作为争议解决方式；选择仲裁应指定具体仲裁机构；约定适用法律"
+    },
+    "C2": {
+        "id": "C2",
+        "category": "争议解决",
+        "title": "合同终止与解除",
+        "level": "中风险",
+        "check": "合同终止条件是否列举完整；单方解除权是否对等；终止后的清算和交接安排",
+        "suggestion_template": "明确约定合同终止的情形；双方应享有对等的单方解除权；终止后应有明确的清算和交接程序"
+    },
+    "C3": {
+        "id": "C3",
+        "category": "争议解决",
+        "title": "转让与分包",
+        "level": "中风险",
+        "check": "合同权利义务转让是否需对方同意；分包/转包限制是否明确；分包方的责任承担",
+        "suggestion_template": "合同转让应经对方书面同意；限制分包范围并明确分包方连带责任"
+    },
+    "C4": {
+        "id": "C4",
+        "category": "争议解决",
+        "title": "通知与送达",
+        "level": "低风险",
+        "check": "通知方式是否明确（书面/邮件/传真）；送达地址是否载明；地址变更的通知义务",
+        "suggestion_template": "明确通知方式和送达地址；地址变更应提前书面通知；电子邮件通知应约定确认回复机制"
+    },
+    "C5": {
+        "id": "C5",
+        "category": "争议解决",
+        "title": "完整协议条款",
+        "level": "低风险",
+        "check": "是否包含完整协议条款（entire agreement clause）；是否存在口头承诺与书面合同的冲突风险",
+        "suggestion_template": "增加完整协议条款，明确本合同取代此前所有口头或书面协议；修改合同须经双方书面同意"
+    },
+}
+
+CONTRACT_RULE_IDS_BY_CATEGORY = {
+    "基本要素": ["A1", "A2", "A3", "A4", "A5"],
+    "权利义务": ["B1", "B2", "B3", "B4", "B5"],
+    "争议解决": ["C1", "C2", "C3", "C4", "C5"],
+}
+
+
+def get_contract_rule(rule_id: str) -> dict:
+    """Look up a single contract rule definition."""
+    return CONTRACT_RULES.get(rule_id, {})
+
+
+def get_all_contract_rules() -> list:
+    """Return all contract rules sorted by category."""
+    result = []
+    for category in ["基本要素", "权利义务", "争议解决"]:
+        for rule_id in CONTRACT_RULE_IDS_BY_CATEGORY[category]:
+            result.append(CONTRACT_RULES[rule_id])
+    return result

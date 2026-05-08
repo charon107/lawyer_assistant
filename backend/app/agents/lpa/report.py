@@ -6,25 +6,39 @@ Builds a Markdown review report from the full pipeline output:
 """
 
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 
 def build_lpa_report(
     file_name: str,
-    labeled_facts: Dict[str, Any],
-    chapter_reviews: List[Dict[str, Any]],
-    cross_check: Optional[Dict[str, Any]] = None,
-    config: Optional[Dict[str, Any]] = None,
+    labeled_facts: dict[str, Any],
+    chapter_reviews: list[dict[str, Any]],
+    cross_check: dict[str, Any] | None = None,
+    config: dict[str, Any] | None = None,
+    rules: dict[str, Any] | None = None,
+    report_title: str = "AI LPA 合同审查报告",
+    label_map: dict[str, tuple] | None = None,
 ) -> str:
-    """Generate a comprehensive LPA contract review report in Markdown."""
+    """Generate a comprehensive contract review report in Markdown.
+
+    Args:
+        file_name: Name of the reviewed file.
+        labeled_facts: Extracted facts from the document.
+        chapter_reviews: Per-chapter review results.
+        cross_check: Cross-chapter consistency check results.
+        config: Optional config (firm_name, jurisdiction).
+        rules: Risk rules dict for finding enrichment.
+        report_title: Report title string.
+        label_map: Field-to-label mapping for the facts table.
+    """
 
     config = config or {}
-    all_findings = _flatten_findings(chapter_reviews)
+    all_findings = _flatten_findings(chapter_reviews, rules)
     risk_summary = _summarize_risks(all_findings, cross_check)
-    facts_md = _format_facts(labeled_facts)
+    facts_md = _format_facts(labeled_facts, label_map)
 
     sections = [
-        _build_header(file_name, config),
+        _build_header(file_name, config, report_title),
         _build_executive_summary(risk_summary),
         "---\n\n## 二、基金基本信息\n\n" + facts_md,
         "---\n\n## 三、风险评估矩阵\n\n" + _build_risk_matrix(all_findings),
@@ -41,9 +55,9 @@ def build_lpa_report(
 
 # ── Header ─────────────────────────────────────────────────────────────────
 
-def _build_header(file_name: str, config: Dict[str, Any]) -> str:
+def _build_header(file_name: str, config: dict[str, Any], report_title: str = "AI LPA 合同审查报告") -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return f"""# AI LPA 合同审查报告
+    return f"""# {report_title}
 
 生成时间：{now}
 文件名称：{file_name}
@@ -56,9 +70,9 @@ def _build_header(file_name: str, config: Dict[str, Any]) -> str:
 # ── Executive Summary ──────────────────────────────────────────────────────
 
 def _summarize_risks(
-    findings: List[Dict[str, Any]],
-    cross_check: Optional[Dict[str, Any]],
-) -> Dict[str, Any]:
+    findings: list[dict[str, Any]],
+    cross_check: dict[str, Any] | None,
+) -> dict[str, Any]:
     high = [f for f in findings if "高风险" in f.get("level", "")]
     mid = [f for f in findings if "中风险" in f.get("level", "")]
     low = [f for f in findings if "低风险" in f.get("level", "")]
@@ -92,7 +106,7 @@ def _summarize_risks(
     }
 
 
-def _build_executive_summary(rs: Dict[str, Any]) -> str:
+def _build_executive_summary(rs: dict[str, Any]) -> str:
     top = "\n".join(f"- {r}" for r in rs["top_risks"]) or "- （无高风险项）"
     return f"""## 一、执行摘要
 
@@ -112,32 +126,35 @@ def _build_executive_summary(rs: Dict[str, Any]) -> str:
 
 # ── Facts Table ────────────────────────────────────────────────────────────
 
-def _format_facts(facts: Dict[str, Any]) -> str:
+_DEFAULT_LABEL_MAP = {
+    "fund_name": ("基金名称",),
+    "fund_type": ("基金类型",),
+    "domicile": ("注册地",),
+    "gp_name": ("普通合伙人 (GP)",),
+    "manager_name": ("管理人",),
+    "gp_is_manager": ("GP 兼任管理人",),
+    "committed_capital": ("总认缴出资额",),
+    "management_fee_rate": ("管理费率",),
+    "management_fee_basis": ("管理费计算基数",),
+    "hurdle_rate": ("优先回报率 (Hurdle)",),
+    "gp_carry": ("GP Carry 比例",),
+    "investment_period_years": ("投资期", "年"),
+    "exit_period_years": ("退出期", "年"),
+    "extension_period_years": ("延长期", "年"),
+    "lp_min_commitment": ("LP 最低出资额",),
+    "gp_removal_for_cause": ("有因除名条件",),
+    "gp_removal_nofault_threshold": ("无因除名投票比例",),
+    "key_persons": ("关键人士",),
+    "dispute_resolution": ("争议解决机构",),
+}
+
+
+def _format_facts(facts: dict[str, Any], label_map: dict[str, tuple] | None = None) -> str:
     if not facts:
         return "（未能提取到结构化事实信息）\n"
 
     rows = []
-    label_map = {
-        "fund_name": ("基金名称",),
-        "fund_type": ("基金类型",),
-        "domicile": ("注册地",),
-        "gp_name": ("普通合伙人 (GP)",),
-        "manager_name": ("管理人",),
-        "gp_is_manager": ("GP 兼任管理人",),
-        "committed_capital": ("总认缴出资额",),
-        "management_fee_rate": ("管理费率",),
-        "management_fee_basis": ("管理费计算基数",),
-        "hurdle_rate": ("优先回报率 (Hurdle)",),
-        "gp_carry": ("GP Carry 比例",),
-        "investment_period_years": ("投资期", "年"),
-        "exit_period_years": ("退出期", "年"),
-        "extension_period_years": ("延长期", "年"),
-        "lp_min_commitment": ("LP 最低出资额",),
-        "gp_removal_for_cause": ("有因除名条件",),
-        "gp_removal_nofault_threshold": ("无因除名投票比例",),
-        "key_persons": ("关键人士",),
-        "dispute_resolution": ("争议解决机构",),
-    }
+    label_map = label_map or _DEFAULT_LABEL_MAP
 
     for key, label_info in label_map.items():
         val = facts.get(key)
@@ -168,11 +185,11 @@ def _format_facts(facts: Dict[str, Any]) -> str:
 
 # ── Risk Matrix ────────────────────────────────────────────────────────────
 
-def _build_risk_matrix(findings: List[Dict[str, Any]]) -> str:
+def _build_risk_matrix(findings: list[dict[str, Any]]) -> str:
     if not findings:
         return "未发现需要标记的风险条款。\n"
 
-    by_category: Dict[str, List[Dict]] = {}
+    by_category: dict[str, list[dict]] = {}
     for f in findings:
         cat = f.get("category", f.get("rule_id", "")[0] if f.get("rule_id") else "其他")
         by_category.setdefault(cat, []).append(f)
@@ -196,7 +213,7 @@ def _build_risk_matrix(findings: List[Dict[str, Any]]) -> str:
 
 # ── Chapter Findings ───────────────────────────────────────────────────────
 
-def _build_chapter_findings(chapter_reviews: List[Dict[str, Any]]) -> str:
+def _build_chapter_findings(chapter_reviews: list[dict[str, Any]]) -> str:
     parts = []
     for review in chapter_reviews:
         chapter_name = review.get("chapter", review.get("chapter_name", "未知章节"))
@@ -230,7 +247,7 @@ def _build_chapter_findings(chapter_reviews: List[Dict[str, Any]]) -> str:
 
 # ── Cross-Check Section ────────────────────────────────────────────────────
 
-def _build_cross_check(cc: Dict[str, Any]) -> str:
+def _build_cross_check(cc: dict[str, Any]) -> str:
     parts = []
 
     contradictions = cc.get("contradictions", [])
@@ -289,13 +306,15 @@ def _build_disclaimer() -> str:
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
-def _flatten_findings(chapter_reviews: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    from .risk_rules import LPA_RULES
+def _flatten_findings(chapter_reviews: list[dict[str, Any]], rules: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    if rules is None:
+        from .risk_rules import LPA_RULES
+        rules = LPA_RULES
     all_findings = []
     for review in chapter_reviews:
         for f in review.get("findings", []):
             rule_id = f.get("rule_id", "")
-            rule = LPA_RULES.get(rule_id, {})
+            rule = rules.get(rule_id, {})
             all_findings.append({
                 "rule_id": rule_id,
                 "title": rule.get("title", f.get("finding", "")[:40]),

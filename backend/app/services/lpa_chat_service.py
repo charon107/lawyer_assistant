@@ -7,7 +7,7 @@ answers lawyer questions about specific findings.
 
 import json
 import logging
-from typing import Dict, Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +26,14 @@ class LPAChatService:
 4. 引用具体条款编号和原文
 5. 不要声称提供正式法律意见"""
 
-    def __init__(self, deepseek_api_key: Optional[str] = None, base_url: str = "https://api.deepseek.com"):
+    def __init__(self, deepseek_api_key: str | None = None, base_url: str = "https://api.deepseek.com"):
         self._api_key = deepseek_api_key
 
     async def chat(
         self,
         question: str,
-        review_context: Dict[str, Any],
-        chat_history: Optional[list] = None,
+        review_context: dict[str, Any],
+        chat_history: list | None = None,
     ) -> str:
         """Answer a follow-up question using the review context."""
         if not self._api_key:
@@ -74,7 +74,7 @@ class LPAChatService:
             logger.error("Chat failed: %s", e)
             return f"抱歉，对话服务暂时不可用。错误：{e}"
 
-    def _offline_response(self, question: str, context: Dict[str, Any]) -> str:
+    def _offline_response(self, question: str, context: dict[str, Any]) -> str:
         """Without API key, return a contextual summary instead."""
         facts = context.get("facts", {}).get("labeled_facts", {})
         chapter_reviews = context.get("chapter_reviews", [])
@@ -99,7 +99,7 @@ class LPAChatService:
             f"如需详细分析，请开启 LLM 模式（配置 DEEPSEEK_API_KEY）。"
         )
 
-    def _build_context(self, review_context: Dict[str, Any]) -> str:
+    def _build_context(self, review_context: dict[str, Any]) -> str:
         """Build a condensed review context for the LLM."""
         parts = []
 

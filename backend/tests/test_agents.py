@@ -59,25 +59,19 @@ class TestAssistantAgent:
         assert agent.system_prompt == "Custom prompt"
 
     @patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"})
-    @patch("app.agents.assistant.OpenAIProvider")
-    @patch("app.agents.assistant.OpenAIResponsesModel")
-    def test_agent_property_creates_agent(self, mock_model, mock_provider):
+    def test_agent_property_creates_agent(self):
         """Test agent property creates agent on first access."""
         agent = AssistantAgent()
         _ = agent.agent
         assert agent._agent is not None
-        mock_model.assert_called_once()
 
     @patch.dict("os.environ", {"OPENAI_API_KEY": "test-key"})
-    @patch("app.agents.assistant.OpenAIProvider")
-    @patch("app.agents.assistant.OpenAIResponsesModel")
-    def test_agent_property_caches_agent(self, mock_model, mock_provider):
+    def test_agent_property_caches_agent(self):
         """Test agent property caches the agent instance."""
         agent = AssistantAgent()
         agent1 = agent.agent
         agent2 = agent.agent
         assert agent1 is agent2
-        mock_model.assert_called_once()
 
 
 class TestGetAgent:

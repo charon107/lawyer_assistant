@@ -1,14 +1,14 @@
 """Tests for Stage 5: Report Generator."""
 
 from app.agents.lpa.report import (
-    build_lpa_report,
-    _summarize_risks,
-    _flatten_findings,
-    _format_facts,
-    _build_risk_matrix,
     _build_chapter_findings,
     _build_cross_check,
     _build_disclaimer,
+    _build_risk_matrix,
+    _flatten_findings,
+    _format_facts,
+    _summarize_risks,
+    build_lpa_report,
 )
 
 

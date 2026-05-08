@@ -10,6 +10,7 @@ from app.api.routes.v1 import admin_conversations
 from app.api.routes.v1 import agent
 from app.api.routes.v1 import files
 from app.api.routes.v1 import lpa
+from app.api.routes.v1 import lpa_cases
 from app.api.routes.v1 import lpa_ws
 
 v1_router = APIRouter()
@@ -44,3 +45,6 @@ v1_router.include_router(
 # LPA Contract Review routes
 v1_router.include_router(lpa.router, tags=["lpa"])
 v1_router.include_router(lpa_ws.router, tags=["lpa-ws"])
+
+# LPA Cases routes
+v1_router.include_router(lpa_cases.router, prefix="/lpa-cases", tags=["lpa-cases"])

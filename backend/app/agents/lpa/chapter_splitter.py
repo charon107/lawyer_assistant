@@ -7,11 +7,10 @@ Three-pass strategy:
   Pass 3 — human-verifiable chapter list (returned to UI for approval)
 """
 
-import re
 import json
 import logging
-from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+import re
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +30,7 @@ SECTION_RE = re.compile(
     re.MULTILINE | re.IGNORECASE,
 )
 
-# Common LPA chapter title keywords for heuristic matching
+# Common LPA chapter title keywords for heuristic matching (backward compatibility)
 LPA_CHAPTER_KEYWORDS = [
     "定义", "definitions", "interpretation", "释义",
     "出资", "capital contribution", "capital commitment", "认缴",
@@ -51,12 +50,13 @@ LPA_CHAPTER_KEYWORDS = [
 
 
 class ChapterSplitter:
-    """Split a parsed LPA document into logical chapters."""
+    """Split a parsed document into logical chapters."""
 
-    def __init__(self, llm_client=None):
+    def __init__(self, llm_client=None, chapter_keywords: list[str] | None = None):
         self._llm = llm_client
+        self._chapter_keywords = chapter_keywords or LPA_CHAPTER_KEYWORDS
 
-    def split(self, document_text: str) -> Dict[str, Any]:
+    def split(self, document_text: str) -> dict[str, Any]:
         chapters = self._split_by_regex(document_text)
 
         if not chapters or len(chapters) < 2:
@@ -75,9 +75,9 @@ class ChapterSplitter:
         chapters = self._merge_small_chapters(chapters)
         return {"chapters": chapters, "method": "regex", "warning": None}
 
-    def _split_by_regex(self, text: str) -> List[Dict[str, Any]]:
+    def _split_by_regex(self, text: str) -> list[dict[str, Any]]:
         """Pass 1: find all chapter markers and split between them."""
-        markers: List[Tuple[int, str]] = []
+        markers: list[tuple[int, str]] = []
 
         for match in CHAPTER_RE.finditer(text):
             num = match.group(1)
@@ -117,7 +117,7 @@ class ChapterSplitter:
 
         return chapters
 
-    def _split_by_keyword(self, text: str) -> List[Dict[str, Any]]:
+    def _split_by_keyword(self, text: str) -> list[dict[str, Any]]:
         """Heuristic: use keyword density to guess chapter boundaries."""
         lines = text.split("\n")
         boundary_indices = []
@@ -127,7 +127,7 @@ class ChapterSplitter:
             if not stripped or len(stripped) > 80:
                 continue
             lower = stripped.lower()
-            for kw in LPA_CHAPTER_KEYWORDS:
+            for kw in self._chapter_keywords:
                 if kw in lower and len(stripped) >= 4:
                     boundary_indices.append(idx)
                     break
@@ -149,7 +149,7 @@ class ChapterSplitter:
             })
         return chapters
 
-    def _split_by_llm(self, text: str) -> List[Dict[str, Any]]:
+    def _split_by_llm(self, text: str) -> list[dict[str, Any]]:
         """Pass 2: LLM fallback for irregular formats."""
         from . import prompts_dir
         prompt_path = prompts_dir() / "chapter_split.md"
@@ -178,7 +178,7 @@ class ChapterSplitter:
         return chapters
 
     @staticmethod
-    def _merge_small_chapters(chapters: List[Dict[str, Any]], min_chars: int = 80) -> List[Dict[str, Any]]:
+    def _merge_small_chapters(chapters: list[dict[str, Any]], min_chars: int = 80) -> list[dict[str, Any]]:
         """Merge chapters that are too small into the next chapter."""
         if len(chapters) <= 1:
             return chapters
@@ -208,6 +208,6 @@ class ChapterSplitter:
         return merged
 
 
-def verify_chapters(chapters: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def verify_chapters(chapters: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Pass 3: Return chapters in UI-consumable format."""
     return chapters

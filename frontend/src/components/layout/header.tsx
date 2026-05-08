@@ -2,26 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/hooks";
 import { Button } from "@/components/ui";
 import { ThemeToggle } from "@/components/theme";
 import { LanguageSwitcherCompact } from "@/components/language-switcher";
 import { APP_NAME, ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-import { LogOut, Menu, LayoutDashboard, MessageSquare, UserCircle } from "lucide-react";
+import { LogOut, Menu, LayoutDashboard, MessageSquare, UserCircle, Briefcase } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui";
 import { useSidebarStore } from "@/stores";
 
-const adminNavItems = [
-  { name: "工作台", href: ROUTES.DASHBOARD, icon: LayoutDashboard, adminOnly: true },
-  { name: "对话", href: ROUTES.CHAT, icon: MessageSquare, adminOnly: false },
-  { name: "个人中心", href: ROUTES.PROFILE, icon: UserCircle, adminOnly: false },
+const navItemKeys = [
+  { key: "dashboard", href: ROUTES.DASHBOARD, icon: LayoutDashboard, adminOnly: true },
+  { key: "cases", href: ROUTES.CASES, icon: Briefcase, adminOnly: false },
+  { key: "conversations", href: ROUTES.CHAT, icon: MessageSquare, adminOnly: false },
+  { key: "profile", href: ROUTES.PROFILE, icon: UserCircle, adminOnly: false },
 ];
 
 export function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const { toggle } = useSidebarStore();
   const pathname = usePathname();
+  const navT = useTranslations("navigation");
+  const authT = useTranslations("auth");
 
   return (
     <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full border-b backdrop-blur">
@@ -39,11 +43,11 @@ export function Header() {
 
           {/* Desktop nav links */}
           <nav className="hidden items-center gap-0.5 md:flex">
-            {adminNavItems.filter(item => !item.adminOnly || user?.role === "admin").map((item) => {
+            {navItemKeys.filter(item => !item.adminOnly || user?.role === "admin").map((item) => {
               const isActive = pathname?.includes(item.href);
               return (
                 <Link
-                  key={item.name}
+                  key={item.key}
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
@@ -54,7 +58,7 @@ export function Header() {
                   )}
                 >
                   <item.icon className="h-3.5 w-3.5" />
-                  {item.name}
+                  {navT(item.key as "dashboard" | "cases" | "conversations" | "profile")}
                 </Link>
               );
             })}
@@ -85,16 +89,16 @@ export function Header() {
                 className="h-10 w-10 p-0 sm:w-auto sm:px-3"
               >
                 <LogOut className="h-4 w-4" />
-                <span className="sr-only sm:not-sr-only sm:ml-2">退出登录</span>
+                <span className="sr-only sm:not-sr-only sm:ml-2">{navT("logout")}</span>
               </Button>
             </>
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild className="h-10">
-                <Link href={ROUTES.LOGIN}>登录</Link>
+                <Link href={ROUTES.LOGIN}>{authT("login")}</Link>
               </Button>
               <Button size="sm" asChild className="h-10">
-                <Link href={ROUTES.REGISTER}>注册</Link>
+                <Link href={ROUTES.REGISTER}>{authT("register")}</Link>
               </Button>
             </>
           )}

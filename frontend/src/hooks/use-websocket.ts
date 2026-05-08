@@ -48,7 +48,10 @@ export function useWebSocket({
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN || wsRef.current?.readyState === WebSocket.CONNECTING) return;
 
-    const ws = protocols && protocols.length > 0 ? new WebSocket(url, protocols) : new WebSocket(url);
+    // Require authentication — never connect without protocols (prevents 4001 auth errors)
+    if (!protocols || protocols.length === 0) return;
+
+    const ws = new WebSocket(url, protocols);
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -94,9 +97,10 @@ export function useWebSocket({
   }, []);
 
   // Reset connection when url or protocols change (e.g. auth token becomes available)
+  const protocolsKey = protocols ? protocols.join(",") : "";
   useEffect(() => {
     disconnect();
-  }, [url, JSON.stringify(protocols)]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [url, protocolsKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     return () => {

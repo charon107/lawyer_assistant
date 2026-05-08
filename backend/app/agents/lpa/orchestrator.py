@@ -1,47 +1,49 @@
 """
-LPA Contract Review Orchestrator — ties Stage 0→5 into a single pipeline.
+Contract Review Orchestrator — ties Stage 0→5 into a single pipeline.
 
 Usage:
-    orchestrator = LPAReviewOrchestrator(deepseek_api_key="sk-...")
+    orchestrator = DocumentReviewOrchestrator(deepseek_api_key="sk-...", document_type="lpa")
     result = orchestrator.review(uploaded_file)
     # result["report_markdown"] is the final Markdown report.
 """
 
-import os
-import json
 import logging
-from pathlib import Path
-from typing import Dict, Any, Optional
+import os
+from typing import Any
 
-from .document_preprocessor import DocumentPreprocessor
+from .chapter_reviewer import ChapterReviewer
 from .chapter_splitter import ChapterSplitter
+from .cross_checker import CrossChecker
+from .document_preprocessor import DocumentPreprocessor
+from .document_types import get_document_type_config
 from .fact_extractor import FactExtractor
 from .llm_client import LLMClient
-from .chapter_reviewer import ChapterReviewer
-from .cross_checker import CrossChecker
 from .report import build_lpa_report
 
 logger = logging.getLogger(__name__)
 
 
-class LPAReviewOrchestrator:
-    """End-to-end LPA contract review pipeline."""
+class DocumentReviewOrchestrator:
+    """End-to-end document review pipeline, configurable by document type."""
 
     def __init__(
         self,
-        deepseek_api_key: Optional[str] = None,
+        deepseek_api_key: str | None = None,
         deepseek_base_url: str = "https://api.deepseek.com",
+        document_type: str = "lpa",
     ):
         api_key = deepseek_api_key or os.getenv("DEEPSEEK_API_KEY", "")
         self._llm = LLMClient(api_key=api_key, base_url=deepseek_base_url) if api_key else None
         self._preprocessor = DocumentPreprocessor()
+        self._document_type = document_type
+        self._doc_config = get_document_type_config(document_type)
 
     def review(
         self,
         uploaded_file,
-        config: Optional[Dict[str, Any]] = None,
+        config: dict[str, Any] | None = None,
         progress_callback=None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run the full LPA review pipeline.
 
@@ -66,7 +68,8 @@ class LPAReviewOrchestrator:
         # Stage 1: Split into chapters
         self._progress(progress_callback, 0.15, "拆分章节...")
         splitter = ChapterSplitter(
-            llm_client=self._safe_llm_chat if self._llm else None
+            llm_client=self._safe_llm_chat if self._llm else None,
+            chapter_keywords=self._doc_config.get("chapter_keywords"),
         )
         split_result = splitter.split(doc_text)
         chapters = split_result["chapters"]
@@ -76,7 +79,12 @@ class LPAReviewOrchestrator:
 
         # Stage 2: Extract facts
         self._progress(progress_callback, 0.30, "提取关键事实...")
-        extractor = FactExtractor(llm_client=self._llm)
+        extractor = FactExtractor(
+            llm_client=self._llm,
+            entity_patterns=self._doc_config.get("entity_patterns"),
+            fact_tool_schema=self._doc_config.get("fact_tool_schema"),
+            prompt_template_path=self._doc_config.get("prompt_templates", {}).get("fact_labeling"),
+        )
         early_chapters = "\n\n".join(
             ch["text"] for ch in chapters[:5]
         )
@@ -88,7 +96,16 @@ class LPAReviewOrchestrator:
         if not self._llm:
             chapter_reviews = self._mock_chapter_reviews(chapters, labeled_facts)
         else:
-            reviewer = ChapterReviewer(llm_client=self._llm, labeled_facts=labeled_facts)
+            reviewer = ChapterReviewer(
+                llm_client=self._llm,
+                labeled_facts=labeled_facts,
+                rules=self._doc_config.get("risk_rules"),
+                complex_keywords=self._doc_config.get("complex_keywords"),
+                simple_rule_ids=self._doc_config.get("simple_rule_ids"),
+                complex_rule_ids=self._doc_config.get("complex_rule_ids"),
+                rule_keyword_map=self._doc_config.get("rule_keyword_map"),
+                prompt_templates=self._doc_config.get("prompt_templates"),
+            )
             chapter_reviews = []
             total = len(chapters)
             for i, ch in enumerate(chapters):
@@ -110,12 +127,16 @@ class LPAReviewOrchestrator:
 
         # Stage 5: Build report
         self._progress(progress_callback, 0.95, "生成审查报告...")
+        doc_name = self._doc_config.get("name", self._document_type)
+        report_title = self._doc_config.get("report_title", f"AI {doc_name} 审查报告")
         report_md = build_lpa_report(
             file_name=file_name,
             labeled_facts=labeled_facts,
             chapter_reviews=chapter_reviews,
             cross_check=cross_check,
             config=config,
+            rules=self._doc_config.get("risk_rules"),
+            report_title=report_title,
         )
 
         self._progress(progress_callback, 1.0, "完成")
@@ -139,16 +160,19 @@ class LPAReviewOrchestrator:
 
     def _mock_chapter_reviews(self, chapters, labeled_facts):
         """Offline mode: rule-based chapter scanning without LLM calls."""
-        from .risk_rules import LPA_RULES
+        rules = self._doc_config.get("risk_rules", {})
+        rule_keyword_map = self._doc_config.get("rule_keyword_map", {})
         reviews = []
         for ch in chapters:
             text = ch.get("text", "")
             title = ch.get("title", "")
             findings = []
 
-            for rule_id, rule in LPA_RULES.items():
+            for rule_id, rule in rules.items():
                 check_text = rule.get("check", "")
-                keywords = self._rule_keywords(rule_id, check_text)
+                keywords = rule_keyword_map.get(rule_id, [])
+                if not keywords:
+                    keywords = self._rule_keywords(rule_id, check_text)
                 matched = [kw for kw in keywords if kw in text]
                 if matched:
                     findings.append({
@@ -207,3 +231,7 @@ class LPAReviewOrchestrator:
                 callback(pct, msg)
             except Exception:
                 pass
+
+
+# Backward compatibility alias
+LPAReviewOrchestrator = DocumentReviewOrchestrator

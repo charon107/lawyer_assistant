@@ -52,9 +52,15 @@ export function useLPAReview() {
 
     function createWS() {
       const token = useAuthStore.getState().accessToken;
-      const ws = token
-        ? new WebSocket(url, [token])
-        : new WebSocket(url);
+      if (!token) {
+        setState((prev) => ({
+          ...prev,
+          status: "error",
+          error: "未登录，请先登录",
+        }));
+        return;
+      }
+      const ws = new WebSocket(url, [`access_token.${token}`, "lpa"]);
       wsRef.current = ws;
 
     ws.onmessage = (event) => {

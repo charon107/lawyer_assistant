@@ -1,13 +1,13 @@
 """LPA Review REST API endpoints."""
 
 import os
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
-from typing import Optional
 
 from app.api.deps import CurrentUser
-from app.services.lpa_service import LPAReviewService
 from app.services.lpa_chat_service import LPAChatService
+from app.services.lpa_service import LPAReviewService
 
 router = APIRouter(prefix="/lpa", tags=["lpa"])
 
@@ -18,7 +18,7 @@ class ChapterUpdate(BaseModel):
 
 class ChatRequest(BaseModel):
     question: str
-    history: Optional[list] = None
+    history: list | None = None
 
 
 def _get_lpa_service() -> LPAReviewService:

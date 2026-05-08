@@ -7,7 +7,6 @@ from pydantic import EmailStr, Field, field_validator, model_validator
 
 from app.schemas.base import BaseSchema, TimestampSchema
 
-
 # === LLM Config schemas ===
 
 

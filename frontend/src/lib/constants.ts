@@ -32,6 +32,7 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   CHAT: "/chat",
   PROFILE: "/profile",
+  CASES: "/cases",
   REVIEW: "/review",
   SETTINGS: "/settings",
   ADMIN_RATINGS: "/admin/ratings",

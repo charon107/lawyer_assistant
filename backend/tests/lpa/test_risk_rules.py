@@ -1,8 +1,8 @@
 """Tests for LPA risk rules — categories, rule integrity, completeness."""
 
 from app.agents.lpa.risk_rules import (
-    LPA_RULES,
     LPA_RULE_IDS_BY_CATEGORY,
+    LPA_RULES,
     get_all_lpa_rules,
     get_lpa_rule,
     get_lpa_rule_ids_by_category,
