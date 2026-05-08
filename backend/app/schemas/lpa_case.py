@@ -13,6 +13,7 @@ class LPACaseCreate(BaseSchema):
 
     name: str = Field(..., max_length=255, min_length=1, description="Case name")
     description: str | None = Field(default=None, description="Case description")
+    document_type: str = Field(default="lpa", max_length=50, description="Document type (e.g., lpa, contract)")
 
 
 class LPACaseUpdate(BaseSchema):
@@ -44,6 +45,7 @@ class LPACaseRead(BaseSchema, TimestampSchema):
     name: str
     description: str | None = None
     status: str = "active"
+    document_type: str = "lpa"
     document_count: int = 0
 
 

@@ -162,7 +162,7 @@
   },
   "landing": {
     "heroTagline": "您的 AI 法律助手",
-    "heroSubtitle": "AI 驱动 LPA 合同审查，智能分析风险条款，高效辅助律师工作。",
+    "heroSubtitle": "AI 驱动法律文件审查，智能分析风险条款，高效辅助律师工作。",
     "signIn": "登录"
   },
   "cases": {
@@ -197,6 +197,13 @@
     "createdAt": "创建时间",
     "status": "状态",
     "active": "进行中",
-    "closed": "已结束"
+    "closed": "已结束",
+    "cancel": "取消",
+    "loading": "创建中...",
+    "documentType": "文件类型",
+    "documentTypeLpa": "有限合伙协议 (LPA)",
+    "documentTypeContract": "通用合同",
+    "documentTypeNda": "保密协议 (NDA)",
+    "documentTypeEmployment": "劳动合同"
   }
 }

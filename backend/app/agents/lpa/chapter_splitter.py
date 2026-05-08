@@ -30,7 +30,7 @@ SECTION_RE = re.compile(
     re.MULTILINE | re.IGNORECASE,
 )
 
-# Common LPA chapter title keywords for heuristic matching
+# Common LPA chapter title keywords for heuristic matching (backward compatibility)
 LPA_CHAPTER_KEYWORDS = [
     "定义", "definitions", "interpretation", "释义",
     "出资", "capital contribution", "capital commitment", "认缴",
@@ -50,10 +50,11 @@ LPA_CHAPTER_KEYWORDS = [
 
 
 class ChapterSplitter:
-    """Split a parsed LPA document into logical chapters."""
+    """Split a parsed document into logical chapters."""
 
-    def __init__(self, llm_client=None):
+    def __init__(self, llm_client=None, chapter_keywords: list[str] | None = None):
         self._llm = llm_client
+        self._chapter_keywords = chapter_keywords or LPA_CHAPTER_KEYWORDS
 
     def split(self, document_text: str) -> dict[str, Any]:
         chapters = self._split_by_regex(document_text)
@@ -126,7 +127,7 @@ class ChapterSplitter:
             if not stripped or len(stripped) > 80:
                 continue
             lower = stripped.lower()
-            for kw in LPA_CHAPTER_KEYWORDS:
+            for kw in self._chapter_keywords:
                 if kw in lower and len(stripped) >= 4:
                     boundary_indices.append(idx)
                     break

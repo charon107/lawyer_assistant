@@ -18,6 +18,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Skeleton,
 } from "@/components/ui";
 import { Plus, Briefcase, FileText, Trash2, ArrowRight } from "lucide-react";
@@ -29,6 +34,7 @@ export default function CasesPage() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [documentType, setDocumentType] = useState("lpa");
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -38,12 +44,13 @@ export default function CasesPage() {
   const handleCreate = async () => {
     if (!name.trim()) return;
     setCreating(true);
-    const result = await createCase(name.trim(), description.trim() || undefined);
+    const result = await createCase(name.trim(), description.trim() || undefined, documentType);
     setCreating(false);
     if (result) {
       setOpen(false);
       setName("");
       setDescription("");
+      setDocumentType("lpa");
     }
   };
 
@@ -93,6 +100,20 @@ export default function CasesPage() {
                   placeholder={t("caseDescription")}
                   rows={3}
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{t("documentType")}</label>
+                <Select value={documentType} onValueChange={setDocumentType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="lpa">{t("documentTypeLpa")}</SelectItem>
+                    <SelectItem value="contract">{t("documentTypeContract")}</SelectItem>
+                    <SelectItem value="nda">{t("documentTypeNda")}</SelectItem>
+                    <SelectItem value="employment">{t("documentTypeEmployment")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setOpen(false)}>
@@ -176,9 +197,16 @@ function CaseCard({
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <FileText className="h-4 w-4" />
-            <span>{t("documentCount", { count: caseData.document_count })}</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <FileText className="h-4 w-4" />
+              <span>{t("documentCount", { count: caseData.document_count })}</span>
+            </div>
+            {caseData.document_type && caseData.document_type !== "lpa" && (
+              <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs">
+                {t(`documentType${caseData.document_type.charAt(0).toUpperCase()}${caseData.document_type.slice(1)}`, { defaultValue: caseData.document_type })}
+              </span>
+            )}
           </div>
           <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>

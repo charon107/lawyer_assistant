@@ -8,6 +8,7 @@ export interface LPACase {
   name: string;
   description: string | null;
   status: string;
+  document_type: string;
   document_count: number;
   created_at: string;
   updated_at: string | null;

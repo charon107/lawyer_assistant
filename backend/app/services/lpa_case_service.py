@@ -25,7 +25,8 @@ class LPACaseService:
     def create(self, data: LPACaseCreate, user_id: str) -> LPACase:
         """Create a new LPA case."""
         return lpa_case_repo.create_case(
-            self.db, user_id=user_id, name=data.name, description=data.description
+            self.db, user_id=user_id, name=data.name, description=data.description,
+            document_type=data.document_type,
         )
 
     def get(self, case_id: str, user_id: str) -> LPACase:

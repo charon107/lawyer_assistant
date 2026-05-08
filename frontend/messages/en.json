@@ -162,7 +162,7 @@
   },
   "landing": {
     "heroTagline": "Your AI Legal Assistant",
-    "heroSubtitle": "AI-powered LPA contract review. Identify risk clauses intelligently and assist legal professionals efficiently.",
+    "heroSubtitle": "AI-powered legal document review. Identify risk clauses intelligently and assist legal professionals efficiently.",
     "signIn": "Sign In"
   },
   "cases": {
@@ -197,6 +197,13 @@
     "createdAt": "Created",
     "status": "Status",
     "active": "Active",
-    "closed": "Closed"
+    "closed": "Closed",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "documentType": "Document Type",
+    "documentTypeLpa": "LPA (Limited Partnership Agreement)",
+    "documentTypeContract": "General Contract",
+    "documentTypeNda": "NDA (Non-Disclosure Agreement)",
+    "documentTypeEmployment": "Employment Contract"
   }
 }

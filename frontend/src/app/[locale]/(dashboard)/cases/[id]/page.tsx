@@ -76,6 +76,11 @@ export default function CaseDetailPage() {
             <Badge variant={caseDetail.status === "active" ? "default" : "secondary"}>
               {t(caseDetail.status as "active" | "closed")}
             </Badge>
+            {caseDetail.document_type && caseDetail.document_type !== "lpa" && (
+              <Badge variant="outline">
+                {t(`documentType${caseDetail.document_type.charAt(0).toUpperCase()}${caseDetail.document_type.slice(1)}`, { defaultValue: caseDetail.document_type })}
+              </Badge>
+            )}
           </div>
           {caseDetail.description && (
             <p className="text-muted-foreground text-sm ml-10">{caseDetail.description}</p>

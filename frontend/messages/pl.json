@@ -161,35 +161,9 @@
     "copyright": "Wszelkie prawa zastrzeżone"
   },
   "landing": {
-    "heroTitle": "Twórz inteligentne",
-    "heroHighlight": "aplikacje",
-    "heroTitleEnd": "z pewnością",
-    "heroSubtitle": "Gotowa do produkcji platforma full-stack z czatem AI, wyszukiwaniem w bazie wiedzy, bezpiecznym uwierzytelnianiem i nowoczesnym panelem.",
-    "getStarted": "Rozpocznij",
-    "signIn": "Zaloguj się",
-    "featureAiChat": "Czat z AI",
-    "featureAiChatDesc": "Konwersacyjny asystent AI ze strumieniowaniem w czasie rzeczywistym, historią rozmów i wywoływaniem narzędzi.",
-    "featureRag": "Baza wiedzy",
-    "featureRagDesc": "Wyszukiwanie wektorowe w dokumentach z generowaniem wspomaganym wyszukiwaniem. Import PDF, DOCX i więcej.",
-    "featureAuth": "Bezpieczne uwierzytelnianie",
-    "featureAuthDesc": "Uwierzytelnianie JWT z tokenami odświeżającymi, integracja OAuth, zarządzanie sesjami i kontrola dostępu.",
-    "featureDashboard": "Panel",
-    "featureDashboardDesc": "Monitorowanie stanu systemu, zarządzanie użytkownikami i statystyki kolekcji na pierwszy rzut oka.",
-    "featureApi": "REST API",
-    "featureApiDesc": "Automatycznie dokumentowany backend FastAPI ze specyfikacją OpenAPI, wersjonowanymi endpointami i asynchroniczną bazą.",
-    "featureRealtime": "Czas rzeczywisty",
-    "featureRealtimeDesc": "Strumieniowanie przez WebSocket dla natychmiastowych odpowiedzi AI i aktualizacji na żywo.",
-    "techStackTitle": "Zbudowane z nowoczesnymi technologiami",
-    "ctaTitle": "Gotowy, żeby zacząć?",
-    "ctaSubtitle": "Załóż konto i zacznij odkrywać platformę.",
-    "createAccount": "Załóż konto",
-    "exploreApi": "Przeglądaj API",
-    "footerDesc": "Platforma AI full-stack z funkcjami klasy enterprise.",
-    "footerProduct": "Produkt",
-    "footerResources": "Zasoby",
-    "apiDocs": "Dokumentacja API",
-    "learnMore": "Dowiedz się więcej",
-    "copyright": "Wszelkie prawa zastrzeżone."
+    "heroTagline": "Twój asystent prawny AI",
+    "heroSubtitle": "Analiza dokumentów prawnych wspomagana AI. Inteligentne wykrywanie ryzykownych klauzul i skuteczna pomoc dla prawników.",
+    "signIn": "Zaloguj się"
   },
   "cases": {
     "title": "Zarządzanie sprawami",
@@ -223,6 +197,13 @@
     "createdAt": "Utworzono",
     "status": "Status",
     "active": "Aktywna",
-    "closed": "Zamknięta"
+    "closed": "Zamknięta",
+    "cancel": "Anuluj",
+    "loading": "Ładowanie...",
+    "documentType": "Typ dokumentu",
+    "documentTypeLpa": "LPA (Umowa Spółki Komandytowej)",
+    "documentTypeContract": "Umowa ogólna",
+    "documentTypeNda": "NDA (Umowa poufności)",
+    "documentTypeEmployment": "Umowa o pracę"
   }
 }

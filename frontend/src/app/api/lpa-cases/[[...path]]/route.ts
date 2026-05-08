@@ -14,18 +14,21 @@ function buildBackendUrl(path: string, searchParams: URLSearchParams): string {
   return `/api/v1/lpa-cases/${path}${qs ? `?${qs}` : ""}`;
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-) {
+type Params = { params: Promise<{ path?: string[] }> };
+
+async function resolvePath(params: Params["params"]): Promise<string> {
+  const { path } = await params;
+  return extractPath(path ?? []);
+}
+
+export async function GET(request: NextRequest, ctx: Params) {
   try {
     const accessToken = request.cookies.get("access_token")?.value;
     if (!accessToken) {
       return NextResponse.json({ detail: "Not authenticated" }, { status: 401 });
     }
 
-    const { path } = await params;
-    const pathStr = extractPath(path);
+    const pathStr = await resolvePath(ctx.params);
     const url = buildBackendUrl(pathStr, request.nextUrl.searchParams);
 
     const data = await backendFetch(url, {
@@ -47,18 +50,14 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-) {
+export async function POST(request: NextRequest, ctx: Params) {
   try {
     const accessToken = request.cookies.get("access_token")?.value;
     if (!accessToken) {
       return NextResponse.json({ detail: "Not authenticated" }, { status: 401 });
     }
 
-    const { path } = await params;
-    const pathStr = extractPath(path);
+    const pathStr = await resolvePath(ctx.params);
     const url = buildBackendUrl(pathStr, request.nextUrl.searchParams);
 
     const contentType = request.headers.get("content-type") || "";
@@ -67,7 +66,6 @@ export async function POST(
 
     if (contentType.includes("multipart/form-data")) {
       body = await request.formData();
-      // Don't set Content-Type — let fetch set it with the boundary
     } else {
       body = await request.text();
       headers["Content-Type"] = "application/json";
@@ -94,18 +92,14 @@ export async function POST(
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-) {
+export async function PATCH(request: NextRequest, ctx: Params) {
   try {
     const accessToken = request.cookies.get("access_token")?.value;
     if (!accessToken) {
       return NextResponse.json({ detail: "Not authenticated" }, { status: 401 });
     }
 
-    const { path } = await params;
-    const pathStr = extractPath(path);
+    const pathStr = await resolvePath(ctx.params);
     const url = buildBackendUrl(pathStr, request.nextUrl.searchParams);
     const body = await request.text();
 
@@ -133,18 +127,14 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ path: string[] }> }
-) {
+export async function DELETE(request: NextRequest, ctx: Params) {
   try {
     const accessToken = request.cookies.get("access_token")?.value;
     if (!accessToken) {
       return NextResponse.json({ detail: "Not authenticated" }, { status: 401 });
     }
 
-    const { path } = await params;
-    const pathStr = extractPath(path);
+    const pathStr = await resolvePath(ctx.params);
     const url = buildBackendUrl(pathStr, request.nextUrl.searchParams);
 
     await backendFetch(url, {

@@ -33,11 +33,12 @@ export function useCases() {
   }, []);
 
   const createCase = useCallback(
-    async (name: string, description?: string): Promise<LPACase | null> => {
+    async (name: string, description?: string, documentType?: string): Promise<LPACase | null> => {
       try {
         const response = await apiClient.post<LPACase>("/lpa-cases", {
           name,
           description: description || null,
+          document_type: documentType || "lpa",
         });
         setCases((prev) => [response, ...prev]);
         setTotal((prev) => prev + 1);

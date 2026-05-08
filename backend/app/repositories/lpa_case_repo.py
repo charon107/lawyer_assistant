@@ -16,9 +16,10 @@ def create_case(
     user_id: str,
     name: str,
     description: str | None = None,
+    document_type: str = "lpa",
 ) -> LPACase:
     """Create a new LPA case."""
-    case = LPACase(user_id=user_id, name=name, description=description)
+    case = LPACase(user_id=user_id, name=name, description=description, document_type=document_type)
     db.add(case)
     db.flush()
     db.refresh(case)

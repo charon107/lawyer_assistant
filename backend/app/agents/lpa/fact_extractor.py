@@ -9,13 +9,14 @@ Two-pass extraction:
 import json
 import logging
 import re
+from collections.abc import Callable
 from typing import Any
 
 from .llm_client import LLMClient, register_tool
 
 logger = logging.getLogger(__name__)
 
-# ── Pass 1 regex patterns ──────────────────────────────────────────────────
+# ── Pass 1 regex patterns (generic, not LPA-specific) ────────────────────
 
 AMOUNT_RE = re.compile(
     r"(?:人民币|RMB|CNY|港币|HKD|美元|USD|欧元|EUR)?[  ]*"
@@ -30,86 +31,63 @@ DATE_RE = re.compile(
     r"|(?:\d{1,2}[  ]*个[  ]*月)"
     r"|(?:\d+[  ]*(?:个)?[  ]*(?:营业|工作|日历|自然)?日[  ]*(?:内|后|前)?)",
 )
-ENTITY_NAMES_RE = re.compile(
+LAW_REFERENCE_RE = re.compile(r"《([^》]+)》")
+
+# Default LPA entity patterns (backward compatibility)
+_DEFAULT_ENTITY_PATTERNS = [
     r"(?:甲方|乙方|普通合伙人|有限合伙人|管理人|执行事务合伙人)[：:  ]*"
     r"([^\n。，；;]{4,60}(?:有限公司|股份有限公司|合伙企业|有限责任合伙|LLP|Ltd\.?|Inc\.?))",
-    re.IGNORECASE,
-)
-LAW_REFERENCE_RE = re.compile(r"《([^》]+)》")
-GP_MANAGER_PATTERNS = [
+]
+
+# Default LPA GP/manager patterns (backward compatibility)
+_DEFAULT_GP_MANAGER_PATTERNS = [
     re.compile(r"普通合伙人[：:  ]*([^\n。，]{4,60})"),
     re.compile(r"执行事务合伙人[：:  ]*([^\n。，]{4,60})"),
     re.compile(r"管理人[：:  ]*([^\n。，]{4,60})"),
     re.compile(r"GP[：:  ]*([^\n。，]{4,60})", re.IGNORECASE),
 ]
 
-# ── Tool registration (s02 pattern) ───────────────────────────────────────
 
-def _handle_label_facts(
-    fund_name: str | None = None,
-    fund_type: str | None = None,
-    domicile: str | None = None,
-    gp_name: str | None = None,
-    manager_name: str | None = None,
-    gp_is_manager: bool | None = None,
-    committed_capital: str | None = None,
-    management_fee_rate: float | None = None,
-    management_fee_basis: str | None = None,
-    hurdle_rate: float | None = None,
-    gp_carry: float | None = None,
-    investment_period_years: float | None = None,
-    exit_period_years: float | None = None,
-    extension_period_years: float | None = None,
-    lp_min_commitment: str | None = None,
-    gp_removal_for_cause: str | None = None,
-    gp_removal_nofault_threshold: float | None = None,
-    key_persons: list[str] | None = None,
-    dispute_resolution: str | None = None,
-    lpac_approval_threshold: float | None = None,
-) -> str:
+# Default LPA fact tool handler (backward compatibility)
+def _default_handle_label_facts(**kwargs: Any) -> str:
     """Tool handler: receives labeled facts and returns them as JSON."""
-    facts = {k: v for k, v in locals().items() if not k.startswith("_") and v is not None}
+    facts = {k: v for k, v in kwargs.items() if v is not None}
     return json.dumps(facts, ensure_ascii=False)
 
 
-register_tool(
-    name="label_lpa_facts",
-    description="Label raw facts extracted from an LPA with their semantic roles",
-    input_schema={
-        "type": "object",
-        "properties": {
-            "fund_name": {"type": "string", "description": "基金法定名称"},
-            "fund_type": {"type": "string", "description": "基金类型（有限合伙制/公司制/契约型）"},
-            "domicile": {"type": "string", "description": "基金注册地"},
-            "gp_name": {"type": "string", "description": "普通合伙人法定名称"},
-            "manager_name": {"type": "string", "description": "管理人法定名称"},
-            "gp_is_manager": {"type": "boolean", "description": "GP 是否兼任管理人"},
-            "committed_capital": {"type": "string", "description": "总认缴出资额（含单位）"},
-            "management_fee_rate": {"type": "number", "description": "管理费率（小数，如 0.02 表示 2%）"},
-            "management_fee_basis": {"type": "string", "description": "管理费计算基数描述"},
-            "hurdle_rate": {"type": "number", "description": "优先回报率（小数，如 0.08 表示 8%）"},
-            "gp_carry": {"type": "number", "description": "GP 超额收益分成比例（小数，如 0.20 表示 20%）"},
-            "investment_period_years": {"type": "number", "description": "投资期（年）"},
-            "exit_period_years": {"type": "number", "description": "退出期（年）"},
-            "extension_period_years": {"type": "number", "description": "延长期（年）"},
-            "lp_min_commitment": {"type": "string", "description": "LP 最低出资额（含单位）"},
-            "gp_removal_for_cause": {"type": "string", "description": "有因除名条件描述"},
-            "gp_removal_nofault_threshold": {"type": "number", "description": "无因除名投票比例（小数）"},
-            "key_persons": {"type": "array", "items": {"type": "string"}, "description": "关键人士姓名列表"},
-            "dispute_resolution": {"type": "string", "description": "争议解决机构名称"},
-            "lpac_approval_threshold": {"type": "number", "description": "LPAC 批准门槛比例（小数）"},
-        },
-        "required": ["gp_name", "management_fee_rate"],
-    },
-    handler=_handle_label_facts,
-)
+# Default LPA tool name
+_DEFAULT_TOOL_NAME = "label_lpa_facts"
 
 
 class FactExtractor:
-    """Extract and label hard facts from an LPA — regex scan + LLM tool-call."""
+    """Extract and label hard facts from a document — regex scan + LLM tool-call."""
 
-    def __init__(self, llm_client: LLMClient | None = None):
+    def __init__(
+        self,
+        llm_client: LLMClient | None = None,
+        entity_patterns: list[str] | None = None,
+        fact_tool_schema: dict | None = None,
+        fact_tool_handler: Callable[..., str] | None = None,
+        fact_tool_name: str | None = None,
+        prompt_template_path: str | None = None,
+    ):
         self._llm = llm_client
+        self._entity_patterns = entity_patterns or _DEFAULT_ENTITY_PATTERNS
+        self._entity_re = re.compile("|".join(self._entity_patterns), re.IGNORECASE)
+        self._gp_manager_patterns = _DEFAULT_GP_MANAGER_PATTERNS
+        self._fact_tool_schema = fact_tool_schema
+        self._fact_tool_handler = fact_tool_handler or _default_handle_label_facts
+        self._fact_tool_name = fact_tool_name or _DEFAULT_TOOL_NAME
+        self._prompt_template_path = prompt_template_path
+
+        # Register tool on the LLM client instance if schema is provided
+        if self._llm and self._fact_tool_schema:
+            self._llm.register_tool(
+                name=self._fact_tool_name,
+                description=f"Label raw facts extracted from a {self._fact_tool_name} document",
+                input_schema=self._fact_tool_schema,
+                handler=self._fact_tool_handler,
+            )
 
     def extract(self, document_text: str, early_chapters: str | None = None) -> dict[str, Any]:
         raw = self.extract_raw(document_text)
@@ -124,10 +102,10 @@ class FactExtractor:
         percents.extend(CHINESE_PERCENT_RE.findall(text))
         dates = list({m.group(0).strip() for m in DATE_RE.finditer(text)})
         entities = []
-        for m in ENTITY_NAMES_RE.finditer(text):
+        for m in self._entity_re.finditer(text):
             entities.append(m.group(1).strip())
         gp_candidates = []
-        for pat in GP_MANAGER_PATTERNS:
+        for pat in self._gp_manager_patterns:
             for m in pat.finditer(text):
                 gp_candidates.append(m.group(1).strip())
         law_refs = list({m.group(1).strip() for m in LAW_REFERENCE_RE.finditer(text)})
@@ -163,6 +141,10 @@ class FactExtractor:
             return self._rule_based_label(raw_facts, source_text)
 
     def _build_system_prompt(self) -> str:
+        if self._prompt_template_path:
+            from pathlib import Path
+            path = Path(self._prompt_template_path)
+            return path.read_text(encoding="utf-8") if path.exists() else ""
         from . import prompts_dir
         path = prompts_dir() / "fact_labeling.md"
         return path.read_text(encoding="utf-8") if path.exists() else ""
@@ -171,7 +153,7 @@ class FactExtractor:
         return (
             f"## 预扫描原始事实\n\n```json\n{json.dumps(raw_facts, ensure_ascii=False, indent=2)}\n```\n\n"
             f"## 合同节选\n\n{source_text}\n\n"
-            f"请调用 label_lpa_facts 工具标注事实。不存在的字段请省略。"
+            f"请调用 {self._fact_tool_name} 工具标注事实。不存在的字段请省略。"
         )
 
     def _rule_based_label(self, raw_facts: dict[str, Any], source_text: str) -> dict[str, Any]:

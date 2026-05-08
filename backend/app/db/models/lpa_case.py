@@ -25,6 +25,7 @@ class LPACase(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
+    document_type: Mapped[str] = mapped_column(String(50), nullable=False, default="lpa")
 
     # Relationships
     documents: Mapped[list["ChatFile"]] = relationship(
