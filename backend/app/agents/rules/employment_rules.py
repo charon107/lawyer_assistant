@@ -115,17 +115,3 @@ EMPLOYMENT_RULE_IDS_BY_CATEGORY = {
     "权利义务": ["B1", "B2", "B3", "B4", "B5"],
     "解除与争议": ["C1", "C2", "C3"],
 }
-
-
-def get_employment_rule(rule_id: str) -> dict:
-    """Look up a single employment contract rule definition."""
-    return EMPLOYMENT_RULES.get(rule_id, {})
-
-
-def get_all_employment_rules() -> list:
-    """Return all employment contract rules sorted by category."""
-    result = []
-    for category in ["基本要素", "权利义务", "解除与争议"]:
-        for rule_id in EMPLOYMENT_RULE_IDS_BY_CATEGORY[category]:
-            result.append(EMPLOYMENT_RULES[rule_id])
-    return result

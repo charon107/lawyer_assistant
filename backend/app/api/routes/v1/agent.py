@@ -140,15 +140,17 @@ def _build_case_system_prompt(case_id: str, user_id: str) -> str | None:
     try:
         from contextlib import contextmanager
 
-        from app.repositories import lpa_case_repo
+        from app.services.lpa_case_service import LPACaseService
 
         with contextmanager(get_db_session)() as db:
-            case = lpa_case_repo.get_case_by_id(db, case_id)
-            if not case or str(case.user_id) != user_id:
+            service = LPACaseService(db)
+            try:
+                case = service.get_without_docs(case_id, user_id=user_id)
+            except Exception:
                 return None
 
-            documents = lpa_case_repo.get_documents_by_case(db, case_id)
-            analyses = lpa_case_repo.get_analyses_by_case(db, case_id)
+            documents = service.get_documents(case_id, user_id=user_id)
+            analyses = service.get_analyses_by_case(case_id, user_id=user_id)
 
             doc_sections = []
             for doc in documents:

@@ -252,10 +252,3 @@ class DocumentPreprocessor:
         if chinese_chars > 0:
             return max(1, chinese_chars // 500)
         return max(1, len(text) // 2500)
-
-
-def load_contract_text(uploaded_file) -> str:
-    """Compatibility wrapper — returns plain text for the existing pipeline."""
-    preprocessor = DocumentPreprocessor()
-    result = preprocessor.parse(uploaded_file)
-    return result["raw_text"]

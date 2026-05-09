@@ -107,17 +107,3 @@ NDA_RULE_IDS_BY_CATEGORY = {
     "权利义务": ["B1", "B2", "B3", "B4", "B5"],
     "违约与争议": ["C1", "C2", "C3"],
 }
-
-
-def get_nda_rule(rule_id: str) -> dict:
-    """Look up a single NDA rule definition."""
-    return NDA_RULES.get(rule_id, {})
-
-
-def get_all_nda_rules() -> list:
-    """Return all NDA rules sorted by category."""
-    result = []
-    for category in ["基本要素", "权利义务", "违约与争议"]:
-        for rule_id in NDA_RULE_IDS_BY_CATEGORY[category]:
-            result.append(NDA_RULES[rule_id])
-    return result

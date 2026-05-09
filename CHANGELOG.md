@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0.0] - 2026-05-08
+
+### Added
+
+- **Multi-Document-Type Support**: Generalized the review pipeline to support contract, NDA, and employment contract types beyond LPA
+- **Document Type Configurations**: `document_types.py` with configs for lpa, contract, nda, employment — chapter keywords, entity patterns, fact tool schemas, risk rules, and prompt templates
+- **Risk Rule Modules**: Separate rule modules for contract (15 rules), NDA (12 rules), and employment (13 rules) contracts
+- **Document Type Selector**: Frontend dropdown in cases UI to choose document type when creating a case
+- **Document Type Badges**: Visual indicators for non-LPA document types in case list and detail views
+- **Pipeline Parameterization**: All pipeline agents now accept `document_type` parameter to use type-specific configurations
+- **API Proxy Fix**: Updated catch-all route from `[...path]` to `[[...path]]` for proper Next.js path forwarding
+- **Test Coverage**: 69 new tests validating all document type configurations (rule structure, keyword maps, rule classification)
+
+### Changed
+
+- **LPA Rule Classification**: Fixed simple_rule_ids to include A2 and A3 rules
+- **Pipeline Agents**: Fact extractor, chapter reviewer, chapter splitter, orchestrator, and report generator now use document-type-specific configs
+- **Frontend i18n**: Updated translations for document types in English, Chinese, and Polish
+
+### Fixed
+
+- **API Proxy Route**: Fixed catch-all route pattern that was causing 404 errors on API forwarding
+
 ## [0.2.0.0] - 2026-05-08
 
 ### Added

@@ -131,17 +131,3 @@ CONTRACT_RULE_IDS_BY_CATEGORY = {
     "权利义务": ["B1", "B2", "B3", "B4", "B5"],
     "争议解决": ["C1", "C2", "C3", "C4", "C5"],
 }
-
-
-def get_contract_rule(rule_id: str) -> dict:
-    """Look up a single contract rule definition."""
-    return CONTRACT_RULES.get(rule_id, {})
-
-
-def get_all_contract_rules() -> list:
-    """Return all contract rules sorted by category."""
-    result = []
-    for category in ["基本要素", "权利义务", "争议解决"]:
-        for rule_id in CONTRACT_RULE_IDS_BY_CATEGORY[category]:
-            result.append(CONTRACT_RULES[rule_id])
-    return result

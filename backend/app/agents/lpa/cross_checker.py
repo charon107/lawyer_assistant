@@ -51,9 +51,9 @@ class CrossChecker:
         prompt = self._build_prompt(all_findings, chapter_reviews)
 
         try:
-            resp = self._llm.call(
+            resp = self._llm.chat(
                 system_prompt="你是一位精通私募基金法律文件的资深律师。请严格按 JSON schema 输出分析结果。",
-                user_prompt=prompt,
+                user_message=prompt,
                 model=self.R1_MODEL,
                 temperature=0.1,
                 max_tokens=8192,

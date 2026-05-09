@@ -115,9 +115,11 @@ def create_document(
     parsed_content: str | None = None,
 ) -> ChatFile:
     """Create a document linked to a case."""
-    chat_file = ChatFile(
+    from app.repositories.chat_file import create as create_chat_file
+
+    chat_file = create_chat_file(
+        db,
         user_id=user_id,
-        case_id=case_id,
         filename=filename,
         mime_type=mime_type,
         size=size,
@@ -125,7 +127,7 @@ def create_document(
         file_type=file_type,
         parsed_content=parsed_content,
     )
-    db.add(chat_file)
+    chat_file.case_id = case_id
     db.flush()
     db.refresh(chat_file)
     return chat_file
@@ -140,7 +142,9 @@ def get_documents_by_case(db: Session, case_id: str) -> list[ChatFile]:
 
 def get_document_by_id(db: Session, doc_id: str) -> ChatFile | None:
     """Get a document by ID."""
-    return db.get(ChatFile, doc_id)
+    from app.repositories.chat_file import get_by_id
+
+    return get_by_id(db, doc_id)
 
 
 def delete_document(db: Session, doc_id: str) -> bool:

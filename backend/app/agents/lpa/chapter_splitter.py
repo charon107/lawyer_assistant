@@ -30,52 +30,8 @@ SECTION_RE = re.compile(
     re.MULTILINE | re.IGNORECASE,
 )
 
-# Common LPA chapter title keywords for heuristic matching (backward compatibility)
-LPA_CHAPTER_KEYWORDS = [
-    "定义",
-    "definitions",
-    "interpretation",
-    "释义",
-    "出资",
-    "capital contribution",
-    "capital commitment",
-    "认缴",
-    "管理费",
-    "management fee",
-    "报酬",
-    "分配",
-    "distribution",
-    "allocation",
-    "waterfall",
-    "投资",
-    "investment",
-    "investments",
-    "普通合伙人",
-    "general partner",
-    "有限合伙人",
-    "limited partner",
-    "合伙人会议",
-    "咨询委员会",
-    "advisory committee",
-    "lpac",
-    "转让",
-    "transfer",
-    "退伙",
-    "withdrawal",
-    "解散",
-    "清算",
-    "dissolution",
-    "liquidation",
-    "违约责任",
-    "default",
-    "争议解决",
-    "dispute resolution",
-    "其他",
-    "miscellaneous",
-    "签署",
-    "signature",
-    "execution",
-]
+# Import from canonical source to avoid duplication
+from .document_types import _LPA_CHAPTER_KEYWORDS as LPA_CHAPTER_KEYWORDS
 
 
 class ChapterSplitter:
@@ -248,8 +204,3 @@ class ChapterSplitter:
                 i += 1
 
         return merged
-
-
-def verify_chapters(chapters: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Pass 3: Return chapters in UI-consumable format."""
-    return chapters

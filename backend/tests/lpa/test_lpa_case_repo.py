@@ -199,7 +199,7 @@ class TestCreateDocument:
         mock_session.flush = MagicMock()
         mock_session.refresh = MagicMock()
 
-        with patch("app.repositories.lpa_case_repo.ChatFile", return_value=mock_document):
+        with patch("app.repositories.chat_file.ChatFile", return_value=mock_document):
             result = lpa_case_repo.create_document(
                 mock_session,
                 user_id="user-123",
@@ -213,7 +213,7 @@ class TestCreateDocument:
             )
 
         mock_session.add.assert_called_once()
-        mock_session.flush.assert_called_once()
+        assert mock_session.flush.call_count == 2
         assert result == mock_document
 
 

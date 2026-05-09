@@ -295,8 +295,8 @@ class TestUploadDocument:
         with (
             patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service),
             patch("app.services.file_storage.get_file_storage", return_value=storage),
-            patch("app.api.routes.v1.lpa_cases._generate_summary_async"),
-            patch("app.api.routes.v1.lpa_cases._generate_analysis_async"),
+            patch("app.api.routes.v1.lpa_cases.schedule_summary_generation"),
+            patch("app.api.routes.v1.lpa_cases.schedule_analysis_generation"),
         ):
             response = await client.post(
                 f"{settings.API_V1_STR}/lpa-cases/case-123/documents",

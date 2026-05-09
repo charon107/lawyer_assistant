@@ -11,21 +11,6 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-TOOL_HANDLERS: dict[str, Callable] = {}
-TOOLS: list[dict[str, Any]] = []
-
-
-def register_tool(name: str, description: str, input_schema: dict, handler: Callable):
-    """Register a tool + its handler (follows s02 pattern)."""
-    TOOLS.append(
-        {
-            "name": name,
-            "description": description,
-            "input_schema": input_schema,
-        }
-    )
-    TOOL_HANDLERS[name] = handler
-
 
 class LLMClient:
     """OpenAI-compatible client wrapped with agent-loop tool dispatch."""
@@ -92,9 +77,7 @@ class LLMClient:
                 messages.append(assistant_msg)
 
                 for tc in choice.message.tool_calls:
-                    handler = self._tool_handlers.get(tc.function.name) or TOOL_HANDLERS.get(
-                        tc.function.name
-                    )
+                    handler = self._tool_handlers.get(tc.function.name)
                     if handler is None:
                         result = json.dumps({"error": f"Unknown tool: {tc.function.name}"})
                     else:
@@ -118,7 +101,7 @@ class LLMClient:
             # finish_reason is "length" or other — return what we have
             return choice.message.content or ""
 
-        return json.dumps({"error": "Max turns exceeded"}) if TOOL_HANDLERS else ""
+        return json.dumps({"error": "Max turns exceeded"}) if self._tool_handlers else ""
 
     def chat(
         self,
@@ -147,7 +130,7 @@ class LLMClient:
     def _build_openai_tools(self) -> list[dict[str, Any]]:
         """Convert Anthropic-style tool schema to OpenAI function-calling format."""
         result = []
-        for tool in self._tools or TOOLS:
+        for tool in self._tools:
             result.append(
                 {
                     "type": "function",

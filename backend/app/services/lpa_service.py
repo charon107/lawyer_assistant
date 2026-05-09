@@ -6,13 +6,25 @@ Manages review sessions in memory (migrate to Redis for production).
 
 import asyncio
 import logging
+import time
 import uuid
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
-# In-memory session store
+# In-memory session store with TTL
+_SESSION_TTL_SECONDS = 3600  # 1 hour
 _sessions: dict[str, dict[str, Any]] = {}
+
+
+def _evict_expired_sessions() -> None:
+    """Remove sessions older than TTL."""
+    now = time.monotonic()
+    expired = [sid for sid, s in _sessions.items() if now - s["_created_at"] > _SESSION_TTL_SECONDS]
+    for sid in expired:
+        del _sessions[sid]
+    if expired:
+        logger.info("Evicted %d expired sessions", len(expired))
 
 
 class LPAReviewService:
@@ -23,9 +35,11 @@ class LPAReviewService:
 
     async def start_review(self, file_content: bytes, filename: str) -> str:
         """Start a new review. Returns review_id immediately."""
+        _evict_expired_sessions()
         review_id = str(uuid.uuid4())[:12]
 
         _sessions[review_id] = {
+            "_created_at": time.monotonic(),
             "id": review_id,
             "status": "uploaded",
             "filename": filename,

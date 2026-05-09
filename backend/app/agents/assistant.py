@@ -221,24 +221,3 @@ def get_agent(
         base_url=base_url,
         system_prompt=system_prompt,
     )
-
-
-async def run_agent(
-    user_input: str,
-    history: list[dict[str, str]],
-    deps: Deps | None = None,
-) -> tuple[str, list[Any], Deps]:
-    """Run agent and return the output along with tool call events.
-
-    This is a convenience function for backwards compatibility.
-
-    Args:
-        user_input: User's message.
-        history: Conversation history.
-        deps: Optional dependencies.
-
-    Returns:
-        Tuple of (output_text, tool_events, deps).
-    """
-    agent = get_agent()
-    return await agent.run(user_input, history, deps)

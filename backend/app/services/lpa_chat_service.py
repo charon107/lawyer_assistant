@@ -30,6 +30,7 @@ class LPAChatService:
         self, deepseek_api_key: str | None = None, base_url: str = "https://api.deepseek.com"
     ):
         self._api_key = deepseek_api_key
+        self._base_url = base_url
 
     async def chat(
         self,
@@ -43,7 +44,7 @@ class LPAChatService:
 
         from openai import OpenAI
 
-        client = OpenAI(api_key=self._api_key, base_url="https://api.deepseek.com")
+        client = OpenAI(api_key=self._api_key, base_url=self._base_url)
 
         context_text = self._build_context(review_context)
         history_text = self._build_history(chat_history or [])

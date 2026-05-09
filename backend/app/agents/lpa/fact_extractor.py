@@ -130,7 +130,7 @@ class FactExtractor:
         try:
             resp = self._llm.agent_loop(
                 system_prompt=system_prompt,
-                user_prompt=user_prompt,
+                user_message=user_prompt,
                 model="deepseek-v4-flash",
                 temperature=0.1,
                 max_turns=5,
