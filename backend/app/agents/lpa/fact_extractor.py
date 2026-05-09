@@ -12,7 +12,7 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-from .llm_client import LLMClient, register_tool
+from .llm_client import LLMClient
 
 logger = logging.getLogger(__name__)
 
@@ -143,9 +143,11 @@ class FactExtractor:
     def _build_system_prompt(self) -> str:
         if self._prompt_template_path:
             from pathlib import Path
+
             path = Path(self._prompt_template_path)
             return path.read_text(encoding="utf-8") if path.exists() else ""
         from . import prompts_dir
+
         path = prompts_dir() / "fact_labeling.md"
         return path.read_text(encoding="utf-8") if path.exists() else ""
 
@@ -172,7 +174,7 @@ class FactExtractor:
                 continue
             val = float(m.group(1)) / 100
             idx = source_text.find(pct)
-            ctx = source_text[max(0, idx - 100):idx + len(pct) + 100] if idx >= 0 else ""
+            ctx = source_text[max(0, idx - 100) : idx + len(pct) + 100] if idx >= 0 else ""
             if any(kw in ctx for kw in ["管理费", "management fee"]):
                 result["management_fee_rate"] = val
             if any(kw in ctx for kw in ["优先回报", "hurdle", "门槛收益"]):

@@ -204,6 +204,16 @@
     "documentTypeLpa": "LPA (Umowa Spółki Komandytowej)",
     "documentTypeContract": "Umowa ogólna",
     "documentTypeNda": "NDA (Umowa poufności)",
-    "documentTypeEmployment": "Umowa o pracę"
+    "documentTypeEmployment": "Umowa o pracę",
+    "documentTypeLease": "Umowa najmu",
+    "documentTypeLoan": "Umowa pożyczki",
+    "documentTypeSales": "Umowa sprzedaży",
+    "documentTypeService": "Umowa o świadczenie usług",
+    "documentTypeIpLicense": "Licencja na własność intelektualną",
+    "documentTypeEquityInvestment": "Umowa inwestycyjna",
+    "documentTypeConstruction": "Umowa o roboty budowlane",
+    "documentTypeArticlesOfAssociation": "Statut spółki",
+    "documentTypeMaritalProperty": "Majątkowa umowa małżeńska",
+    "documentTypeWillEstate": "Testament / Spadek"
   }
 }

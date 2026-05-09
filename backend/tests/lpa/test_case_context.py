@@ -2,8 +2,6 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from app.api.routes.v1.agent import _build_case_system_prompt
 
 

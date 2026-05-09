@@ -112,6 +112,16 @@ export default function CasesPage() {
                     <SelectItem value="contract">{t("documentTypeContract")}</SelectItem>
                     <SelectItem value="nda">{t("documentTypeNda")}</SelectItem>
                     <SelectItem value="employment">{t("documentTypeEmployment")}</SelectItem>
+                    <SelectItem value="lease">{t("documentTypeLease")}</SelectItem>
+                    <SelectItem value="loan">{t("documentTypeLoan")}</SelectItem>
+                    <SelectItem value="sales">{t("documentTypeSales")}</SelectItem>
+                    <SelectItem value="service">{t("documentTypeService")}</SelectItem>
+                    <SelectItem value="ip_license">{t("documentTypeIpLicense")}</SelectItem>
+                    <SelectItem value="equity_investment">{t("documentTypeEquityInvestment")}</SelectItem>
+                    <SelectItem value="construction">{t("documentTypeConstruction")}</SelectItem>
+                    <SelectItem value="articles_of_association">{t("documentTypeArticlesOfAssociation")}</SelectItem>
+                    <SelectItem value="marital_property">{t("documentTypeMaritalProperty")}</SelectItem>
+                    <SelectItem value="will_estate">{t("documentTypeWillEstate")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

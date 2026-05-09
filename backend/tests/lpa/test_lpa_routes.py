@@ -14,27 +14,31 @@ def mock_lpa_service():
     """Mock LPAReviewService for route testing."""
     service = MagicMock()
     service.start_review = AsyncMock(return_value="test-review-123")
-    service.get_status = MagicMock(return_value={
-        "id": "test-review-123",
-        "status": "complete",
-        "filename": "test.pdf",
-        "progress": 1.0,
-        "progress_msg": "完成",
-        "awaiting_chapter_confirmation": False,
-        "chapters": None,
-        "facts": None,
-        "error": None,
-    })
+    service.get_status = MagicMock(
+        return_value={
+            "id": "test-review-123",
+            "status": "complete",
+            "filename": "test.pdf",
+            "progress": 1.0,
+            "progress_msg": "完成",
+            "awaiting_chapter_confirmation": False,
+            "chapters": None,
+            "facts": None,
+            "error": None,
+        }
+    )
     service.get_report = MagicMock(return_value="# Test Report")
-    service.get_full_result = MagicMock(return_value={
-        "id": "test-review-123",
-        "status": "complete",
-        "chapters": [],
-        "chapter_reviews": [],
-        "facts": {},
-        "cross_check": {},
-        "report_markdown": "# Test Report",
-    })
+    service.get_full_result = MagicMock(
+        return_value={
+            "id": "test-review-123",
+            "status": "complete",
+            "chapters": [],
+            "chapter_reviews": [],
+            "facts": {},
+            "cross_check": {},
+            "report_markdown": "# Test Report",
+        }
+    )
     service.confirm_chapters = AsyncMock(return_value=True)
     return service
 
@@ -50,6 +54,7 @@ def mock_chat_service():
 def auth_headers(api_key_headers):
     """Headers with API key and a mock JWT token."""
     from app.core.security import create_access_token
+
     token = create_access_token(subject="test-user-id")
     return {**api_key_headers, "Authorization": f"Bearer {token}"}
 
@@ -76,7 +81,9 @@ class TestStartReview:
         assert data["status"] == "started"
 
     @pytest.mark.anyio
-    async def test_start_review_no_filename(self, client: AsyncClient, auth_headers, mock_lpa_service):
+    async def test_start_review_no_filename(
+        self, client: AsyncClient, auth_headers, mock_lpa_service
+    ):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.post(
             "/api/v1/lpa/review",
@@ -87,7 +94,9 @@ class TestStartReview:
         assert response.status_code in (400, 422)
 
     @pytest.mark.anyio
-    async def test_start_review_unsupported_format(self, client: AsyncClient, auth_headers, mock_lpa_service):
+    async def test_start_review_unsupported_format(
+        self, client: AsyncClient, auth_headers, mock_lpa_service
+    ):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.post(
             "/api/v1/lpa/review",
@@ -97,7 +106,9 @@ class TestStartReview:
         assert response.status_code == 400
 
     @pytest.mark.anyio
-    async def test_start_review_file_too_short(self, client: AsyncClient, auth_headers, mock_lpa_service):
+    async def test_start_review_file_too_short(
+        self, client: AsyncClient, auth_headers, mock_lpa_service
+    ):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.post(
             "/api/v1/lpa/review",
@@ -157,7 +168,9 @@ class TestGetReport:
 
 class TestGetFullResult:
     @pytest.mark.anyio
-    async def test_get_full_result_success(self, client: AsyncClient, auth_headers, mock_lpa_service):
+    async def test_get_full_result_success(
+        self, client: AsyncClient, auth_headers, mock_lpa_service
+    ):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.get(
             "/api/v1/lpa/review/test-review-123/full",
@@ -171,7 +184,9 @@ class TestGetFullResult:
 
 class TestConfirmChapters:
     @pytest.mark.anyio
-    async def test_confirm_chapters_success(self, client: AsyncClient, auth_headers, mock_lpa_service):
+    async def test_confirm_chapters_success(
+        self, client: AsyncClient, auth_headers, mock_lpa_service
+    ):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.put(
             "/api/v1/lpa/review/test-review-123/chapters",
@@ -184,7 +199,9 @@ class TestConfirmChapters:
 
 class TestChatFollowup:
     @pytest.mark.anyio
-    async def test_chat_success(self, client: AsyncClient, auth_headers, mock_lpa_service, mock_chat_service):
+    async def test_chat_success(
+        self, client: AsyncClient, auth_headers, mock_lpa_service, mock_chat_service
+    ):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         app.dependency_overrides[_get_chat_service] = lambda: mock_chat_service
         response = await client.post(

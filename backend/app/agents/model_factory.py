@@ -32,7 +32,9 @@ def create_pydantic_model(
     """
     provider = provider or settings.LLM_PROVIDER
     model_name = model_name or settings.AI_MODEL
-    api_key = api_key or (settings.ANTHROPIC_API_KEY if provider == "anthropic" else settings.OPENAI_API_KEY)
+    api_key = api_key or (
+        settings.ANTHROPIC_API_KEY if provider == "anthropic" else settings.OPENAI_API_KEY
+    )
     base_url = base_url or settings.LLM_BASE_URL
 
     if provider == "anthropic":
@@ -49,7 +51,11 @@ def create_pydantic_model(
         logger.info("Creating Google model (OpenAI-compat): %s", model_name)
 
     # OpenAI-compatible (covers OpenAI, DeepSeek, Moonshot, Xiaomi, etc.)
-    logger.info("Creating OpenAI-compatible model: %s%s", model_name, f" (base_url={base_url})" if base_url else "")
+    logger.info(
+        "Creating OpenAI-compatible model: %s%s",
+        model_name,
+        f" (base_url={base_url})" if base_url else "",
+    )
     provider_kwargs: dict[str, Any] = {"api_key": api_key}
     if base_url:
         provider_kwargs["base_url"] = base_url

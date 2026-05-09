@@ -1,4 +1,3 @@
-
 """add law_metadata table
 
 Revision ID: f030249bd9eb
@@ -6,17 +5,18 @@ Revises: 618bc6dc5e76
 Create Date: 2026-05-09 00:41:02.141496
 
 """
-from typing import Sequence, Union
 
-from alembic import op
+from collections.abc import Sequence
+
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'f030249bd9eb'
-down_revision: Union[str, None] = '618bc6dc5e76'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision: str = "f030249bd9eb"
+down_revision: str | None = "618bc6dc5e76"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

@@ -85,9 +85,7 @@ class DocumentReviewOrchestrator:
             fact_tool_schema=self._doc_config.get("fact_tool_schema"),
             prompt_template_path=self._doc_config.get("prompt_templates", {}).get("fact_labeling"),
         )
-        early_chapters = "\n\n".join(
-            ch["text"] for ch in chapters[:5]
-        )
+        early_chapters = "\n\n".join(ch["text"] for ch in chapters[:5])
         facts = extractor.extract(doc_text, early_chapters=early_chapters)
         labeled_facts = facts["labeled_facts"]
 
@@ -113,8 +111,7 @@ class DocumentReviewOrchestrator:
                 chapter_reviews.append(review)
                 pct = 0.40 + 0.40 * ((i + 1) / total)
                 self._progress(
-                    progress_callback, pct,
-                    f"审查第 {i+1}/{total} 章: {ch.get('title', '')[:30]}"
+                    progress_callback, pct, f"审查第 {i + 1}/{total} 章: {ch.get('title', '')[:30]}"
                 )
 
         # Stage 4: Cross-chapter check
@@ -175,45 +172,29 @@ class DocumentReviewOrchestrator:
                     keywords = self._rule_keywords(rule_id, check_text)
                 matched = [kw for kw in keywords if kw in text]
                 if matched:
-                    findings.append({
-                        "rule_id": rule_id,
-                        "level": rule.get("level", "中风险"),
-                        "finding": f"文本中包含相关关键词: {', '.join(matched[:5])}",
-                        "evidence": self._find_context(text, matched[0]),
-                        "suggestion": rule.get("suggestion_template", "建议人工复核"),
-                    })
+                    findings.append(
+                        {
+                            "rule_id": rule_id,
+                            "level": rule.get("level", "中风险"),
+                            "finding": f"文本中包含相关关键词: {', '.join(matched[:5])}",
+                            "evidence": self._find_context(text, matched[0]),
+                            "suggestion": rule.get("suggestion_template", "建议人工复核"),
+                        }
+                    )
 
-            reviews.append({
-                "chapter": title,
-                "complexity": ChapterReviewer.classify_complexity(title, text),
-                "findings": findings,
-            })
+            reviews.append(
+                {
+                    "chapter": title,
+                    "complexity": ChapterReviewer.classify_complexity(title, text),
+                    "findings": findings,
+                }
+            )
         return reviews
 
     @staticmethod
     def _rule_keywords(rule_id: str, check_text: str) -> list:
         """Derive keywords from rule check description."""
-        kw_map = {
-            "A1": ["注册", "管辖", "法律适用", "设立地"],
-            "A2": ["存续期", "投资期", "延长期", "退出期"],
-            "A3": ["普通合伙人", "管理人", "执行事务合伙人", "GP"],
-            "A4": ["认缴出资", "承诺出资", "交割", "基金规模"],
-            "A5": ["最低出资", "LP", "有限合伙人"],
-            "B1": ["管理费", "management fee"],
-            "B2": ["计算基数", "认缴", "实缴", "committed capital", "called capital"],
-            "B3": ["减免", "下调", "step-down", "投资期结束"],
-            "B4": ["费用分担", "GP承担", "基金承担", "运营成本"],
-            "B5": ["关联方", "关联交易", "related party", "服务费"],
-            "D1": ["key man", "关键人士", "核心人员"],
-            "D2": ["除名", "removal", "解任", "罢免"],
-            "D3": ["关联交易", "利益冲突", "conflict of interest"],
-            "D4": ["投资限制", "集中度", "单一项目", "杠杆"],
-            "D5": ["转让", "退伙", "transfer", "withdrawal"],
-            "D6": ["报告", "信息披露", "查阅", "知情权"],
-            "D7": ["风险", "risk"],
-            "D8": ["退出", "清算", "解散"],
-        }
-        return kw_map.get(rule_id, [])
+        return []
 
     @staticmethod
     def _find_context(text: str, keyword: str, window: int = 150) -> str:

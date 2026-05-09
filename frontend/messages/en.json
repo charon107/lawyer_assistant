@@ -204,6 +204,16 @@
     "documentTypeLpa": "LPA (Limited Partnership Agreement)",
     "documentTypeContract": "General Contract",
     "documentTypeNda": "NDA (Non-Disclosure Agreement)",
-    "documentTypeEmployment": "Employment Contract"
+    "documentTypeEmployment": "Employment Contract",
+    "documentTypeLease": "Lease Agreement",
+    "documentTypeLoan": "Loan Agreement",
+    "documentTypeSales": "Sales/Purchase Agreement",
+    "documentTypeService": "Service Agreement",
+    "documentTypeIpLicense": "IP License Agreement",
+    "documentTypeEquityInvestment": "Equity Investment Agreement",
+    "documentTypeConstruction": "Construction Contract",
+    "documentTypeArticlesOfAssociation": "Articles of Association",
+    "documentTypeMaritalProperty": "Marital Property Agreement",
+    "documentTypeWillEstate": "Will / Estate"
   }
 }

@@ -66,9 +66,8 @@ def list_llm_configs(
 ) -> Any:
     """List all LLM provider configs for the current user."""
     from sqlalchemy import select
-    result = db.execute(
-        select(UserLLMConfig).where(UserLLMConfig.user_id == current_user.id)
-    )
+
+    result = db.execute(select(UserLLMConfig).where(UserLLMConfig.user_id == current_user.id))
     configs = result.scalars().all()
     return configs
 
@@ -102,6 +101,7 @@ def update_llm_config(
 ) -> Any:
     """Update an LLM provider config."""
     from sqlalchemy import select
+
     result = db.execute(
         select(UserLLMConfig).where(
             UserLLMConfig.id == config_id,
@@ -111,6 +111,7 @@ def update_llm_config(
     config = result.scalar_one_or_none()
     if not config:
         from app.core.exceptions import NotFoundError
+
         raise NotFoundError(message="配置不存在", details={"config_id": config_id})
 
     update_data = config_in.model_dump(exclude_unset=True)
@@ -121,7 +122,9 @@ def update_llm_config(
     return config
 
 
-@router.delete("/me/llm-configs/{config_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
+@router.delete(
+    "/me/llm-configs/{config_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None
+)
 def delete_llm_config(
     config_id: str,
     current_user: CurrentUser,
@@ -129,6 +132,7 @@ def delete_llm_config(
 ) -> None:
     """Delete an LLM provider config."""
     from sqlalchemy import select
+
     result = db.execute(
         select(UserLLMConfig).where(
             UserLLMConfig.id == config_id,
@@ -138,6 +142,7 @@ def delete_llm_config(
     config = result.scalar_one_or_none()
     if not config:
         from app.core.exceptions import NotFoundError
+
         raise NotFoundError(message="配置不存在", details={"config_id": config_id})
     db.delete(config)
     db.flush()
@@ -154,6 +159,7 @@ def test_llm_connection(
     Returns {success: bool, message: str, models: list[str]}.
     """
     from sqlalchemy import select
+
     result = db.execute(
         select(UserLLMConfig).where(
             UserLLMConfig.id == config_id,
@@ -199,6 +205,7 @@ def list_config_models(
     Returns {models: list[str]}.
     """
     from sqlalchemy import select
+
     result = db.execute(
         select(UserLLMConfig).where(
             UserLLMConfig.id == config_id,
@@ -234,7 +241,11 @@ def _test_anthropic(api_key: str, base_url: str | None) -> dict[str, Any]:
             "anthropic-version": "2023-06-01",
             "content-type": "application/json",
         },
-        json={"model": "claude-haiku-4-5", "max_tokens": 1, "messages": [{"role": "user", "content": "hi"}]},
+        json={
+            "model": "claude-haiku-4-5",
+            "max_tokens": 1,
+            "messages": [{"role": "user", "content": "hi"}],
+        },
         timeout=15,
     )
     if resp.status_code == 200:
@@ -264,11 +275,15 @@ def _fetch_models(provider: str, api_key: str, base_url: str | None) -> dict[str
 
     if provider == "google":
         try:
-            url = (base_url or "https://generativelanguage.googleapis.com/v1beta").rstrip("/") + "/models"
+            url = (base_url or "https://generativelanguage.googleapis.com/v1beta").rstrip(
+                "/"
+            ) + "/models"
             resp = httpx.get(url, params={"key": api_key}, timeout=10)
             if resp.status_code == 200:
                 data = resp.json()
-                return {"models": sorted([m["name"].split("/")[-1] for m in data.get("models", [])])}
+                return {
+                    "models": sorted([m["name"].split("/")[-1] for m in data.get("models", [])])
+                }
         except Exception as e:
             logger.warning("Failed to fetch Google models: %s", e)
         return {"models": []}

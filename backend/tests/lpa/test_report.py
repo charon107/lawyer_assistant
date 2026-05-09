@@ -13,7 +13,13 @@ from app.agents.lpa.report import (
 
 
 def _make_finding(rule_id="A1", level="中风险", finding="test finding"):
-    return {"rule_id": rule_id, "level": level, "finding": finding, "evidence": "evidence", "suggestion": "suggestion"}
+    return {
+        "rule_id": rule_id,
+        "level": level,
+        "finding": finding,
+        "evidence": "evidence",
+        "suggestion": "suggestion",
+    }
 
 
 class TestBuildReport:
@@ -35,7 +41,18 @@ class TestBuildReport:
         facts = {"fund_name": "Test Fund"}
         reviews = []
         cross_check = {
-            "contradictions": [{"id": "C1", "level": "高风险", "description": "矛盾", "chapter_a": "A", "text_a": "x", "chapter_b": "B", "text_b": "y", "resolution": "修改"}],
+            "contradictions": [
+                {
+                    "id": "C1",
+                    "level": "高风险",
+                    "description": "矛盾",
+                    "chapter_a": "A",
+                    "text_a": "x",
+                    "chapter_b": "B",
+                    "text_b": "y",
+                    "resolution": "修改",
+                }
+            ],
             "consistency_issues": [],
             "missing_items": [],
         }
@@ -67,7 +84,11 @@ class TestSummarizeRisks:
         assert "未发现" in rs["verdict"]
 
     def test_cross_issues_count(self):
-        cross = {"contradictions": [{"id": "1"}], "consistency_issues": [{"id": "2"}], "missing_items": []}
+        cross = {
+            "contradictions": [{"id": "1"}],
+            "consistency_issues": [{"id": "2"}],
+            "missing_items": [],
+        }
         rs = _summarize_risks([], cross)
         assert rs["cross_issues"] == 2
 
@@ -143,7 +164,18 @@ class TestBuildChapterFindings:
 class TestBuildCrossCheck:
     def test_formats_contradictions(self):
         cc = {
-            "contradictions": [{"id": "CC1", "level": "高风险", "description": "矛盾", "chapter_a": "A", "text_a": "x", "chapter_b": "B", "text_b": "y", "resolution": "修改"}],
+            "contradictions": [
+                {
+                    "id": "CC1",
+                    "level": "高风险",
+                    "description": "矛盾",
+                    "chapter_a": "A",
+                    "text_a": "x",
+                    "chapter_b": "B",
+                    "text_b": "y",
+                    "resolution": "修改",
+                }
+            ],
             "consistency_issues": [],
             "missing_items": [],
         }
@@ -151,7 +183,9 @@ class TestBuildCrossCheck:
         assert "跨章矛盾" in md
 
     def test_empty_cross_check(self):
-        md = _build_cross_check({"contradictions": [], "consistency_issues": [], "missing_items": []})
+        md = _build_cross_check(
+            {"contradictions": [], "consistency_issues": [], "missing_items": []}
+        )
         assert "未发现" in md
 
 

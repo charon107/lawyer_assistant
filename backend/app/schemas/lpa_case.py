@@ -13,9 +13,22 @@ class LPACaseCreate(BaseSchema):
 
     name: str = Field(..., max_length=255, min_length=1, description="Case name")
     description: str | None = Field(default=None, description="Case description")
-    document_type: Literal["lpa", "contract", "nda", "employment"] = Field(
-        default="lpa", description="Document type"
-    )
+    document_type: Literal[
+        "lpa",
+        "contract",
+        "nda",
+        "employment",
+        "lease",
+        "loan",
+        "sales",
+        "service",
+        "ip_license",
+        "equity_investment",
+        "construction",
+        "articles_of_association",
+        "marital_property",
+        "will_estate",
+    ] = Field(default="lpa", description="Document type")
 
 
 class LPACaseUpdate(BaseSchema):

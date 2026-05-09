@@ -113,13 +113,15 @@ class UserRead(UserBase, TimestampSchema):
         if hasattr(data, "llm_configs"):
             configs = []
             for cfg in data.llm_configs:
-                configs.append(LLMConfigRead(
-                    id=cfg.id,
-                    provider=cfg.provider,
-                    model=cfg.model,
-                    base_url=cfg.base_url,
-                    has_api_key=bool(cfg.api_key),
-                ))
+                configs.append(
+                    LLMConfigRead(
+                        id=cfg.id,
+                        provider=cfg.provider,
+                        model=cfg.model,
+                        base_url=cfg.base_url,
+                        has_api_key=bool(cfg.api_key),
+                    )
+                )
             if isinstance(data, dict):
                 data["llm_configs"] = configs
             else:

@@ -47,20 +47,43 @@ class TestReviewOffline:
 class TestValidateFindings:
     def test_filters_invalid_rule_ids(self):
         findings = [
-            {"rule_id": "A1", "level": "中风险", "finding": "test", "evidence": "", "suggestion": ""},
-            {"rule_id": "Z99", "level": "低风险", "finding": "invalid", "evidence": "", "suggestion": ""},
+            {
+                "rule_id": "A1",
+                "level": "中风险",
+                "finding": "test",
+                "evidence": "",
+                "suggestion": "",
+            },
+            {
+                "rule_id": "Z99",
+                "level": "低风险",
+                "finding": "invalid",
+                "evidence": "",
+                "suggestion": "",
+            },
         ]
         result = ChapterReviewer._validate_findings(findings, SIMPLE_RULE_IDS)
         assert len(result) == 1
         assert result[0]["rule_id"] == "A1"
 
     def test_skips_non_dict_items(self):
-        findings = ["not a dict", {"rule_id": "A1", "level": "中风险", "finding": "", "evidence": "", "suggestion": ""}]
+        findings = [
+            "not a dict",
+            {"rule_id": "A1", "level": "中风险", "finding": "", "evidence": "", "suggestion": ""},
+        ]
         result = ChapterReviewer._validate_findings(findings, SIMPLE_RULE_IDS)
         assert len(result) == 1
 
     def test_preserves_valid_fields(self):
-        findings = [{"rule_id": "D6", "level": "低风险", "finding": "test finding", "evidence": "test evidence", "suggestion": "test suggestion"}]
+        findings = [
+            {
+                "rule_id": "D6",
+                "level": "低风险",
+                "finding": "test finding",
+                "evidence": "test evidence",
+                "suggestion": "test suggestion",
+            }
+        ]
         result = ChapterReviewer._validate_findings(findings, SIMPLE_RULE_IDS)
         assert result[0]["finding"] == "test finding"
         assert result[0]["evidence"] == "test evidence"

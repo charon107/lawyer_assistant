@@ -12,15 +12,33 @@ class TestCollectFindings:
                 "chapter": "第一章",
                 "complexity": "simple",
                 "findings": [
-                    {"rule_id": "A1", "level": "中风险", "finding": "test1", "evidence": "", "suggestion": ""},
-                    {"rule_id": "B1", "level": "高风险", "finding": "test2", "evidence": "", "suggestion": ""},
+                    {
+                        "rule_id": "A1",
+                        "level": "中风险",
+                        "finding": "test1",
+                        "evidence": "",
+                        "suggestion": "",
+                    },
+                    {
+                        "rule_id": "B1",
+                        "level": "高风险",
+                        "finding": "test2",
+                        "evidence": "",
+                        "suggestion": "",
+                    },
                 ],
             },
             {
                 "chapter": "第二章",
                 "complexity": "complex",
                 "findings": [
-                    {"rule_id": "D1", "level": "高风险", "finding": "test3", "evidence": "", "suggestion": ""},
+                    {
+                        "rule_id": "D1",
+                        "level": "高风险",
+                        "finding": "test3",
+                        "evidence": "",
+                        "suggestion": "",
+                    },
                 ],
             },
         ]
@@ -35,8 +53,20 @@ class TestCollectFindings:
             {
                 "chapter": "第一章",
                 "findings": [
-                    {"rule_id": "ERROR", "level": "审查失败", "finding": "error", "evidence": "", "suggestion": ""},
-                    {"rule_id": "A1", "level": "中风险", "finding": "ok", "evidence": "", "suggestion": ""},
+                    {
+                        "rule_id": "ERROR",
+                        "level": "审查失败",
+                        "finding": "error",
+                        "evidence": "",
+                        "suggestion": "",
+                    },
+                    {
+                        "rule_id": "A1",
+                        "level": "中风险",
+                        "finding": "ok",
+                        "evidence": "",
+                        "suggestion": "",
+                    },
                 ],
             }
         ]
@@ -67,7 +97,13 @@ class TestCheckOffline:
             {
                 "chapter": "第一章",
                 "findings": [
-                    {"rule_id": "A1", "level": "中风险", "finding": "test", "evidence": "", "suggestion": ""},
+                    {
+                        "rule_id": "A1",
+                        "level": "中风险",
+                        "finding": "test",
+                        "evidence": "",
+                        "suggestion": "",
+                    },
                 ],
             }
         ]

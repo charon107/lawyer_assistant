@@ -26,7 +26,9 @@ class LPAChatService:
 4. 引用具体条款编号和原文
 5. 不要声称提供正式法律意见"""
 
-    def __init__(self, deepseek_api_key: str | None = None, base_url: str = "https://api.deepseek.com"):
+    def __init__(
+        self, deepseek_api_key: str | None = None, base_url: str = "https://api.deepseek.com"
+    ):
         self._api_key = deepseek_api_key
 
     async def chat(
@@ -40,6 +42,7 @@ class LPAChatService:
             return self._offline_response(question, review_context)
 
         from openai import OpenAI
+
         client = OpenAI(api_key=self._api_key, base_url="https://api.deepseek.com")
 
         context_text = self._build_context(review_context)
@@ -47,7 +50,9 @@ class LPAChatService:
 
         messages = [
             {"role": "system", "content": self.SYSTEM_PROMPT},
-            {"role": "user", "content": f"""## 审查上下文
+            {
+                "role": "user",
+                "content": f"""## 审查上下文
 
 {context_text}
 
@@ -59,7 +64,8 @@ class LPAChatService:
 
 {question}
 
-请基于上述审查上下文回答。"""},
+请基于上述审查上下文回答。""",
+            },
         ]
 
         try:
@@ -84,7 +90,9 @@ class LPAChatService:
             # Try to find relevant finding
             for review in chapter_reviews:
                 for f in review.get("findings", []):
-                    if any(kw in question for kw in [f.get("rule_id", ""), f.get("finding", "")[:20]]):
+                    if any(
+                        kw in question for kw in [f.get("rule_id", ""), f.get("finding", "")[:20]]
+                    ):
                         return (
                             f"**{f.get('level', '')} | {f.get('rule_id', '')}**\n\n"
                             f"{f.get('finding', '')}\n\n"
@@ -105,7 +113,11 @@ class LPAChatService:
 
         facts = review_context.get("facts", {}).get("labeled_facts", {})
         if facts:
-            parts.append("### 关键事实\n```json\n" + json.dumps(facts, ensure_ascii=False, indent=2) + "\n```")
+            parts.append(
+                "### 关键事实\n```json\n"
+                + json.dumps(facts, ensure_ascii=False, indent=2)
+                + "\n```"
+            )
 
         chapter_reviews = review_context.get("chapter_reviews", [])
         if chapter_reviews:
@@ -122,7 +134,11 @@ class LPAChatService:
 
         cross = review_context.get("cross_check", {})
         if cross:
-            parts.append("### 跨章问题\n```json\n" + json.dumps(cross, ensure_ascii=False, indent=2) + "\n```")
+            parts.append(
+                "### 跨章问题\n```json\n"
+                + json.dumps(cross, ensure_ascii=False, indent=2)
+                + "\n```"
+            )
 
         return "\n\n".join(parts)[:8000]
 

@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import magic_pdf  # MinerU's Python package
+
     HAS_MINERU = True
 except ImportError:
     HAS_MINERU = False
@@ -27,6 +28,7 @@ except ImportError:
 
 try:
     import tabula
+
     HAS_TABULA = True
 except ImportError:
     HAS_TABULA = False
@@ -34,6 +36,7 @@ except ImportError:
 
 try:
     from paddleocr import PaddleOCR
+
     HAS_PADDLEOCR = True
 except ImportError:
     HAS_PADDLEOCR = False
@@ -93,6 +96,7 @@ class DocumentPreprocessor:
     def _parse_pdf_mineru(self, stream: BytesIO) -> dict[str, Any]:
         """Parse PDF using MinerU for high-fidelity extraction."""
         import tempfile
+
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             tmp.write(stream.getvalue())
             tmp_path = tmp.name
@@ -189,9 +193,13 @@ class DocumentPreprocessor:
     def _extract_docx_table(self, tbl_element, doc) -> list[list[str]] | None:
         """Extract a single DOCX table into a list of rows."""
         rows = []
-        for row in tbl_element.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tr"):
+        for row in tbl_element.findall(
+            ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tr"
+        ):
             cells = []
-            for cell in row.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tc"):
+            for cell in row.findall(
+                ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tc"
+            ):
                 text = "".join(cell.itertext()).strip()
                 cells.append(text)
             if any(cells):
@@ -201,9 +209,7 @@ class DocumentPreprocessor:
     def _parse_text(self, text: str) -> dict[str, Any]:
         return self._build_output(text, [], "text", "native")
 
-    def _build_output(
-        self, text: str, tables: list[Any], fmt: str, parser: str
-    ) -> dict[str, Any]:
+    def _build_output(self, text: str, tables: list[Any], fmt: str, parser: str) -> dict[str, Any]:
         markdown = self._text_to_markdown(text)
         page_count = self._estimate_pages(text)
         return {

@@ -27,6 +27,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     import app.db.models  # noqa: F401 — register models with Base.metadata
     from app.db.base import Base
     from app.db.session import engine
+
     Base.metadata.create_all(bind=engine)
     yield
 

@@ -13,6 +13,7 @@ class TestParseText:
 
         class FakeFile:
             name = "test.txt"
+
             def read(self):
                 return "第一章 总则\n这是测试内容。\n第二章 出资\n出资相关内容。".encode()
 
@@ -28,6 +29,7 @@ class TestParseText:
 
         class FakeFile:
             name = "test.md"
+
             def read(self):
                 return "# 标题\n\n内容。".encode()
 
@@ -55,6 +57,7 @@ class TestParseDocx:
 
         class FakeFile:
             name = "test.docx"
+
             def read(self):
                 buf.seek(0)
                 return buf.read()
@@ -129,6 +132,7 @@ class TestUnsupportedFormat:
 
         class FakeFile:
             name = "test.xyz"
+
             def read(self):
                 return b"data"
 

@@ -11,7 +11,8 @@ function extractPath(pathSegments: string[]): string {
 
 function buildBackendUrl(path: string, searchParams: URLSearchParams): string {
   const qs = searchParams.toString();
-  return `/api/v1/lpa-cases/${path}${qs ? `?${qs}` : ""}`;
+  const base = path ? `/api/v1/lpa-cases/${path}` : "/api/v1/lpa-cases";
+  return `${base}${qs ? `?${qs}` : ""}`;
 }
 
 type Params = { params: Promise<{ path?: string[] }> };

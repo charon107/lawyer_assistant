@@ -136,6 +136,7 @@ class LPAReviewService:
 
             # Create a file-like object for the orchestrator
             from io import BytesIO
+
             file_obj = BytesIO(session["file_content"])
             file_obj.name = session["filename"]
 
@@ -146,7 +147,7 @@ class LPAReviewService:
                 lambda: orchestrator.review(
                     file_obj,
                     progress_callback=async_progress if self._api_key else None,
-                )
+                ),
             )
 
             if "error" in result:

@@ -17,11 +17,13 @@ TOOLS: list[dict[str, Any]] = []
 
 def register_tool(name: str, description: str, input_schema: dict, handler: Callable):
     """Register a tool + its handler (follows s02 pattern)."""
-    TOOLS.append({
-        "name": name,
-        "description": description,
-        "input_schema": input_schema,
-    })
+    TOOLS.append(
+        {
+            "name": name,
+            "description": description,
+            "input_schema": input_schema,
+        }
+    )
     TOOL_HANDLERS[name] = handler
 
 
@@ -36,11 +38,13 @@ class LLMClient:
 
     def register_tool(self, name: str, description: str, input_schema: dict, handler: Callable):
         """Register a tool at instance level."""
-        self._tools.append({
-            "name": name,
-            "description": description,
-            "input_schema": input_schema,
-        })
+        self._tools.append(
+            {
+                "name": name,
+                "description": description,
+                "input_schema": input_schema,
+            }
+        )
         self._tool_handlers[name] = handler
 
     def agent_loop(
@@ -57,6 +61,7 @@ class LLMClient:
           messages → model → execute tools → write-back → repeat
         """
         from openai import OpenAI
+
         client = OpenAI(api_key=self._api_key, base_url=self._base_url)
 
         messages: list[dict[str, Any]] = [
@@ -87,7 +92,9 @@ class LLMClient:
                 messages.append(assistant_msg)
 
                 for tc in choice.message.tool_calls:
-                    handler = self._tool_handlers.get(tc.function.name) or TOOL_HANDLERS.get(tc.function.name)
+                    handler = self._tool_handlers.get(tc.function.name) or TOOL_HANDLERS.get(
+                        tc.function.name
+                    )
                     if handler is None:
                         result = json.dumps({"error": f"Unknown tool: {tc.function.name}"})
                     else:
@@ -99,11 +106,13 @@ class LLMClient:
                         except Exception as e:
                             result = json.dumps({"error": str(e)})
 
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tc.id,
-                        "content": str(result),
-                    })
+                    messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tc.id,
+                            "content": str(result),
+                        }
+                    )
                 continue
 
             # finish_reason is "length" or other — return what we have
@@ -121,6 +130,7 @@ class LLMClient:
     ) -> str:
         """Simple one-shot chat (no tools, no loop)."""
         from openai import OpenAI
+
         client = OpenAI(api_key=self._api_key, base_url=self._base_url)
 
         resp = client.chat.completions.create(
@@ -138,12 +148,14 @@ class LLMClient:
         """Convert Anthropic-style tool schema to OpenAI function-calling format."""
         result = []
         for tool in self._tools or TOOLS:
-            result.append({
-                "type": "function",
-                "function": {
-                    "name": tool["name"],
-                    "description": tool.get("description", ""),
-                    "parameters": tool.get("input_schema", {}),
-                },
-            })
+            result.append(
+                {
+                    "type": "function",
+                    "function": {
+                        "name": tool["name"],
+                        "description": tool.get("description", ""),
+                        "parameters": tool.get("input_schema", {}),
+                    },
+                }
+            )
         return result

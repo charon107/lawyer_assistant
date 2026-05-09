@@ -88,29 +88,31 @@ class CrossChecker:
             for f in review.get("findings", []):
                 if f.get("rule_id") == "ERROR":
                     continue
-                all_findings.append({
-                    "chapter": chapter_name,
-                    "rule_id": f.get("rule_id", ""),
-                    "level": f.get("level", ""),
-                    "finding": f.get("finding", ""),
-                    "evidence": f.get("evidence", ""),
-                    "suggestion": f.get("suggestion", ""),
-                })
+                all_findings.append(
+                    {
+                        "chapter": chapter_name,
+                        "rule_id": f.get("rule_id", ""),
+                        "level": f.get("level", ""),
+                        "finding": f.get("finding", ""),
+                        "evidence": f.get("evidence", ""),
+                        "suggestion": f.get("suggestion", ""),
+                    }
+                )
         return all_findings
 
-    def _build_prompt(
-        self, all_findings: list[dict], chapter_reviews: list[dict]
-    ) -> str:
+    def _build_prompt(self, all_findings: list[dict], chapter_reviews: list[dict]) -> str:
         template = self._load_cross_check_prompt()
         facts_json = json.dumps(self._labeled_facts, ensure_ascii=False, indent=2)
 
         chapters_info = []
         for review in chapter_reviews:
-            chapters_info.append({
-                "chapter": review.get("chapter", ""),
-                "complexity": review.get("complexity", ""),
-                "finding_count": len(review.get("findings", [])),
-            })
+            chapters_info.append(
+                {
+                    "chapter": review.get("chapter", ""),
+                    "complexity": review.get("complexity", ""),
+                    "finding_count": len(review.get("findings", [])),
+                }
+            )
 
         findings_json = json.dumps(all_findings, ensure_ascii=False, indent=2)
         chapters_json = json.dumps(chapters_info, ensure_ascii=False, indent=2)
@@ -140,6 +142,7 @@ class CrossChecker:
     @staticmethod
     def _load_cross_check_prompt() -> str:
         from . import prompts_dir
+
         prompt_path = prompts_dir() / "cross_check.md"
         if prompt_path.exists():
             return prompt_path.read_text(encoding="utf-8")

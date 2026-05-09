@@ -32,20 +32,49 @@ SECTION_RE = re.compile(
 
 # Common LPA chapter title keywords for heuristic matching (backward compatibility)
 LPA_CHAPTER_KEYWORDS = [
-    "定义", "definitions", "interpretation", "释义",
-    "出资", "capital contribution", "capital commitment", "认缴",
-    "管理费", "management fee", "报酬",
-    "分配", "distribution", "allocation", "waterfall",
-    "投资", "investment", "investments",
-    "普通合伙人", "general partner",
-    "有限合伙人", "limited partner",
-    "合伙人会议", "咨询委员会", "advisory committee", "lpac",
-    "转让", "transfer", "退伙", "withdrawal",
-    "解散", "清算", "dissolution", "liquidation",
-    "违约责任", "default",
-    "争议解决", "dispute resolution",
-    "其他", "miscellaneous",
-    "签署", "signature", "execution",
+    "定义",
+    "definitions",
+    "interpretation",
+    "释义",
+    "出资",
+    "capital contribution",
+    "capital commitment",
+    "认缴",
+    "管理费",
+    "management fee",
+    "报酬",
+    "分配",
+    "distribution",
+    "allocation",
+    "waterfall",
+    "投资",
+    "investment",
+    "investments",
+    "普通合伙人",
+    "general partner",
+    "有限合伙人",
+    "limited partner",
+    "合伙人会议",
+    "咨询委员会",
+    "advisory committee",
+    "lpac",
+    "转让",
+    "transfer",
+    "退伙",
+    "withdrawal",
+    "解散",
+    "清算",
+    "dissolution",
+    "liquidation",
+    "违约责任",
+    "default",
+    "争议解决",
+    "dispute resolution",
+    "其他",
+    "miscellaneous",
+    "签署",
+    "signature",
+    "execution",
 ]
 
 
@@ -108,12 +137,14 @@ class ChapterSplitter:
             if len(chapter_text) < 100 and i < 2:
                 continue
 
-            chapters.append({
-                "index": len(chapters) + 1,
-                "title": title,
-                "text": chapter_text,
-                "start_char": pos,
-            })
+            chapters.append(
+                {
+                    "index": len(chapters) + 1,
+                    "title": title,
+                    "text": chapter_text,
+                    "start_char": pos,
+                }
+            )
 
         return chapters
 
@@ -141,17 +172,20 @@ class ChapterSplitter:
             char_start = sum(len(l) + 1 for l in lines[:line_idx])
             next_idx = boundary_indices[i + 1] if i + 1 < len(boundary_indices) else len(lines)
             next_char = sum(len(l) + 1 for l in lines[:next_idx])
-            chapters.append({
-                "index": i + 1,
-                "title": lines[line_idx].strip(),
-                "text": text[char_start:next_char].strip(),
-                "start_char": char_start,
-            })
+            chapters.append(
+                {
+                    "index": i + 1,
+                    "title": lines[line_idx].strip(),
+                    "text": text[char_start:next_char].strip(),
+                    "start_char": char_start,
+                }
+            )
         return chapters
 
     def _split_by_llm(self, text: str) -> list[dict[str, Any]]:
         """Pass 2: LLM fallback for irregular formats."""
         from . import prompts_dir
+
         prompt_path = prompts_dir() / "chapter_split.md"
         base = prompt_path.read_text(encoding="utf-8") if prompt_path.exists() else ""
         prompt = f"{base}\n\n## 合同全文（首 12000 字）\n{text[:12000]}"
@@ -169,16 +203,20 @@ class ChapterSplitter:
             s = item.get("start_char", item.get("start_line", 0))
             e = item.get("end_char", item.get("end_line", len(text)))
             if isinstance(s, int) and isinstance(e, int) and s < len(text):
-                chapters.append({
-                    "index": item.get("index", len(chapters) + 1),
-                    "title": item.get("title", f"第{len(chapters)+1}章"),
-                    "text": text[s:e].strip(),
-                    "start_char": s,
-                })
+                chapters.append(
+                    {
+                        "index": item.get("index", len(chapters) + 1),
+                        "title": item.get("title", f"第{len(chapters) + 1}章"),
+                        "text": text[s:e].strip(),
+                        "start_char": s,
+                    }
+                )
         return chapters
 
     @staticmethod
-    def _merge_small_chapters(chapters: list[dict[str, Any]], min_chars: int = 80) -> list[dict[str, Any]]:
+    def _merge_small_chapters(
+        chapters: list[dict[str, Any]], min_chars: int = 80
+    ) -> list[dict[str, Any]]:
         """Merge chapters that are too small into the next chapter."""
         if len(chapters) <= 1:
             return chapters
@@ -189,20 +227,24 @@ class ChapterSplitter:
             ch = chapters[i]
             if len(ch["text"]) < min_chars and i + 1 < len(chapters):
                 next_ch = chapters[i + 1]
-                merged.append({
-                    "index": len(merged) + 1,
-                    "title": f"{ch['title']}、{next_ch['title']}",
-                    "text": ch["text"] + "\n\n" + next_ch["text"],
-                    "start_char": ch["start_char"],
-                })
+                merged.append(
+                    {
+                        "index": len(merged) + 1,
+                        "title": f"{ch['title']}、{next_ch['title']}",
+                        "text": ch["text"] + "\n\n" + next_ch["text"],
+                        "start_char": ch["start_char"],
+                    }
+                )
                 i += 2
             else:
-                merged.append({
-                    "index": len(merged) + 1,
-                    "title": ch["title"],
-                    "text": ch["text"],
-                    "start_char": ch["start_char"],
-                })
+                merged.append(
+                    {
+                        "index": len(merged) + 1,
+                        "title": ch["title"],
+                        "text": ch["text"],
+                        "start_char": ch["start_char"],
+                    }
+                )
                 i += 1
 
         return merged

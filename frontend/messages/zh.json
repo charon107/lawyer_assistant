@@ -204,6 +204,16 @@
     "documentTypeLpa": "有限合伙协议 (LPA)",
     "documentTypeContract": "通用合同",
     "documentTypeNda": "保密协议 (NDA)",
-    "documentTypeEmployment": "劳动合同"
+    "documentTypeEmployment": "劳动合同",
+    "documentTypeLease": "租赁合同",
+    "documentTypeLoan": "借款合同",
+    "documentTypeSales": "买卖合同",
+    "documentTypeService": "服务合同",
+    "documentTypeIpLicense": "知识产权许可",
+    "documentTypeEquityInvestment": "股权投资协议",
+    "documentTypeConstruction": "建设工程合同",
+    "documentTypeArticlesOfAssociation": "公司章程",
+    "documentTypeMaritalProperty": "婚姻财产协议",
+    "documentTypeWillEstate": "遗嘱/继承"
   }
 }

@@ -55,19 +55,23 @@ def build_lpa_report(
 
 # ── Header ─────────────────────────────────────────────────────────────────
 
-def _build_header(file_name: str, config: dict[str, Any], report_title: str = "AI LPA 合同审查报告") -> str:
+
+def _build_header(
+    file_name: str, config: dict[str, Any], report_title: str = "AI LPA 合同审查报告"
+) -> str:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return f"""# {report_title}
 
 生成时间：{now}
 文件名称：{file_name}
-律所名称：{config.get('firm_name', '（未填写）')}
-适用法域：{config.get('jurisdiction', '中国大陆')}
+律所名称：{config.get("firm_name", "（未填写）")}
+适用法域：{config.get("jurisdiction", "中国大陆")}
 审查范围：基本要素 / 费用结构 / GP-LP权利义务
 说明：本报告由 AI 自动生成，仅供律师辅助参考，不构成正式法律意见。"""
 
 
 # ── Executive Summary ──────────────────────────────────────────────────────
+
 
 def _summarize_risks(
     findings: list[dict[str, Any]],
@@ -112,13 +116,13 @@ def _build_executive_summary(rs: dict[str, Any]) -> str:
 
 | 维度 | 结果 |
 |------|------|
-| 高风险项 | {rs['high_count']} |
-| 中风险项 | {rs['mid_count']} |
-| 低风险项 | {rs['low_count']} |
-| 跨章问题 | {rs['cross_issues']} |
-| **合计** | **{rs['total']}** |
+| 高风险项 | {rs["high_count"]} |
+| 中风险项 | {rs["mid_count"]} |
+| 低风险项 | {rs["low_count"]} |
+| 跨章问题 | {rs["cross_issues"]} |
+| **合计** | **{rs["total"]}** |
 
-**综合判断**：{rs['verdict']}
+**综合判断**：{rs["verdict"]}
 
 **前三大风险**：
 {top}"""
@@ -185,6 +189,7 @@ def _format_facts(facts: dict[str, Any], label_map: dict[str, tuple] | None = No
 
 # ── Risk Matrix ────────────────────────────────────────────────────────────
 
+
 def _build_risk_matrix(findings: list[dict[str, Any]]) -> str:
     if not findings:
         return "未发现需要标记的风险条款。\n"
@@ -198,20 +203,29 @@ def _build_risk_matrix(findings: list[dict[str, Any]]) -> str:
     for cat, items in by_category.items():
         rows = []
         for item in items:
-            level_emoji = {"高风险": "red", "中风险": "orange", "低风险": "yellow", "未发现问题": "green"}
+            level_emoji = {
+                "高风险": "red",
+                "中风险": "orange",
+                "低风险": "yellow",
+                "未发现问题": "green",
+            }
             color = level_emoji.get(item.get("level", ""), "grey")
             rows.append(
                 f"| {item.get('rule_id', '')} | {item.get('title', '')} "
                 f"| <span style='color:{color}'>**{item.get('level', '')}**</span> "
                 f"| {item.get('finding', '')[:100]} |"
             )
-        table = f"### {cat}\n\n| ID | 检查项 | 风险等级 | 发现 |\n|----|--------|---------|------|\n" + "\n".join(rows)
+        table = (
+            f"### {cat}\n\n| ID | 检查项 | 风险等级 | 发现 |\n|----|--------|---------|------|\n"
+            + "\n".join(rows)
+        )
         tables.append(table)
 
     return "\n\n".join(tables) + "\n"
 
 
 # ── Chapter Findings ───────────────────────────────────────────────────────
+
 
 def _build_chapter_findings(chapter_reviews: list[dict[str, Any]]) -> str:
     parts = []
@@ -233,11 +247,11 @@ def _build_chapter_findings(chapter_reviews: list[dict[str, Any]]) -> str:
             evidence = f.get("evidence", "")
             evidence_block = f"> {evidence}" if evidence else "> （无原文引用）"
 
-            items.append(f"""**{idx}. [{f.get('level', '')}] {f.get('rule_id', '')} — {f.get('finding', '')}**
+            items.append(f"""**{idx}. [{f.get("level", "")}] {f.get("rule_id", "")} — {f.get("finding", "")}**
 
 {evidence_block}
 
-**修改建议**：{f.get('suggestion', '（无）')}
+**修改建议**：{f.get("suggestion", "（无）")}
 """)
 
         parts.append(header + "\n".join(items))
@@ -246,6 +260,7 @@ def _build_chapter_findings(chapter_reviews: list[dict[str, Any]]) -> str:
 
 
 # ── Cross-Check Section ────────────────────────────────────────────────────
+
 
 def _build_cross_check(cc: dict[str, Any]) -> str:
     parts = []
@@ -291,6 +306,7 @@ def _build_cross_check(cc: dict[str, Any]) -> str:
 
 # ── Disclaimer ─────────────────────────────────────────────────────────────
 
+
 def _build_disclaimer() -> str:
     return """本报告由 AI 自动生成，仅用于合同初审、风险提示和流程提效。
 
@@ -306,22 +322,28 @@ def _build_disclaimer() -> str:
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
-def _flatten_findings(chapter_reviews: list[dict[str, Any]], rules: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+
+def _flatten_findings(
+    chapter_reviews: list[dict[str, Any]], rules: dict[str, Any] | None = None
+) -> list[dict[str, Any]]:
     if rules is None:
         from .risk_rules import LPA_RULES
+
         rules = LPA_RULES
     all_findings = []
     for review in chapter_reviews:
         for f in review.get("findings", []):
             rule_id = f.get("rule_id", "")
             rule = rules.get(rule_id, {})
-            all_findings.append({
-                "rule_id": rule_id,
-                "title": rule.get("title", f.get("finding", "")[:40]),
-                "category": rule.get("category", "其他"),
-                "level": f.get("level", ""),
-                "finding": f.get("finding", ""),
-                "evidence": f.get("evidence", ""),
-                "suggestion": f.get("suggestion", ""),
-            })
+            all_findings.append(
+                {
+                    "rule_id": rule_id,
+                    "title": rule.get("title", f.get("finding", "")[:40]),
+                    "category": rule.get("category", "其他"),
+                    "level": f.get("level", ""),
+                    "finding": f.get("finding", ""),
+                    "evidence": f.get("evidence", ""),
+                    "suggestion": f.get("suggestion", ""),
+                }
+            )
     return all_findings

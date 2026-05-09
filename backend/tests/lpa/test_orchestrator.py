@@ -1,6 +1,5 @@
 """Tests for the LPA Review Orchestrator (offline mode)."""
 
-
 from app.agents.lpa.orchestrator import LPAReviewOrchestrator
 
 
@@ -12,6 +11,7 @@ class TestOrchestratorOffline:
 
         class FakeFile:
             name = "test.txt"
+
             def read(self):
                 return (
                     "第一章 总则\n本基金名称为测试基金。\n"
@@ -36,6 +36,7 @@ class TestOrchestratorOffline:
 
         class FakeFile:
             name = "lpa.txt"
+
             def read(self):
                 text = (
                     "第一章 总则\n"
@@ -60,6 +61,7 @@ class TestOrchestratorOffline:
 
         class FakeFile:
             name = "test.txt"
+
             def read(self):
                 text = (
                     "第一章 总则\n" + "本基金为有限合伙型私募基金。" * 10 + "\n"
@@ -68,7 +70,9 @@ class TestOrchestratorOffline:
                 return text.encode("utf-8")
 
         progress_calls = []
-        result = orchestrator.review(FakeFile(), progress_callback=lambda pct, msg: progress_calls.append((pct, msg)))
+        result = orchestrator.review(
+            FakeFile(), progress_callback=lambda pct, msg: progress_calls.append((pct, msg))
+        )
         assert len(progress_calls) >= 2
         assert progress_calls[-1][0] == 1.0
 
@@ -86,12 +90,18 @@ class TestOrchestratorOffline:
 
 
 class TestRuleKeywords:
-    def test_known_rules_have_keywords(self):
-        for rule_id in ["A1", "B1", "D1"]:
-            kws = LPAReviewOrchestrator._rule_keywords(rule_id, "")
-            assert len(kws) > 0, f"Rule {rule_id} has no keywords"
+    def test_lpa_config_has_keyword_map(self):
+        from app.agents.lpa.document_types import get_document_type_config
 
-    def test_unknown_rule_returns_empty(self):
+        config = get_document_type_config("lpa")
+        kw_map = config.get("rule_keyword_map", {})
+        assert len(kw_map) > 0, "LPA config should have rule_keyword_map"
+        for rule_id in ["B1", "D1"]:
+            assert rule_id in kw_map, f"Rule {rule_id} missing from LPA keyword map"
+            assert len(kw_map[rule_id]) > 0, f"Rule {rule_id} has no keywords"
+
+    def test_static_rule_keywords_returns_empty(self):
+        assert LPAReviewOrchestrator._rule_keywords("A1", "") == []
         assert LPAReviewOrchestrator._rule_keywords("Z99", "") == []
 
 

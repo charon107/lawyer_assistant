@@ -17,16 +17,35 @@ logger = logging.getLogger(__name__)
 
 # Keywords that flag a chapter as complex (backward compatibility)
 COMPLEX_KEYWORDS = [
-    "管理费", "management fee",
-    "分配", "distribution", "waterfall",
-    "出资", "capital contribution", "capital commitment",
-    "普通合伙人", "general partner",
-    "关联交易", "related party", "conflict of interest",
-    "除名", "removal", "termination",
-    "key man", "关键人士",
-    "转让", "transfer", "退伙", "withdrawal",
-    "违约责任", "default", "indemnification",
-    "解散", "清算", "dissolution", "liquidation",
+    "管理费",
+    "management fee",
+    "分配",
+    "distribution",
+    "waterfall",
+    "出资",
+    "capital contribution",
+    "capital commitment",
+    "普通合伙人",
+    "general partner",
+    "关联交易",
+    "related party",
+    "conflict of interest",
+    "除名",
+    "removal",
+    "termination",
+    "key man",
+    "关键人士",
+    "转让",
+    "transfer",
+    "退伙",
+    "withdrawal",
+    "违约责任",
+    "default",
+    "indemnification",
+    "解散",
+    "清算",
+    "dissolution",
+    "liquidation",
     "投资限制",
 ]
 
@@ -76,7 +95,9 @@ class ChapterReviewer:
         return {"chapter": title, "complexity": complexity, "findings": findings}
 
     @staticmethod
-    def classify_complexity(title: str, text: str, complex_keywords: list[str] | None = None) -> str:
+    def classify_complexity(
+        title: str, text: str, complex_keywords: list[str] | None = None
+    ) -> str:
         keywords = complex_keywords or COMPLEX_KEYWORDS
         combined = (title + " " + text[:500]).lower()
         for kw in keywords:
@@ -100,13 +121,15 @@ class ChapterReviewer:
             return self._validate_findings(data.get("findings", []), self._simple_rule_ids)
         except Exception as e:
             logger.error("Simple review failed for '%s': %s", title, e)
-            return [{
-                "rule_id": "ERROR",
-                "level": "审查失败",
-                "finding": f"本章节审查过程中出现技术错误: {str(e)[:100]}",
-                "evidence": "",
-                "suggestion": "请人工审查本章节",
-            }]
+            return [
+                {
+                    "rule_id": "ERROR",
+                    "level": "审查失败",
+                    "finding": f"本章节审查过程中出现技术错误: {str(e)[:100]}",
+                    "evidence": "",
+                    "suggestion": "请人工审查本章节",
+                }
+            ]
 
     def _review_complex(self, title: str, text: str) -> list[dict[str, Any]]:
         """R1 deep review for complex chapters."""
@@ -122,7 +145,9 @@ class ChapterReviewer:
                 max_tokens=8192,
             )
             data = self._parse_json(resp)
-            return self._validate_findings(data.get("findings", []), self._complex_rule_ids.union(self._simple_rule_ids))
+            return self._validate_findings(
+                data.get("findings", []), self._complex_rule_ids.union(self._simple_rule_ids)
+            )
         except Exception as e:
             logger.error("R1 review failed for '%s': %s; falling back to V3", title, e)
             return self._review_simple(title, text)
@@ -132,14 +157,18 @@ class ChapterReviewer:
         template_path = self._prompt_templates.get(template_key)
         if template_path:
             from pathlib import Path
+
             path = Path(template_path)
             template = path.read_text(encoding="utf-8") if path.exists() else ""
         else:
             name = f"{level}_review.md"
             from . import prompts_dir
+
             path = prompts_dir() / name
             template = path.read_text(encoding="utf-8") if path.exists() else ""
-        return template.replace("{labeled_facts}", json.dumps(self._labeled_facts, ensure_ascii=False, indent=2))
+        return template.replace(
+            "{labeled_facts}", json.dumps(self._labeled_facts, ensure_ascii=False, indent=2)
+        )
 
     def _build_chapter_prompt(self, title: str, text: str) -> str:
         return f"## {title}\n\n{text}\n\n请按 JSON schema 输出审查结果。"
@@ -162,11 +191,13 @@ class ChapterReviewer:
             rid = f.get("rule_id", "")
             if rid not in allowed_ids:
                 continue
-            out.append({
-                "rule_id": rid,
-                "level": f.get("level", "未发现问题"),
-                "finding": f.get("finding", ""),
-                "evidence": f.get("evidence", ""),
-                "suggestion": f.get("suggestion", ""),
-            })
+            out.append(
+                {
+                    "rule_id": rid,
+                    "level": f.get("level", "未发现问题"),
+                    "finding": f.get("finding", ""),
+                    "evidence": f.get("evidence", ""),
+                    "suggestion": f.get("suggestion", ""),
+                }
+            )
         return out

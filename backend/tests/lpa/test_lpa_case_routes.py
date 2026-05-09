@@ -20,6 +20,7 @@ def mock_case():
     case.name = "Test Case"
     case.description = "A test case"
     case.status = "active"
+    case.document_type = "lpa"
     case.documents = []
     case.created_at = datetime.now(UTC)
     case.updated_at = datetime.now(UTC)
@@ -88,7 +89,9 @@ def mock_user():
 
 class TestCreateCase:
     @pytest.mark.anyio
-    async def test_create_case_success(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_create_case_success(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
             response = await client.post(
@@ -103,7 +106,9 @@ class TestCreateCase:
         assert data["document_count"] == 0
 
     @pytest.mark.anyio
-    async def test_create_case_minimal(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_create_case_minimal(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
             response = await client.post(
@@ -122,7 +127,9 @@ class TestCreateCase:
         assert response.status_code == 401
 
     @pytest.mark.anyio
-    async def test_create_case_empty_name(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_create_case_empty_name(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
             response = await client.post(
@@ -135,7 +142,9 @@ class TestCreateCase:
 
 class TestListCases:
     @pytest.mark.anyio
-    async def test_list_cases_success(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_list_cases_success(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
             response = await client.get(
@@ -150,7 +159,9 @@ class TestListCases:
         assert len(data["items"]) == 1
 
     @pytest.mark.anyio
-    async def test_list_cases_with_pagination(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_list_cases_with_pagination(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
             response = await client.get(
@@ -160,7 +171,9 @@ class TestListCases:
         assert response.status_code == 200
 
     @pytest.mark.anyio
-    async def test_list_cases_empty(self, client: AsyncClient, auth_headers, mock_db_session, mock_user):
+    async def test_list_cases_empty(
+        self, client: AsyncClient, auth_headers, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.list.return_value = ([], 0)
@@ -175,7 +188,9 @@ class TestListCases:
 
 class TestGetCase:
     @pytest.mark.anyio
-    async def test_get_case_success(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_get_case_success(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
             response = await client.get(
@@ -188,8 +203,11 @@ class TestGetCase:
         assert "documents" in data
 
     @pytest.mark.anyio
-    async def test_get_case_not_found(self, client: AsyncClient, auth_headers, mock_db_session, mock_user):
+    async def test_get_case_not_found(
+        self, client: AsyncClient, auth_headers, mock_db_session, mock_user
+    ):
         from app.core.exceptions import NotFoundError
+
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.get.side_effect = NotFoundError(message="Case not found")
@@ -203,7 +221,9 @@ class TestGetCase:
 
 class TestUpdateCase:
     @pytest.mark.anyio
-    async def test_update_case_success(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_update_case_success(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
             response = await client.patch(
@@ -214,8 +234,11 @@ class TestUpdateCase:
         assert response.status_code == 200
 
     @pytest.mark.anyio
-    async def test_update_case_not_found(self, client: AsyncClient, auth_headers, mock_db_session, mock_user):
+    async def test_update_case_not_found(
+        self, client: AsyncClient, auth_headers, mock_db_session, mock_user
+    ):
         from app.core.exceptions import NotFoundError
+
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.update.side_effect = NotFoundError(message="Case not found")
@@ -230,7 +253,9 @@ class TestUpdateCase:
 
 class TestDeleteCase:
     @pytest.mark.anyio
-    async def test_delete_case_success(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_delete_case_success(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
             response = await client.delete(
@@ -240,8 +265,11 @@ class TestDeleteCase:
         assert response.status_code == 204
 
     @pytest.mark.anyio
-    async def test_delete_case_not_found(self, client: AsyncClient, auth_headers, mock_db_session, mock_user):
+    async def test_delete_case_not_found(
+        self, client: AsyncClient, auth_headers, mock_db_session, mock_user
+    ):
         from app.core.exceptions import NotFoundError
+
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.delete.side_effect = NotFoundError(message="Case not found")
@@ -258,7 +286,9 @@ class TestDeleteCase:
 
 class TestUploadDocument:
     @pytest.mark.anyio
-    async def test_upload_document_success(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_upload_document_success(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         storage = MagicMock()
         storage.save = AsyncMock(return_value="user-123/abc_test.pdf")
@@ -266,6 +296,7 @@ class TestUploadDocument:
             patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service),
             patch("app.services.file_storage.get_file_storage", return_value=storage),
             patch("app.api.routes.v1.lpa_cases._generate_summary_async"),
+            patch("app.api.routes.v1.lpa_cases._generate_analysis_async"),
         ):
             response = await client.post(
                 f"{settings.API_V1_STR}/lpa-cases/case-123/documents",
@@ -277,8 +308,11 @@ class TestUploadDocument:
         assert data["filename"] == "test.pdf"
 
     @pytest.mark.anyio
-    async def test_upload_document_case_not_found(self, client: AsyncClient, auth_headers, mock_db_session, mock_user):
+    async def test_upload_document_case_not_found(
+        self, client: AsyncClient, auth_headers, mock_db_session, mock_user
+    ):
         from app.core.exceptions import NotFoundError
+
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.upload_document.side_effect = NotFoundError(message="Case not found")
@@ -298,7 +332,9 @@ class TestUploadDocument:
 
 class TestListDocuments:
     @pytest.mark.anyio
-    async def test_list_documents_success(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_list_documents_success(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
             response = await client.get(
@@ -313,7 +349,9 @@ class TestListDocuments:
 
 class TestDeleteDocument:
     @pytest.mark.anyio
-    async def test_delete_document_success(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_delete_document_success(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
             response = await client.delete(
@@ -323,8 +361,11 @@ class TestDeleteDocument:
         assert response.status_code == 204
 
     @pytest.mark.anyio
-    async def test_delete_document_not_found(self, client: AsyncClient, auth_headers, mock_db_session, mock_user):
+    async def test_delete_document_not_found(
+        self, client: AsyncClient, auth_headers, mock_db_session, mock_user
+    ):
         from app.core.exceptions import NotFoundError
+
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.delete_document.side_effect = NotFoundError(message="Doc not found")
@@ -341,7 +382,9 @@ class TestDeleteDocument:
 
 class TestCaseConversations:
     @pytest.mark.anyio
-    async def test_create_case_conversation_success(self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user):
+    async def test_create_case_conversation_success(
+        self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
+    ):
         _setup_overrides(mock_db_session, mock_user)
         mock_conv = MagicMock()
         mock_conv.id = "conv-123"
@@ -362,8 +405,11 @@ class TestCaseConversations:
         assert data["case_id"] == "case-123"
 
     @pytest.mark.anyio
-    async def test_create_case_conversation_case_not_found(self, client: AsyncClient, auth_headers, mock_db_session, mock_user):
+    async def test_create_case_conversation_case_not_found(
+        self, client: AsyncClient, auth_headers, mock_db_session, mock_user
+    ):
         from app.core.exceptions import NotFoundError
+
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.get_without_docs.side_effect = NotFoundError(message="Case not found")

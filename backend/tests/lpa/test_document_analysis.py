@@ -1,8 +1,7 @@
 """Tests for document analysis feature."""
 
-import json
 from datetime import UTC, datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -14,7 +13,6 @@ from app.schemas.document_analysis import (
     RiskPoint,
 )
 
-
 # --- Schema Tests ---
 
 
@@ -25,11 +23,20 @@ class TestDocumentAnalysisResult:
             "contract_type": "借款合同",
             "key_terms": [{"term": "借款金额", "content": "100万元", "location": "第三条"}],
             "legal_relationships": [
-                {"parties": ["张三", "李四"], "relationship_type": "借贷关系", "description": "张三向李四借款"}
+                {
+                    "parties": ["张三", "李四"],
+                    "relationship_type": "借贷关系",
+                    "description": "张三向李四借款",
+                }
             ],
             "applicable_laws": ["民法典第六百六十七条"],
             "risk_points": [
-                {"category": "法律风险", "level": "高", "description": "未约定利息", "suggestion": "补充利息条款"}
+                {
+                    "category": "法律风险",
+                    "level": "高",
+                    "description": "未约定利息",
+                    "suggestion": "补充利息条款",
+                }
             ],
             "dispute_focal_points": ["还款期限争议"],
             "summary": "这是一份借款合同",
@@ -219,9 +226,7 @@ class TestFormatAnalysisForPrompt:
                 )
             ],
             applicable_laws=["民法典第六百六十七条"],
-            risk_points=[
-                RiskPoint(category="法律风险", level="高", description="未约定还款期限")
-            ],
+            risk_points=[RiskPoint(category="法律风险", level="高", description="未约定还款期限")],
             dispute_focal_points=["还款期限"],
             summary="借款合同摘要",
         )

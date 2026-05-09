@@ -5,6 +5,7 @@ Revises: b2c3d4e5f6a7
 Create Date: 2026-05-08 05:29:01.916905
 
 """
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -12,8 +13,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'e015f3b6544f'
-down_revision: str | None = 'b2c3d4e5f6a7'
+revision: str = "e015f3b6544f"
+down_revision: str | None = "b2c3d4e5f6a7"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
@@ -48,40 +49,47 @@ def _table_exists(table_name: str) -> bool:
 
 def upgrade() -> None:
     # Create lpa_cases table if not exists
-    if not _table_exists('lpa_cases'):
+    if not _table_exists("lpa_cases"):
         op.create_table(
-            'lpa_cases',
-            sa.Column('id', sa.String(length=36), nullable=False),
-            sa.Column('user_id', sa.String(length=36), nullable=False),
-            sa.Column('name', sa.String(length=255), nullable=False),
-            sa.Column('description', sa.Text(), nullable=True),
-            sa.Column('status', sa.String(length=20), nullable=False),
-            sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
-            sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
-            sa.ForeignKeyConstraint(['user_id'], ['users.id'], name='lpa_cases_user_id_fkey', ondelete='CASCADE'),
-            sa.PrimaryKeyConstraint('id', name='lpa_cases_pkey'),
+            "lpa_cases",
+            sa.Column("id", sa.String(length=36), nullable=False),
+            sa.Column("user_id", sa.String(length=36), nullable=False),
+            sa.Column("name", sa.String(length=255), nullable=False),
+            sa.Column("description", sa.Text(), nullable=True),
+            sa.Column("status", sa.String(length=20), nullable=False),
+            sa.Column(
+                "created_at",
+                sa.DateTime(timezone=True),
+                server_default=sa.text("(CURRENT_TIMESTAMP)"),
+                nullable=False,
+            ),
+            sa.Column("updated_at", sa.DateTime(timezone=True), nullable=True),
+            sa.ForeignKeyConstraint(
+                ["user_id"], ["users.id"], name="lpa_cases_user_id_fkey", ondelete="CASCADE"
+            ),
+            sa.PrimaryKeyConstraint("id", name="lpa_cases_pkey"),
         )
 
-    if not _index_exists('lpa_cases_user_id_idx'):
-        op.create_index('lpa_cases_user_id_idx', 'lpa_cases', ['user_id'], unique=False)
+    if not _index_exists("lpa_cases_user_id_idx"):
+        op.create_index("lpa_cases_user_id_idx", "lpa_cases", ["user_id"], unique=False)
 
     # Add columns to chat_files if not present
-    if not _column_exists('chat_files', 'case_id'):
+    if not _column_exists("chat_files", "case_id"):
         op.execute("ALTER TABLE chat_files ADD COLUMN case_id VARCHAR(36)")
-    if not _column_exists('chat_files', 'summary'):
+    if not _column_exists("chat_files", "summary"):
         op.execute("ALTER TABLE chat_files ADD COLUMN summary TEXT")
-    if not _index_exists('chat_files_case_id_idx'):
+    if not _index_exists("chat_files_case_id_idx"):
         op.execute("CREATE INDEX chat_files_case_id_idx ON chat_files (case_id)")
 
     # Add case_id to conversations if not present
-    if not _column_exists('conversations', 'case_id'):
+    if not _column_exists("conversations", "case_id"):
         op.execute("ALTER TABLE conversations ADD COLUMN case_id VARCHAR(36)")
-    if not _index_exists('conversations_case_id_idx'):
+    if not _index_exists("conversations_case_id_idx"):
         op.execute("CREATE INDEX conversations_case_id_idx ON conversations (case_id)")
 
 
 def downgrade() -> None:
-    op.drop_index('conversations_case_id_idx', table_name='conversations')
-    op.drop_index('chat_files_case_id_idx', table_name='chat_files')
-    op.drop_index('lpa_cases_user_id_idx', table_name='lpa_cases')
-    op.drop_table('lpa_cases')
+    op.drop_index("conversations_case_id_idx", table_name="conversations")
+    op.drop_index("chat_files_case_id_idx", table_name="chat_files")
+    op.drop_index("lpa_cases_user_id_idx", table_name="lpa_cases")
+    op.drop_table("lpa_cases")
