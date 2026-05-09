@@ -42,12 +42,15 @@ async def search_law(
         top_k: 返回结果数量，默认5
     """
     service = LawSearchService.get_instance()
-    results = await service.search(
-        query,
-        category=category,
-        source_type=source_type,
-        top_k=top_k,
-    )
+    try:
+        results = await service.search(
+            query,
+            category=category,
+            source_type=source_type,
+            top_k=top_k,
+        )
+    except RuntimeError as e:
+        return f"法律搜索出错：{e}"
     return _format_search_results(results, query)
 
 
@@ -63,7 +66,10 @@ async def get_law_article(
         article_id: 条文号（如"第四百六十四条"）
     """
     service = LawSearchService.get_instance()
-    article = await service.get_article(law_id, article_id)
+    try:
+        article = await service.get_article(law_id, article_id)
+    except RuntimeError as e:
+        return f"法律条文查询出错：{e}"
     if article is None:
         return f"未找到《{law_id}》{article_id}"
     return f"《{article.law_name}》{article.article_id}\n\n{article.content}"

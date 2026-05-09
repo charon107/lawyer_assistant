@@ -182,9 +182,9 @@ class LawSearchService:
 
             return search_results
 
-        except Exception:
+        except Exception as e:
             logger.exception("Law search failed for query: %s", query)
-            return []
+            raise RuntimeError(f"法律搜索失败: {e}") from e
 
     async def get_article(
         self,
@@ -211,9 +211,9 @@ class LawSearchService:
             if not points:
                 return None
             return _payload_to_article(points[0].payload)
-        except Exception:
+        except Exception as e:
             logger.exception("get_article failed: %s %s", law_id, article_id)
-            return None
+            raise RuntimeError(f"法律条文查询失败: {e}") from e
 
     async def search_by_category(
         self,
