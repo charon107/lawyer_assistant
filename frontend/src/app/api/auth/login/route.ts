@@ -33,9 +33,10 @@ export async function POST(request: NextRequest) {
     });
 
     // Set access token cookie (short-lived)
+    // Note: secure=false allows HTTP access (e.g., IP-based deployment without SSL)
     response.cookies.set("access_token", data.access_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       sameSite: "lax",
       maxAge: 60 * 15, // 15 minutes
       path: "/",
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     // Set refresh token cookie (long-lived)
     response.cookies.set("refresh_token", data.refresh_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: false,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: "/",

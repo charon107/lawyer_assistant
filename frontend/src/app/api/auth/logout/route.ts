@@ -6,7 +6,7 @@ export async function POST() {
   // Clear auth cookies
   response.cookies.set("access_token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: false,
     sameSite: "lax",
     maxAge: 0,
     path: "/",
@@ -14,7 +14,7 @@ export async function POST() {
 
   response.cookies.set("refresh_token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: false,
     sameSite: "lax",
     maxAge: 0,
     path: "/",
