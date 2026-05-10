@@ -2,15 +2,9 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
-
-class BaseSchema(BaseModel):
-    model_config = ConfigDict(
-        from_attributes=True,
-        populate_by_name=True,
-        str_strip_whitespace=True,
-    )
+from app.schemas.base import BaseSchema
 
 
 class LegalParty(BaseSchema):

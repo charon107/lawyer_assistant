@@ -5,7 +5,7 @@ Builds a Markdown review report from the full pipeline output:
   labeled_facts → chapter reviews → cross-check → risk matrix → Markdown
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 
@@ -59,7 +59,7 @@ def build_lpa_report(
 def _build_header(
     file_name: str, config: dict[str, Any], report_title: str = "AI LPA 合同审查报告"
 ) -> str:
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
     return f"""# {report_title}
 
 生成时间：{now}

@@ -135,20 +135,6 @@ A FastAPI project
         allow_headers=settings.CORS_ALLOW_HEADERS,
     )
 
-    # API Version Deprecation (uncomment when deprecating old versions)
-    # Example: Mark v1 as deprecated when v2 is ready
-    # from app.api.versioning import VersionDeprecationMiddleware
-    # app.add_middleware(
-    #     VersionDeprecationMiddleware,
-    #     deprecated_versions={
-    #         "v1": {
-    #             "sunset": "2025-12-31",
-    #             "link": "/docs/migration/v2",
-    #             "message": "Please migrate to API v2",
-    #         }
-    #     },
-    # )
-
     # Include API router
     app.include_router(api_router, prefix=settings.API_V1_STR)
 

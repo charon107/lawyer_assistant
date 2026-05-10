@@ -79,44 +79,9 @@ class AuthorizationError(AppException):
     status_code = 403
 
 
-class RateLimitError(AppException):
-    """Rate limit exceeded (429)."""
-
-    message = "Rate limit exceeded"
-    code = "RATE_LIMIT_EXCEEDED"
-    status_code = 429
-
-
 class BadRequestError(AppException):
     """Bad request (400)."""
 
     message = "Bad request"
     code = "BAD_REQUEST"
     status_code = 400
-
-
-# === 5xx Server Errors ===
-
-
-class ExternalServiceError(AppException):
-    """External service unavailable (503)."""
-
-    message = "External service unavailable"
-    code = "EXTERNAL_SERVICE_ERROR"
-    status_code = 503
-
-
-class DatabaseError(AppException):
-    """Database error (500)."""
-
-    message = "Database error"
-    code = "DATABASE_ERROR"
-    status_code = 500
-
-
-class InternalError(AppException):
-    """Internal server error (500)."""
-
-    message = "Internal server error"
-    code = "INTERNAL_ERROR"
-    status_code = 500

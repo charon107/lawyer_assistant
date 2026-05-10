@@ -1,6 +1,6 @@
 """Date and time utilities for agents."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 
 def get_current_datetime() -> str:
@@ -9,5 +9,5 @@ def get_current_datetime() -> str:
     Returns:
         A string with the current date and time.
     """
-    now = datetime.now()
+    now = datetime.now(UTC)
     return f"Current date: {now.strftime('%Y-%m-%d')}, Current time: {now.strftime('%H:%M:%S')}"
