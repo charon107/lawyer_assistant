@@ -1,16 +1,19 @@
-# LPA Review App — Production deployment
+# LPA Review App — Production deployment (local build)
 #
-# Backend and frontend images pulled from GHCR.
+# All services built locally on the server.
 # Qdrant and Redis are internal-only (no host port binding).
 #
 # Required files on server:
 #   docker-compose.yml  (this file)
 #   nginx.conf
 #   backend/.env        (with real secrets — NEVER committed to git)
+#   prompts/            (Dockerfile COPY needs this)
 
 services:
   backend:
-    image: ghcr.io/charon107/lpa-backend:latest
+    build:
+      context: .
+      file: ./backend/Dockerfile
     container_name: lpa-backend
     restart: unless-stopped
     env_file:
@@ -35,7 +38,7 @@ services:
       retries: 3
 
   frontend:
-    image: ghcr.io/charon107/lpa-frontend:latest
+    build: ./frontend
     container_name: lpa-frontend
     restart: unless-stopped
     environment:
