@@ -1,13 +1,12 @@
-# LPA Review App — Production deployment (uses pre-built GHCR images)
+# LPA Review App — Production deployment
 #
-# This file is used ON THE SERVER at /opt/lpa_review_app/
-# Images are built by GitHub Actions and pushed to GHCR.
-# Server just pulls and runs — no local build needed.
+# Backend and frontend images pulled from GHCR.
+# Qdrant and Redis are internal-only (no host port binding).
 #
 # Required files on server:
-#   docker-compose.prod.yml  (this file)
+#   docker-compose.yml  (this file)
 #   nginx.conf
-#   backend/.env             (with real secrets — NEVER committed to git)
+#   backend/.env        (with real secrets — NEVER committed to git)
 
 services:
   backend:
@@ -16,11 +15,19 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/.env
+    environment:
+      # Hugging Face 国内镜像，阿里云服务器建议开启
+      - HF_ENDPOINT=https://hf-mirror.com
     volumes:
       - backend_data:/app/data
       - backend_media:/app/media
     networks:
       - lpa-network
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 30s
@@ -55,6 +62,36 @@ services:
       - backend
       - frontend
 
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: lpa-qdrant
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - lpa-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lpa-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - lpa-network
+
 networks:
   lpa-network:
     driver: bridge
@@ -62,3 +99,5 @@ networks:
 volumes:
   backend_data:
   backend_media:
+  qdrant_data:
+  redis_data:
