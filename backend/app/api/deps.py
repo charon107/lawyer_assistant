@@ -6,7 +6,7 @@ Dependency injection factories for services, repositories, and authentication.
 
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Cookie, Depends
 from fastapi.security import OAuth2PasswordBearer
 
 from app.core.config import settings
@@ -86,15 +86,17 @@ LawSearchSvc = Annotated[LawSearchService, Depends(get_law_search_service)]
 from app.core.exceptions import AuthenticationError, AuthorizationError
 from app.db.models.user import User, UserRole
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login", auto_error=False)
 
 
 def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
+    token: Annotated[str | None, Depends(oauth2_scheme)],
     user_service: UserSvc,
+    access_token: str | None = Cookie(None),
 ) -> User:
     """Get current authenticated user from JWT token.
 
+    Supports both Authorization header and httpOnly cookie.
     Returns the full User object including role information.
 
     Raises:
@@ -102,7 +104,12 @@ def get_current_user(
     """
     from app.core.security import verify_token
 
-    payload = verify_token(token)
+    # Try Authorization header first, then cookie
+    resolved_token = token or access_token
+    if not resolved_token:
+        raise AuthenticationError(message="Not authenticated")
+
+    payload = verify_token(resolved_token)
     if payload is None:
         raise AuthenticationError(message="Invalid or expired token")
 
