@@ -19,8 +19,51 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           command_timeout: 25m
           script: |
+            set -euo pipefail
+
             cd /opt/lpa_review_app
-            git pull origin main
-            docker compose build backend frontend
-            docker compose up -d --remove-orphans
+
+            # Pull latest code — abort on failure
+            echo "=== Pulling latest code ==="
+            git pull origin main || { echo "ERROR: git pull failed"; exit 1; }
+
+            # Build with production compose file
+            echo "=== Building images ==="
+            docker compose -f docker-compose.prod.yml build backend frontend || { echo "ERROR: build failed"; exit 1; }
+
+            # Deploy
+            echo "=== Starting services ==="
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans || { echo "ERROR: deploy failed"; exit 1; }
+
+            # Wait for health checks
+            echo "=== Waiting for services to be healthy ==="
+            sleep 10
+
+            # Verify backend is responding
+            for i in 1 2 3 4 5; do
+              if docker exec lpa-backend curl -sf http://localhost:8000/api/v1/health > /dev/null 2>&1; then
+                echo "Backend: healthy"
+                break
+              fi
+              echo "Backend: waiting... (attempt $i/5)"
+              sleep 10
+            done
+
+            # Verify frontend is responding
+            for i in 1 2 3 4 5; do
+              if docker exec lpa-frontend curl -sf http://localhost:3000/ > /dev/null 2>&1; then
+                echo "Frontend: healthy"
+                break
+              fi
+              echo "Frontend: waiting... (attempt $i/5)"
+              sleep 10
+            done
+
+            # Show running containers
+            echo "=== Running containers ==="
+            docker compose -f docker-compose.prod.yml ps
+
+            # Cleanup old images
             docker image prune -f --filter "until=72h"
+
+            echo "=== Deploy complete ==="

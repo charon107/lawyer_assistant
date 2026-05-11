@@ -1,0 +1,28 @@
+# Frontend (not needed for backend build)
+frontend/
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# IDE & tools
+.claude/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+*.md
+LICENSE
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data volumes (managed by Docker)
+backend/data/
+backend/media/
