@@ -21,6 +21,9 @@ services:
     environment:
       # Hugging Face 国内镜像，阿里云服务器建议开启
       - HF_ENDPOINT=https://hf-mirror.com
+      # Container-internal URLs (override .env localhost defaults)
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379/0
     volumes:
       - backend_data:/app/data
       - backend_media:/app/media
