@@ -1,20 +1,16 @@
-# LPA Review App — Production deployment (local build)
+# LPA Review App — Production deployment
 #
-# All services built locally on the server.
-# Qdrant and Redis are internal-only (no host port binding).
+# Images built by GitHub Actions and pushed to Alibaba Cloud ACR.
+# Server pulls pre-built images — no local build needed.
 #
 # Required files on server:
-#   docker-compose.yml  (this file)
+#   docker-compose.prod.yml  (this file)
 #   nginx.conf
-#   backend/.env        (with real secrets — NEVER committed to git)
-#   prompts/            (Dockerfile COPY needs this)
+#   backend/.env             (with real secrets — NEVER committed to git)
 
 services:
   backend:
     image: lpa-backend:latest
-    build:
-      context: .
-      dockerfile: ./backend/Dockerfile
     container_name: lpa-backend
     restart: unless-stopped
     env_file:
@@ -43,7 +39,6 @@ services:
 
   frontend:
     image: lpa-frontend:latest
-    build: ./frontend
     container_name: lpa-frontend
     restart: unless-stopped
     environment:

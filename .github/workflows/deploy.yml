@@ -1,14 +1,75 @@
-name: Deploy to Production
+name: Build & Deploy
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
+env:
+  ACR_REGISTRY: ${{ secrets.ACR_REGISTRY }}
+  ACR_NAMESPACE: ${{ secrets.ACR_NAMESPACE }}
+
 jobs:
-  deploy:
+  build-backend:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build & push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-backend:latest
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build & push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-frontend:latest
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Deploy to server via SSH
@@ -17,29 +78,40 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: root
           key: ${{ secrets.SERVER_SSH_KEY }}
-          command_timeout: 25m
+          command_timeout: 10m
           script: |
             set -euo pipefail
 
             cd /opt/lpa_review_app
 
-            # Pull latest code — abort on failure
+            # Pull latest code
             echo "=== Pulling latest code ==="
             git pull origin main || { echo "ERROR: git pull failed"; exit 1; }
 
-            # Build with production compose file
-            echo "=== Building images ==="
-            docker compose -f docker-compose.prod.yml build backend frontend || { echo "ERROR: build failed"; exit 1; }
+            # Login to ACR
+            echo "=== Logging into ACR ==="
+            echo "${{ secrets.ACR_PASSWORD }}" | docker login \
+              --username="${{ secrets.ACR_USERNAME }}" \
+              --password-stdin ${{ env.ACR_REGISTRY }}
 
-            # Deploy
+            # Pull pre-built images
+            echo "=== Pulling images ==="
+            docker pull ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-backend:latest
+            docker pull ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-frontend:latest
+
+            # Tag for docker-compose
+            docker tag ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-backend:latest lpa-backend:latest
+            docker tag ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-frontend:latest lpa-frontend:latest
+
+            # Restart services
             echo "=== Starting services ==="
             docker compose -f docker-compose.prod.yml up -d --remove-orphans || { echo "ERROR: deploy failed"; exit 1; }
 
             # Wait for health checks
             echo "=== Waiting for services to be healthy ==="
-            sleep 10
+            sleep 15
 
-            # Verify backend is responding
+            # Verify backend
             for i in 1 2 3 4 5; do
               if docker exec lpa-backend curl -sf http://localhost:8000/api/v1/health > /dev/null 2>&1; then
                 echo "Backend: healthy"
@@ -49,7 +121,7 @@ jobs:
               sleep 10
             done
 
-            # Verify frontend is responding
+            # Verify frontend
             for i in 1 2 3 4 5; do
               if docker exec lpa-frontend curl -sf http://localhost:3000/ > /dev/null 2>&1; then
                 echo "Frontend: healthy"
@@ -61,7 +133,7 @@ jobs:
 
             # Show running containers
             echo "=== Running containers ==="
-            docker compose -f docker-compose.prod.yml ps
+            docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}'
 
             # Cleanup old images
             docker image prune -f --filter "until=72h"
