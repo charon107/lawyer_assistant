@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { APP_NAME, ROUTES } from "@/lib/constants";
 
@@ -7,56 +6,64 @@ export default async function HomePage() {
   const t = await getTranslations("landing");
 
   return (
-    <div className="relative flex min-h-screen flex-col">
-      {/* Background images */}
-      <div className="fixed inset-0 -z-10">
-        <Image
-          src="/bg-sun.png"
-          alt=""
-          fill
-          className="object-cover object-center opacity-100 dark:opacity-0 transition-opacity duration-1000"
-          priority
-          sizes="100vw"
-        />
-        <Image
-          src="/bg-moon.png"
-          alt=""
-          fill
-          className="object-cover object-center opacity-0 dark:opacity-100 transition-opacity duration-1000"
-          priority
-          sizes="100vw"
-        />
-      </div>
+    <div className="flex min-h-screen flex-col bg-background">
+      {/* Header */}
+      <header className="flex items-center justify-between border-b border-border px-6 py-4">
+        <span className="text-lg font-bold tracking-tight">{APP_NAME}</span>
+        <nav className="flex items-center gap-4">
+          <Link
+            href={ROUTES.LOGIN}
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {t("signIn")}
+          </Link>
+          <Link
+            href={ROUTES.REGISTER}
+            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
+          >
+            {t("register") || "注册"}
+          </Link>
+        </nav>
+      </header>
 
-      {/* Gradient overlay for text readability */}
-      <div className="fixed inset-0 -z-[5] bg-gradient-to-b from-white/30 via-transparent to-white/60 dark:from-black/30 dark:via-transparent dark:to-black/60" />
+      {/* Hero */}
+      <main className="flex flex-1 items-center justify-center px-6">
+        <div className="mx-auto max-w-2xl text-center">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-muted bg-brand-muted/30 px-4 py-1.5 text-sm font-medium text-brand">
+            法律 AI 智能助手
+          </div>
 
-      <main className="relative flex flex-1 items-center justify-center px-6">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-5xl font-bold tracking-tight text-black dark:text-white sm:text-6xl lg:text-7xl">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             {APP_NAME}
           </h1>
 
-          <p className="mt-6 text-lg font-medium tracking-wide text-black/60 dark:text-white/60 sm:text-xl">
+          <p className="mt-4 text-lg text-muted-foreground sm:text-xl">
             {t("heroTagline")}
           </p>
 
-          <p className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-black/40 dark:text-white/40 sm:text-base">
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground/80">
             {t("heroSubtitle")}
           </p>
 
-          <div className="mt-12">
+          <div className="mt-10 flex items-center justify-center gap-4">
             <Link
               href={ROUTES.LOGIN}
-              className="inline-flex items-center gap-2 rounded-md bg-brand px-8 py-3 text-base font-medium text-white transition-colors hover:bg-brand-hover active:opacity-90"
+              className="rounded-md bg-brand px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
             >
               {t("signIn")}
+            </Link>
+            <Link
+              href={ROUTES.REGISTER}
+              className="rounded-md border border-border px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+            >
+              {t("register") || "注册"}
             </Link>
           </div>
         </div>
       </main>
 
-      <footer className="relative pb-8 text-center text-xs text-black/20 dark:text-white/20">
+      {/* Footer */}
+      <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
         &copy; {new Date().getFullYear()} {APP_NAME}
       </footer>
     </div>
