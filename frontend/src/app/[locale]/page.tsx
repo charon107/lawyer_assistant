@@ -48,7 +48,7 @@ export default async function HomePage() {
           <div className="mt-12">
             <Link
               href={ROUTES.LOGIN}
-              className="inline-flex items-center gap-2 rounded-full bg-black px-8 py-3 text-base font-medium text-white transition-all duration-300 ease-out hover:scale-105 hover:bg-black/85 hover:shadow-[0_0_60px_rgba(0,0,0,0.15)] active:scale-[0.98] dark:bg-white dark:text-black dark:hover:bg-white/90 dark:hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] dark:active:scale-[0.98]"
+              className="inline-flex items-center gap-2 rounded-md bg-brand px-8 py-3 text-base font-medium text-white transition-colors hover:bg-brand-hover active:opacity-90"
             >
               {t("signIn")}
             </Link>

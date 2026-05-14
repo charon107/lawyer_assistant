@@ -41,7 +41,7 @@ export default function SettingsPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">项目</span>
-              <span className="font-medium">lpa_review_app</span>
+              <span className="font-medium">LexMind</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">AI 框架</span>

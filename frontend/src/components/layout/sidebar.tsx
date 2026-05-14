@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ROUTES } from "@/lib/constants";
+import { APP_NAME, ROUTES } from "@/lib/constants";
 import { LayoutDashboard, MessageSquare, UserCircle, FileSearch, Briefcase } from "lucide-react";
 import { useSidebarStore } from "@/stores";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui";
@@ -54,7 +54,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           className="flex items-center gap-2 font-semibold"
           onClick={onNavigate}
         >
-          <span>{"AI 法律助手"}</span>
+          <span>{APP_NAME}</span>
         </Link>
       </div>
       <NavLinks onNavigate={onNavigate} />
@@ -69,7 +69,7 @@ export function Sidebar() {
     <Sheet open={isOpen} onOpenChange={close}>
       <SheetContent side="left" className="w-72 p-0">
         <SheetHeader className="h-14 px-4">
-          <SheetTitle>{"AI 法律助手"}</SheetTitle>
+          <SheetTitle>{APP_NAME}</SheetTitle>
           <SheetClose onClick={close} />
         </SheetHeader>
         <NavLinks onNavigate={close} />
