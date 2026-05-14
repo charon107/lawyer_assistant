@@ -33,7 +33,7 @@ jobs:
           context: .
           file: ./backend/Dockerfile
           push: true
-          tags: ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-backend:latest
+          tags: ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/backend:latest
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -61,7 +61,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-frontend:latest
+          tags: ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/frontend:latest
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -96,12 +96,12 @@ jobs:
 
             # Pull pre-built images
             echo "=== Pulling images ==="
-            docker pull ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-backend:latest
-            docker pull ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-frontend:latest
+            docker pull ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/backend:latest
+            docker pull ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/frontend:latest
 
             # Tag for docker-compose
-            docker tag ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-backend:latest lpa-backend:latest
-            docker tag ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/lpa-frontend:latest lpa-frontend:latest
+            docker tag ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/backend:latest lpa-backend:latest
+            docker tag ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/frontend:latest lpa-frontend:latest
 
             # Restart services
             echo "=== Starting services ==="
