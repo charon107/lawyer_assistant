@@ -13,7 +13,7 @@ import { Check, X } from "lucide-react";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
+function getPasswordStrength(pw: string, t: (key: string) => string): { score: number; label: string; color: string } {
   if (!pw) return { score: 0, label: "", color: "" };
   let score = 0;
   if (pw.length >= 8) score++;
@@ -22,10 +22,10 @@ function getPasswordStrength(pw: string): { score: number; label: string; color:
   if (/\d/.test(pw)) score++;
   if (/[^a-zA-Z0-9]/.test(pw)) score++;
 
-  if (score <= 1) return { score: 1, label: "弱", color: "bg-red-500" };
-  if (score <= 2) return { score: 2, label: "一般", color: "bg-orange-500" };
-  if (score <= 3) return { score: 3, label: "良好", color: "bg-yellow-500" };
-  return { score: 4, label: "强", color: "bg-green-500" };
+  if (score <= 1) return { score: 1, label: t("passwordWeak"), color: "bg-red-500" };
+  if (score <= 2) return { score: 2, label: t("passwordFair"), color: "bg-orange-500" };
+  if (score <= 3) return { score: 3, label: t("passwordGood"), color: "bg-yellow-500" };
+  return { score: 4, label: t("passwordStrong"), color: "bg-green-500" };
 }
 
 export function RegisterForm() {
@@ -41,7 +41,7 @@ export function RegisterForm() {
   const [emailTouched, setEmailTouched] = useState(false);
 
   const emailValid = !email || EMAIL_RE.test(email);
-  const strength = useMemo(() => getPasswordStrength(password), [password]);
+  const strength = useMemo(() => getPasswordStrength(password, t), [password, t]);
   const passwordsMatch = !confirmPassword || password === confirmPassword;
   const passwordLongEnough = !password || password.length >= 8;
 
@@ -50,18 +50,18 @@ export function RegisterForm() {
     setError("");
 
     if (!EMAIL_RE.test(email)) {
-      setError("请输入有效的邮箱地址");
+      setError(t("invalidEmail"));
       return;
     }
 
     if (password.length < 8) {
-      setError("密码至少需要 8 个字符");
+      setError(t("passwordTooShort"));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("两次输入的密码不一致");
-      toast.error("两次输入的密码不一致");
+      setError(t("passwordMismatch"));
+      toast.error(t("passwordMismatch"));
       return;
     }
 
@@ -72,7 +72,7 @@ export function RegisterForm() {
       toast.success(t("registerSuccess"));
       router.push(ROUTES.LOGIN + "?registered=true");
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : "注册失败，请重试。";
+      const message = err instanceof ApiError ? err.message : t("registerFailed");
       setError(message);
       toast.error(message);
     } finally {
@@ -85,7 +85,7 @@ export function RegisterForm() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight">{t("createAccount")}</h1>
         <p className="text-sm text-muted-foreground">
-          创建一个新账号开始使用
+          {t("registerSubtitle")}
         </p>
       </div>
 
@@ -95,7 +95,7 @@ export function RegisterForm() {
           <Input
             id="name"
             type="text"
-            placeholder="张三"
+            placeholder={t("nameOptional")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={isLoading}
@@ -148,9 +148,9 @@ export function RegisterForm() {
                 <p className="text-muted-foreground text-xs">{strength.label}</p>
                 <div className="flex items-center gap-1.5 text-xs">
                   {password.length >= 8 ? (
-                    <span className="flex items-center gap-0.5 text-green-500"><Check className="h-3 w-3" />8+ 字符</span>
+                    <span className="flex items-center gap-0.5 text-green-500"><Check className="h-3 w-3" />{t("passwordChars")}</span>
                   ) : (
-                    <span className="flex items-center gap-0.5 text-muted-foreground"><X className="h-3 w-3" />8+ 字符</span>
+                    <span className="flex items-center gap-0.5 text-muted-foreground"><X className="h-3 w-3" />{t("passwordChars")}</span>
                   )}
                 </div>
               </div>

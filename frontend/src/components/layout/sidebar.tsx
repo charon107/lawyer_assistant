@@ -2,22 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { APP_NAME, ROUTES } from "@/lib/constants";
 import { LayoutDashboard, MessageSquare, UserCircle, FileSearch, Briefcase } from "lucide-react";
 import { useSidebarStore } from "@/stores";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui";
 
-const navigation = [
-  { name: "工作台", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
-  { name: "案件", href: ROUTES.CASES, icon: Briefcase },
-  { name: "文件审查", href: ROUTES.REVIEW, icon: FileSearch },
-  { name: "对话", href: ROUTES.CHAT, icon: MessageSquare },
-  { name: "个人中心", href: ROUTES.PROFILE, icon: UserCircle },
-];
-
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const t = useTranslations("navigation");
+
+  const navigation = [
+    { name: t("dashboard"), href: ROUTES.DASHBOARD, icon: LayoutDashboard },
+    { name: t("cases"), href: ROUTES.CASES, icon: Briefcase },
+    { name: t("review"), href: ROUTES.REVIEW, icon: FileSearch },
+    { name: t("conversations"), href: ROUTES.CHAT, icon: MessageSquare },
+    { name: t("profile"), href: ROUTES.PROFILE, icon: UserCircle },
+  ];
 
   return (
     <nav className="flex-1 space-y-1 p-4">
@@ -33,7 +35,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
               "min-h-[44px]",
               isActive
                 ? "bg-secondary text-secondary-foreground"
-                : "text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground"
+                : "text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground",
             )}
           >
             <item.icon className="h-5 w-5" />

@@ -31,7 +31,7 @@ export function LoginForm() {
       await login({ email, password });
       toast.success(t("loginSuccess"));
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : "登录失败，请重试。";
+      const message = err instanceof ApiError ? err.message : t("loginFailed");
       setError(message);
       toast.error(message);
       setIsLoading(false);
@@ -43,7 +43,7 @@ export function LoginForm() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight">{t("login")}</h1>
         <p className="text-sm text-muted-foreground">
-          输入您的邮箱和密码登录系统
+          {t("loginSubtitle")}
         </p>
       </div>
 

@@ -25,7 +25,14 @@
     "conversations": "对话",
     "profile": "个人中心",
     "settings": "设置",
-    "logout": "退出登录"
+    "logout": "退出登录",
+    "work": "工作",
+    "admin": "管理员",
+    "user": "用户",
+    "review": "文件审查",
+    "adminRatings": "回复评分",
+    "adminConversations": "全部对话",
+    "cases": "案件"
   },
   "auth": {
     "login": "登录",
@@ -51,7 +58,32 @@
     "loggingIn": "登录中...",
     "creatingAccount": "创建账号中...",
     "nameOptional": "姓名（选填）",
-    "createAccount": "创建账号"
+    "createAccount": "创建账号",
+    "loginFailed": "登录失败，请重试。",
+    "loginSubtitle": "输入您的邮箱和密码登录系统",
+    "registerSubtitle": "创建一个新账号开始使用",
+    "registerFailed": "注册失败，请重试。",
+    "invalidEmail": "请输入有效的邮箱地址",
+    "passwordTooShort": "密码至少需要 8 个字符",
+    "passwordWeak": "弱",
+    "passwordFair": "一般",
+    "passwordGood": "良好",
+    "passwordStrong": "强",
+    "passwordChars": "8+ 字符",
+    "heroTitle1": "AI 驱动的",
+    "heroTitle2": "法律文档审查",
+    "heroTitle3": "助手",
+    "heroDesc": "上传合同，AI 自动识别关键条款、权利义务与风险点，快速生成专业审查报告。",
+    "featureContract": "合同审查",
+    "featureContractEn": "Contract Review",
+    "featureNda": "保密协议",
+    "featureNdaEn": "NDA Review",
+    "featureAnalysis": "文件分析",
+    "featureAnalysisEn": "Document Analysis",
+    "featureEmployment": "劳动合同",
+    "featureEmploymentEn": "Employment Review",
+    "testimonial": "AI 帮助您解答法律问题、审查合同条款、发现隐藏风险，将数小时的工作缩短至分钟级别。",
+    "appDescription": "法律 AI 智能助手"
   },
   "profile": {
     "title": "个人中心",
@@ -161,6 +193,7 @@
     "copyright": "版权所有"
   },
   "landing": {
+    "appBadge": "法律 AI 智能助手",
     "heroTagline": "您的 AI 法律助手",
     "heroSubtitle": "AI 驱动法律文件审查，智能分析风险条款，高效辅助律师工作。",
     "signIn": "登录",

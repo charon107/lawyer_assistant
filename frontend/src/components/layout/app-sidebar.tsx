@@ -2,24 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { APP_NAME, ROUTES } from "@/lib/constants";
 import { useAuth } from "@/hooks";
 import { LayoutDashboard, MessageSquare, FileSearch, UserCircle, Star, List } from "lucide-react";
 import { ThemeToggle } from "@/components/theme";
 import { LanguageSwitcherCompact } from "@/components/language-switcher";
-
-const navigation = [
-  { name: "工作台", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
-  { name: "文件审查", href: ROUTES.REVIEW, icon: FileSearch },
-  { name: "对话", href: ROUTES.CHAT, icon: MessageSquare },
-  { name: "个人中心", href: ROUTES.SETTINGS, icon: UserCircle },
-];
-
-const adminNav = [
-  { name: "回复评分", href: ROUTES.ADMIN_RATINGS, icon: Star },
-  { name: "全部对话", href: ROUTES.ADMIN_CONVERSATIONS, icon: List },
-];
 
 function NavSection({
   label,
@@ -60,6 +49,19 @@ function NavSection({
 export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const t = useTranslations("navigation");
+
+  const navigation = [
+    { name: t("dashboard"), href: ROUTES.DASHBOARD, icon: LayoutDashboard },
+    { name: t("review"), href: ROUTES.REVIEW, icon: FileSearch },
+    { name: t("conversations"), href: ROUTES.CHAT, icon: MessageSquare },
+    { name: t("profile"), href: ROUTES.SETTINGS, icon: UserCircle },
+  ];
+
+  const adminNav = [
+    { name: t("adminRatings"), href: ROUTES.ADMIN_RATINGS, icon: Star },
+    { name: t("adminConversations"), href: ROUTES.ADMIN_CONVERSATIONS, icon: List },
+  ];
 
   return (
     <aside className="bg-card hidden w-60 shrink-0 border-r md:flex md:flex-col">
@@ -71,9 +73,9 @@ export function AppSidebar() {
 
       {/* Nav */}
       <nav className="flex flex-1 flex-col gap-6 p-4">
-        <NavSection label="工作" items={navigation} pathname={pathname} />
+        <NavSection label={t("work")} items={navigation} pathname={pathname} />
         {user?.role === "admin" && (
-          <NavSection label="管理员" items={adminNav} pathname={pathname} />
+          <NavSection label={t("admin")} items={adminNav} pathname={pathname} />
         )}
       </nav>
 
@@ -85,10 +87,10 @@ export function AppSidebar() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[13px] font-medium">
-              {user?.name || user?.email?.split("@")[0] || "用户"}
+              {user?.name || user?.email?.split("@")[0] || t("user")}
             </p>
             <p className="text-muted-foreground truncate text-[11px]">
-              {user?.role === "admin" ? "管理员" : "用户"}
+              {user?.role === "admin" ? t("admin") : t("user")}
             </p>
           </div>
         </div>

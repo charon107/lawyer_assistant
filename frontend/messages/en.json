@@ -25,7 +25,14 @@
     "conversations": "Conversations",
     "profile": "Profile",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "work": "Work",
+    "admin": "Admin",
+    "user": "User",
+    "review": "Review",
+    "adminRatings": "Ratings",
+    "adminConversations": "All Conversations",
+    "cases": "Cases"
   },
   "auth": {
     "login": "Login",
@@ -51,7 +58,32 @@
     "loggingIn": "Logging in...",
     "creatingAccount": "Creating account...",
     "nameOptional": "Name (optional)",
-    "createAccount": "Create Account"
+    "createAccount": "Create Account",
+    "loginFailed": "Login failed, please try again.",
+    "loginSubtitle": "Enter your email and password to sign in",
+    "registerSubtitle": "Create a new account to get started",
+    "registerFailed": "Registration failed, please try again.",
+    "invalidEmail": "Please enter a valid email address",
+    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordWeak": "Weak",
+    "passwordFair": "Fair",
+    "passwordGood": "Good",
+    "passwordStrong": "Strong",
+    "passwordChars": "8+ characters",
+    "heroTitle1": "AI-Powered",
+    "heroTitle2": "Legal Document",
+    "heroTitle3": "Review Assistant",
+    "heroDesc": "Upload contracts and let AI automatically identify key clauses, obligations, and risks to generate professional review reports quickly.",
+    "featureContract": "Contract Review",
+    "featureContractEn": "",
+    "featureNda": "NDA Review",
+    "featureNdaEn": "",
+    "featureAnalysis": "Document Analysis",
+    "featureAnalysisEn": "",
+    "featureEmployment": "Employment Review",
+    "featureEmploymentEn": "",
+    "testimonial": "AI helps you answer legal questions, review contract clauses, and uncover hidden risks — reducing hours of work to minutes.",
+    "appDescription": "AI Legal Assistant"
   },
   "profile": {
     "title": "Profile",
@@ -161,6 +193,7 @@
     "copyright": "All rights reserved"
   },
   "landing": {
+    "appBadge": "AI Legal Assistant",
     "heroTagline": "Your AI Legal Assistant",
     "heroSubtitle": "AI-powered legal document review. Identify risk clauses intelligently and assist legal professionals efficiently.",
     "signIn": "Sign In",

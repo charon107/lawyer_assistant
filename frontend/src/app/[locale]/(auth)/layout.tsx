@@ -1,16 +1,20 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ThemeToggle } from "@/components/theme";
-import { APP_NAME, APP_DESCRIPTION, ROUTES } from "@/lib/constants";
+import { LanguageSwitcherCompact } from "@/components/language-switcher";
+import { APP_NAME, ROUTES } from "@/lib/constants";
 import { FileText, ShieldCheck, FileSearch, Briefcase, Scale } from "lucide-react";
 
-const docTypes = [
-  { icon: FileText, label: "合同审查", labelEn: "Contract Review" },
-  { icon: ShieldCheck, label: "保密协议", labelEn: "NDA Review" },
-  { icon: FileSearch, label: "文件分析", labelEn: "Document Analysis" },
-  { icon: Briefcase, label: "劳动合同", labelEn: "Employment Review" },
-];
+export default async function AuthLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "auth" });
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+  const docTypes = [
+    { icon: FileText, label: t("featureContract"), labelEn: t("featureContractEn") },
+    { icon: ShieldCheck, label: t("featureNda"), labelEn: t("featureNdaEn") },
+    { icon: FileSearch, label: t("featureAnalysis"), labelEn: t("featureAnalysisEn") },
+    { icon: Briefcase, label: t("featureEmployment"), labelEn: t("featureEmploymentEn") },
+  ];
   return (
     <div className="bg-background min-h-screen lg:grid lg:grid-cols-2">
       {/* Left — hero panel (desktop only) */}
@@ -31,17 +35,17 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="relative z-10">
           <div className="mb-6 inline-flex items-center rounded-full border border-zinc-200 bg-zinc-200/50 px-3 py-1 text-sm text-zinc-500 dark:border-white/10 dark:bg-white/5 dark:text-zinc-400">
             <Scale className="mr-2 h-3.5 w-3.5 text-brand" />
-            {APP_DESCRIPTION}
+            {t("appDescription")}
           </div>
           <h1 className="mb-4 text-4xl font-bold leading-tight tracking-tight text-zinc-900 dark:text-white xl:text-5xl">
-            AI 驱动的
+            {t("heroTitle1")}
             <span className="block bg-gradient-to-r from-brand to-brand-hover bg-clip-text text-transparent">
-              法律文档审查
+              {t("heroTitle2")}
             </span>
-            助手
+            {t("heroTitle3")}
           </h1>
           <p className="max-w-md text-lg leading-relaxed text-zinc-500 dark:text-zinc-400">
-            上传合同，AI 自动识别关键条款、权利义务与风险点，快速生成专业审查报告。
+            {t("heroDesc")}
           </p>
 
           <div className="mt-8 grid grid-cols-2 gap-3">
@@ -63,7 +67,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="relative z-10">
           <blockquote className="border-l-2 border-brand/40 pl-4">
             <p className="text-sm italic leading-relaxed text-zinc-400 dark:text-zinc-500">
-              &ldquo;AI 帮助您解答法律问题、审查合同条款、发现隐藏风险，将数小时的工作缩短至分钟级别。&rdquo;
+              &ldquo;{t("testimonial")}&rdquo;
             </p>
           </blockquote>
         </div>
@@ -75,7 +79,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <Link href={ROUTES.HOME} className="text-lg font-bold tracking-tight lg:hidden">
             {APP_NAME}
           </Link>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <LanguageSwitcherCompact />
             <ThemeToggle />
           </div>
         </div>
