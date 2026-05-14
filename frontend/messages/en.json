@@ -163,7 +163,8 @@
   "landing": {
     "heroTagline": "Your AI Legal Assistant",
     "heroSubtitle": "AI-powered legal document review. Identify risk clauses intelligently and assist legal professionals efficiently.",
-    "signIn": "Sign In"
+    "signIn": "Sign In",
+    "register": "Register"
   },
   "cases": {
     "title": "Case Management",

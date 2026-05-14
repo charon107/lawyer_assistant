@@ -1,7 +1,7 @@
 import { getRequestConfig } from "next-intl/server";
 
 // Supported locales
-export const locales = ["zh", "en", "pl"] as const;
+export const locales = ["zh", "en"] as const;
 export type Locale = (typeof locales)[number];
 
 export const defaultLocale: Locale = "zh";
@@ -25,7 +25,6 @@ export function getLocaleLabel(locale: Locale): string {
   const labels: Record<Locale, string> = {
     zh: "中文",
     en: "English",
-    pl: "Polski",
   };
   return labels[locale];
 }

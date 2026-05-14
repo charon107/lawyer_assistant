@@ -8,6 +8,9 @@ const dmSans = DM_Sans({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "LexMind",
   description: "法律 AI 智能助手，提供法律咨询、合同审查和法律研究",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({
