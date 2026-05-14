@@ -15,18 +15,12 @@ RUN pip install --no-cache-dir uv -i https://mirrors.aliyun.com/pypi/simple/
 # Copy dependency files first for layer caching
 COPY backend/pyproject.toml backend/uv.lock ./
 
-# Install dependencies — skip torch to avoid CUDA bloat (~8GB saved)
-# CUDA packages (nvidia-*, cuda-*, triton) are torch-only deps and auto-skipped
-RUN uv sync --frozen --no-dev \
-    --no-install-package torch \
-    --index-url https://mirrors.aliyun.com/pypi/simple/
+# Install dependencies with Aliyun PyPI mirror (no dev deps, CPU-only torch)
+RUN uv sync --frozen --no-dev --index-url https://mirrors.aliyun.com/pypi/simple/
 
-# Install CPU-only PyTorch (BGE embedding only needs CPU inference)
-RUN uv pip install torch --index-url https://download.pytorch.org/whl/cpu
-
-# Pre-download embedding model (--no-sync to preserve CPU-only torch)
+# Pre-download embedding model
 # HF_ENDPOINT set to hf-mirror.com at runtime via docker-compose.prod.yml
-RUN uv run --no-sync python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-base-zh-v1.5')"
+RUN uv run python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-base-zh-v1.5')"
 
 # Copy application code
 COPY backend/ .
@@ -39,4 +33,4 @@ RUN mkdir -p /app/data /app/media
 
 EXPOSE 8000
 
-CMD ["uv", "run", "--no-sync", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -133,6 +133,10 @@ invalid-return-type = "warn"
 # CrewAI/langgraph runtime classes use kwargs that ty stubs don't enumerate
 invalid-type-form = "warn"
 
+[tool.uv]
+extra-index-url = ["https://download.pytorch.org/whl/cpu"]
+index-strategy = "unsafe-best-match"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
