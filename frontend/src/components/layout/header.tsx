@@ -1,29 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/hooks";
 import { Button } from "@/components/ui";
 import { ThemeToggle } from "@/components/theme";
 import { LanguageSwitcherCompact } from "@/components/language-switcher";
 import { APP_NAME, ROUTES } from "@/lib/constants";
-import { cn } from "@/lib/utils";
-import { LogOut, Menu, LayoutDashboard, MessageSquare, UserCircle, Briefcase } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui";
 import { useSidebarStore } from "@/stores";
-
-const navItemKeys = [
-  { key: "dashboard", href: ROUTES.DASHBOARD, icon: LayoutDashboard, adminOnly: true },
-  { key: "cases", href: ROUTES.CASES, icon: Briefcase, adminOnly: false },
-  { key: "conversations", href: ROUTES.CHAT, icon: MessageSquare, adminOnly: false },
-  { key: "profile", href: ROUTES.PROFILE, icon: UserCircle, adminOnly: false },
-];
 
 export function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const { toggle } = useSidebarStore();
-  const pathname = usePathname();
   const navT = useTranslations("navigation");
   const authT = useTranslations("auth");
 
@@ -40,29 +30,6 @@ export function Header() {
           <Link href={ROUTES.DASHBOARD} className="text-sm font-bold tracking-tight sm:text-base">
             {APP_NAME}
           </Link>
-
-          {/* Desktop nav links */}
-          <nav className="hidden items-center gap-0.5 md:flex">
-            {navItemKeys.filter(item => !item.adminOnly || user?.role === "admin").map((item) => {
-              const isActive = pathname?.includes(item.href);
-              return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-secondary text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <item.icon className="h-3.5 w-3.5" />
-                  {navT(item.key as "dashboard" | "cases" | "conversations" | "profile")}
-                </Link>
-              );
-            })}
-          </nav>
         </div>
 
         {/* Right: language, theme, user */}
@@ -72,7 +39,7 @@ export function Header() {
           {isAuthenticated ? (
             <>
               <Button variant="ghost" size="sm" asChild className="h-10 px-2 sm:px-3">
-                <Link href={ROUTES.PROFILE} className="flex items-center gap-2">
+                <Link href={ROUTES.SETTINGS} className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
                     {user?.avatar_url && <AvatarImage src={`/api/users/avatar/${user.id}`} alt={user.email} />}
                     <AvatarFallback className="bg-brand/10 text-brand text-[10px]">

@@ -1,15 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, Skeleton } from "@/components/ui";
-import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks";
 import { ROUTES } from "@/lib/constants";
-import type { HealthResponse } from "@/types";
 import {
-  CheckCircle,
-  XCircle,
   MessageSquare,
   FileSearch,
   Briefcase,
@@ -27,25 +22,6 @@ function getGreeting(): string {
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [healthLoading, setHealthLoading] = useState(true);
-  const [healthError, setHealthError] = useState(false);
-
-  useEffect(() => {
-    const checkHealth = async () => {
-      try {
-        const data = await apiClient.get<HealthResponse>("/health");
-        setHealth(data);
-        setHealthError(false);
-      } catch {
-        setHealthError(true);
-      } finally {
-        setHealthLoading(false);
-      }
-    };
-
-    checkHealth();
-  }, []);
 
   return (
     <div className="space-y-6 pb-8">
@@ -59,69 +35,27 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardContent className="p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-[13px] font-medium text-muted-foreground">API 状态</span>
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950">
-                {healthLoading ? (
-                  <Skeleton className="h-4 w-4 rounded-full" />
-                ) : healthError ? (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                ) : (
-                  <CheckCircle className="h-4 w-4 text-blue-600" />
-                )}
-              </div>
+      {/* Account card */}
+      <Card className="max-w-sm">
+        <CardContent className="p-5">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-[13px] font-medium text-muted-foreground">账户</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950">
+              <span className="text-sm">👤</span>
             </div>
-            {healthLoading ? (
-              <Skeleton className="h-7 w-16 rounded" />
-            ) : (
-              <p className="text-[28px] font-bold leading-none tracking-tight">
-                {healthError ? "离线" : health?.status || "正常"}
-              </p>
-            )}
-            {health?.version && (
-              <p className="mt-1 text-xs text-muted-foreground">v{health.version}</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-[13px] font-medium text-muted-foreground">账户</span>
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950">
-                <span className="text-sm">👤</span>
-              </div>
-            </div>
-            {user?.email ? (
-              <p className="text-[28px] font-bold leading-none tracking-tight truncate">
-                {user.email.split("@")[0]}
-              </p>
-            ) : (
-              <Skeleton className="h-7 w-24 rounded" />
-            )}
-            <p className="mt-1 text-xs text-muted-foreground">
-              {user?.role === "admin" ? "管理员" : "用户"}
+          </div>
+          {user?.email ? (
+            <p className="text-[28px] font-bold leading-none tracking-tight truncate">
+              {user.email.split("@")[0]}
             </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-[13px] font-medium text-muted-foreground">AI 引擎</span>
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 dark:bg-green-950">
-                <span className="text-sm">⚡</span>
-              </div>
-            </div>
-            <p className="text-[28px] font-bold leading-none tracking-tight">PydanticAI</p>
-            <p className="mt-1 text-xs text-muted-foreground">OpenAI 提供商</p>
-          </CardContent>
-        </Card>
-      </div>
+          ) : (
+            <Skeleton className="h-7 w-24 rounded" />
+          )}
+          <p className="mt-1 text-xs text-muted-foreground">
+            {user?.role === "admin" ? "管理员" : "用户"}
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Quick actions */}
       <div>
