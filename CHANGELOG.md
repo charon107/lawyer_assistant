@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0.0] - 2026-05-15
+
+### Added
+
+- **LexMind Design System**: Complete visual rebrand with professional, modern design language
+- **Design Documentation**: DESIGN.md with brand guidelines, color tokens, typography scale, and component specs
+- **Design Preview**: Interactive HTML preview showcasing all design system components
+- **Persistent Sidebar**: New AppSidebar component with navigation, user info, and controls
+- **App Icon**: Custom icon.png for favicon and brand identity
+- **Language & Theme Controls**: Moved to sidebar bottom for better accessibility
+
+### Changed
+
+- **Dashboard Layout**: Removed top header bar, simplified to sidebar + content layout
+- **Landing Page**: Redesigned with LexMind branding and improved hero section
+- **Dashboard Page**: Updated stat cards and case list with new design tokens
+- **Settings Page**: Applied design system styles
+- **Profile Page**: Applied design system styles
+- **Auth Pages**: Updated login/register with new brand icon
+- **Global Styles**: Replaced with design system CSS variables and tokens
+- **Color System**: Migrated to warm gray (Stone) palette, deep indigo brand colors
+- **Typography**: Unified to DM Sans family with structured type scale
+
+### Removed
+
+- **Polish Language**: Removed PL locale support (zh/en only)
+- **Header Component**: Removed from dashboard layout (controls moved to sidebar)
+
+### Fixed
+
+- **Translation Keys**: Added missing `landing.register` translation for zh/en
+- **Icon Conflict**: Resolved Next.js conflicting public/page file error for icon.png
+
 ## [0.3.0.0] - 2026-05-08
 
 ### Added
