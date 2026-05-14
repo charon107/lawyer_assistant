@@ -2,8 +2,8 @@
  * Application constants.
  */
 
-export const APP_NAME = "AI 法律助手";
-export const APP_DESCRIPTION = "AI 驱动的智能法律助手";
+export const APP_NAME = "LexMind";
+export const APP_DESCRIPTION = "法律 AI 智能助手";
 
 // API Routes (Next.js internal routes)
 export const API_ROUTES = {

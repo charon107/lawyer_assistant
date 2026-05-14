@@ -23,9 +23,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="relative z-10">
           <Link href={ROUTES.HOME} className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand">
-              <Scale className="h-4 w-4 text-white" />
-            </div>
+            <img src="/icon.png" alt="LexMind" className="h-8 w-8 rounded-lg object-cover" />
             <span className="text-lg font-bold text-zinc-900 dark:text-white">{APP_NAME}</span>
           </Link>
         </div>

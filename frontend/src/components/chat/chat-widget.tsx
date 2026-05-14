@@ -16,7 +16,7 @@ interface Message {
 export function ChatWidget({ reviewId, apiBase, enabled }: ChatWidgetProps) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "你好！我是 AI 法律助手。你可以基于审查结果向我提问，也可以咨询任何法律问题，例如：\n\n- \"第 3.4 条为什么标记为中风险？\"\n- \"这个条款的法律依据是什么？\"\n- \"帮我总结前三大风险\"" },
+    { role: "assistant", content: "你好！我是 LexMind 法律助手。你可以基于审查结果向我提问，也可以咨询任何法律问题，例如：\n\n- \"第 3.4 条为什么标记为中风险？\"\n- \"这个条款的法律依据是什么？\"\n- \"帮我总结前三大风险\"" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -80,7 +80,7 @@ export function ChatWidget({ reviewId, apiBase, enabled }: ChatWidgetProps) {
                         rounded-xl shadow-2xl flex flex-col z-50">
           {/* Header */}
           <div className="p-3 border-b border-zinc-700 flex items-center justify-between">
-            <span className="text-sm font-medium">AI 法律助手</span>
+            <span className="text-sm font-medium">LexMind</span>
             <span className="text-xs text-zinc-500">基于当前审查结果回答</span>
           </div>
 

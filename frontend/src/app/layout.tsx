@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import { defaultLocale } from "@/i18n";
 
-const inter = Inter({ subsets: ["latin"] });
+const dmSans = DM_Sans({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI 法律助手",
-  description: "AI 驱动的智能法律助手，提供法律咨询、合同审查和法律研究",
+  title: "LexMind",
+  description: "法律 AI 智能助手，提供法律咨询、合同审查和法律研究",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -17,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang={defaultLocale} suppressHydrationWarning>
-      <body className={inter.className}>{children}</body>
+      <body className={dmSans.className}>{children}</body>
     </html>
   );
 }

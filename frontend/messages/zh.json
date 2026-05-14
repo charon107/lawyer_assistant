@@ -163,7 +163,8 @@
   "landing": {
     "heroTagline": "您的 AI 法律助手",
     "heroSubtitle": "AI 驱动法律文件审查，智能分析风险条款，高效辅助律师工作。",
-    "signIn": "登录"
+    "signIn": "登录",
+    "register": "注册"
   },
   "cases": {
     "title": "案件管理",

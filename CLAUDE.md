@@ -1,6 +1,6 @@
 ## Project Overview
 
-**lpa_review_app** — FastAPI application generated with Full-Stack AI Agent Template.
+**LexMind** — 法律 AI 智能助手，面向律师与法务人员。
 
 Stack:
 
@@ -32,6 +32,22 @@ GStack decides:
 
 Superpowers decides:
 - HOW implementation work must be done
+
+---
+
+# Design System
+
+详见 [DESIGN.md](./DESIGN.md)。
+
+核心要点：
+
+- **品牌名：** LexMind
+- **主色：** 深靛蓝 `#1E40AF`
+- **字体：** DM Sans（全站统一），JetBrains Mono（仅编号）
+- **背景：** 暖白 `#FAFAF9`，Stone 色系
+- **风格：** 专业严肃 + 现代高级，靠排版和间距建立层级，不用装饰
+
+禁止：glass-card 模糊、动画渐变边框、科技感动画、多字体混用、冷灰色系。
 
 ---
 
