@@ -2,21 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardContent, Button, Skeleton } from "@/components/ui";
+import { Card, CardContent, Skeleton } from "@/components/ui";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks";
-import { ROUTES, BACKEND_URL } from "@/lib/constants";
+import { ROUTES } from "@/lib/constants";
 import type { HealthResponse } from "@/types";
 import {
   CheckCircle,
   XCircle,
-  User,
-  ArrowRight,
   MessageSquare,
-  Settings,
-  Activity,
-  ExternalLink,
-  BookOpen,
+  FileSearch,
+  Briefcase,
+  Download,
   Star,
   List,
 } from "lucide-react";
@@ -52,152 +49,159 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 pb-8">
+      {/* Page header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold">
-          {getGreeting()}{user?.name ? `, ${user.name}` : user?.email ? `, ${user.email.split("@")[0]}` : ""}
+        <h1 className="text-2xl font-bold tracking-tight">
+          {getGreeting()}{user?.name ? `，${user.name}` : user?.email ? `，${user.email.split("@")[0]}` : ""}
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          以下是您的项目动态。
+        <p className="mt-1 text-sm text-muted-foreground">
+          欢迎使用 LexMind — 以下是您的工作台概览
         </p>
       </div>
 
-      {/* Stats cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Stat cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">API 状态</CardTitle>
+          <CardContent className="p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-[13px] font-medium text-muted-foreground">API 状态</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950">
+                {healthLoading ? (
+                  <Skeleton className="h-4 w-4 rounded-full" />
+                ) : healthError ? (
+                  <XCircle className="h-4 w-4 text-red-500" />
+                ) : (
+                  <CheckCircle className="h-4 w-4 text-blue-600" />
+                )}
+              </div>
+            </div>
             {healthLoading ? (
-              <Skeleton className="h-4 w-4 rounded-full" />
-            ) : healthError ? (
-              <XCircle className="h-4 w-4 text-destructive" />
+              <Skeleton className="h-7 w-16 rounded" />
             ) : (
-              <CheckCircle className="h-4 w-4 text-green-500" />
-            )}
-          </CardHeader>
-          <CardContent>
-            {healthLoading ? <Skeleton className="h-8 w-16 rounded" /> : (
-              <p className="text-2xl font-bold">{healthError ? "离线" : health?.status || "正常"}</p>
+              <p className="text-[28px] font-bold leading-none tracking-tight">
+                {healthError ? "离线" : health?.status || "正常"}
+              </p>
             )}
             {health?.version && (
-              <p className="text-xs text-muted-foreground">v{health.version}</p>
+              <p className="mt-1 text-xs text-muted-foreground">v{health.version}</p>
             )}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">账户</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
+          <CardContent className="p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-[13px] font-medium text-muted-foreground">账户</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950">
+                <span className="text-sm">👤</span>
+              </div>
+            </div>
             {user?.email ? (
-              <p className="text-sm font-medium truncate">{user.email}</p>
+              <p className="text-[28px] font-bold leading-none tracking-tight truncate">
+                {user.email.split("@")[0]}
+              </p>
             ) : (
-              <Skeleton className="h-5 w-40 rounded" />
+              <Skeleton className="h-7 w-24 rounded" />
             )}
-            <p className="text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground">
               {user?.role === "admin" ? "管理员" : "用户"}
-              {user?.created_at && ` · 注册于 ${new Date(user.created_at).toLocaleDateString()}`}
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">AI 智能体</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">pydantic_ai</p>
-            <p className="text-xs text-muted-foreground">OpenAI 提供商</p>
+          <CardContent className="p-5">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-[13px] font-medium text-muted-foreground">AI 引擎</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-green-50 dark:bg-green-950">
+                <span className="text-sm">⚡</span>
+              </div>
+            </div>
+            <p className="text-[28px] font-bold leading-none tracking-tight">PydanticAI</p>
+            <p className="mt-1 text-xs text-muted-foreground">OpenAI 提供商</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Quick actions */}
       <div>
-        <h2 className="mb-3 text-lg font-semibold">快捷操作</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">快捷操作</h2>
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
           <Link href={ROUTES.CHAT}>
-            <Card className="cursor-pointer transition-colors hover:bg-accent">
-              <CardContent className="flex items-center gap-3 p-4">
-                <MessageSquare className="h-5 w-5 text-primary" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">开始对话</p>
-                  <p className="text-xs text-muted-foreground">与 AI 智能体交流</p>
+            <Card className="cursor-pointer transition-colors hover:border-brand/40">
+              <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/8">
+                  <MessageSquare className="h-5 w-5 text-brand" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                <p className="text-[13px] font-semibold">AI 对话</p>
+                <p className="text-xs text-muted-foreground">法律咨询与分析</p>
               </CardContent>
             </Card>
           </Link>
 
-          <Link href={ROUTES.PROFILE}>
-            <Card className="cursor-pointer transition-colors hover:bg-accent">
-              <CardContent className="flex items-center gap-3 p-4">
-                <Settings className="h-5 w-5 text-primary" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">个人中心与设置</p>
-                  <p className="text-xs text-muted-foreground">管理您的账户</p>
+          <Link href={ROUTES.REVIEW}>
+            <Card className="cursor-pointer transition-colors hover:border-brand/40">
+              <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/8">
+                  <FileSearch className="h-5 w-5 text-brand" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                <p className="text-[13px] font-semibold">文件审查</p>
+                <p className="text-xs text-muted-foreground">合同与协议审查</p>
               </CardContent>
             </Card>
           </Link>
 
-          <a href={`${BACKEND_URL}/docs`} target="_blank" rel="noopener noreferrer">
-            <Card className="cursor-pointer transition-colors hover:bg-accent">
-              <CardContent className="flex items-center gap-3 p-4">
-                <BookOpen className="h-5 w-5 text-primary" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">API 文档</p>
-                  <p className="text-xs text-muted-foreground">OpenAPI / Swagger 接口文档</p>
+          <Link href={ROUTES.CASES}>
+            <Card className="cursor-pointer transition-colors hover:border-brand/40">
+              <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/8">
+                  <Briefcase className="h-5 w-5 text-brand" />
                 </div>
-                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                <p className="text-[13px] font-semibold">案件管理</p>
+                <p className="text-xs text-muted-foreground">查看与管理案件</p>
               </CardContent>
             </Card>
-          </a>
+          </Link>
 
           <a href="/api/conversations/export" download="conversations_export.json">
-            <Card className="cursor-pointer transition-colors hover:bg-accent">
-              <CardContent className="flex items-center gap-3 p-4">
-                <ArrowRight className="h-5 w-5 text-primary" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">导出对话</p>
-                  <p className="text-xs text-muted-foreground">以 JSON 格式下载所有对话记录</p>
+            <Card className="cursor-pointer transition-colors hover:border-brand/40">
+              <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/8">
+                  <Download className="h-5 w-5 text-brand" />
                 </div>
-                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                <p className="text-[13px] font-semibold">文档导出</p>
+                <p className="text-xs text-muted-foreground">下载对话记录</p>
               </CardContent>
             </Card>
           </a>
         </div>
       </div>
+
       {/* Admin Actions */}
       {user?.role === "admin" && (
         <div>
-          <h2 className="mb-3 text-lg font-semibold">管理员操作</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">管理员</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Link href={ROUTES.ADMIN_RATINGS}>
-              <Card className="cursor-pointer transition-colors hover:bg-accent">
-                <CardContent className="flex items-center gap-3 p-4">
-                  <Star className="h-5 w-5 text-primary" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">回复评分</p>
-                    <p className="text-xs text-muted-foreground">查看和管理评分</p>
+              <Card className="cursor-pointer transition-colors hover:border-brand/40">
+                <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950">
+                    <Star className="h-5 w-5 text-amber-600" />
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-[13px] font-semibold">回复评分</p>
+                  <p className="text-xs text-muted-foreground">查看和管理评分</p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link href={ROUTES.ADMIN_CONVERSATIONS}>
-              <Card className="cursor-pointer transition-colors hover:bg-accent">
-                <CardContent className="flex items-center gap-3 p-4">
-                  <List className="h-5 w-5 text-primary" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">全部对话</p>
-                    <p className="text-xs text-muted-foreground">查看所有用户的对话</p>
+              <Card className="cursor-pointer transition-colors hover:border-brand/40">
+                <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950">
+                    <List className="h-5 w-5 text-purple-600" />
                   </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-[13px] font-semibold">全部对话</p>
+                  <p className="text-xs text-muted-foreground">查看所有用户的对话</p>
                 </CardContent>
               </Card>
             </Link>
