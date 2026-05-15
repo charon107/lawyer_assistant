@@ -13,8 +13,10 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **PDF Upload Stuck at Idle**: Review detail page now auto-connects WebSocket when review is still in progress, fixing the stuck-at-0% bug after upload redirect
 - **Duplicate Agent Icons**: Prevented multiple agent avatars from appearing during tool-call loops — one icon per assistant turn
 - **Duplicate Type Interface**: Removed duplicate `ToolStatusEvent` declaration in chat types
+- **API Proxy Route**: Added Next.js catch-all route for `/api/v1/lpa/review/*` to enable local development without nginx
 
 ## [0.4.0.0] - 2026-05-15
 
