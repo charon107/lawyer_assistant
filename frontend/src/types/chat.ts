@@ -52,6 +52,7 @@ export type WSEventType =
   | "call_tools_start"
   | "tool_call"
   | "tool_result"
+  | "tool_status"
   | "final_result_start"
   | "final_result"
   | "complete"
@@ -99,6 +100,14 @@ export interface ToolResultEvent {
   data: {
     tool_name: string;
     result: unknown;
+  };
+}
+
+export interface ToolStatusEvent {
+  type: "tool_status";
+  data: {
+    tool_name: string;
+    label: string;
   };
 }
 

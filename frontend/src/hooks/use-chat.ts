@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { nanoid } from "nanoid";
 import { useWebSocket } from "./use-websocket";
 import { useChatStore, useAuthStore } from "@/stores";
-import type { ChatMessage, ToolCall, WSEvent, PendingApproval, Decision } from "@/types";
+import type { WSEvent, PendingApproval, Decision } from "@/types";
 import { getWsUrl } from "@/lib/constants";
 import { useConversationStore } from "@/stores";
 interface UseChatOptions {
@@ -15,15 +15,9 @@ interface UseChatOptions {
 
 export function useChat(options: UseChatOptions = {}) {
   const { conversationId, caseId, onConversationCreated } = options;
-  const { setCurrentConversationId, currentConversationId: currentConversationIdFromStore } = useConversationStore();
-  const {
-    messages,
-    addMessage,
-    updateMessage,
-    addToolCall,
-    updateToolCall,
-    clearMessages,
-  } = useChatStore();
+  const { setCurrentConversationId, currentConversationId: currentConversationIdFromStore } =
+    useConversationStore();
+  const { messages, addMessage, updateMessage, setToolStatus, clearMessages } = useChatStore();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
@@ -49,7 +43,8 @@ export function useChat(options: UseChatOptions = {}) {
 
         const newMsgId = nanoid();
         // Use current conversationId from store to avoid closure issues
-        const effectiveConversationId = currentConversationIdFromStore || conversationId || undefined;
+        const effectiveConversationId =
+          currentConversationIdFromStore || conversationId || undefined;
         addMessage({
           id: newMsgId,
           role: "assistant",
@@ -74,7 +69,7 @@ export function useChat(options: UseChatOptions = {}) {
           const { updateMessagesWhere } = useChatStore.getState();
           updateMessagesWhere(
             (msg) => !msg.conversationId,
-            (msg) => ({ ...msg, conversationId: conversation_id })
+            (msg) => ({ ...msg, conversationId: conversation_id }),
           );
           onConversationCreated?.(conversation_id);
           break;
@@ -94,12 +89,14 @@ export function useChat(options: UseChatOptions = {}) {
             // Fallback: find the last assistant message with a temp ID
             // This handles cases where currentMessageId was already cleared
             const messages = useChatStore.getState().messages;
-            const lastTemp = [...messages].reverse().find(
-              msg => msg.role === "assistant" && !!msg.isTemporaryId
-            );
+            const lastTemp = [...messages]
+              .reverse()
+              .find((msg) => msg.role === "assistant" && !!msg.isTemporaryId);
             if (lastTemp) {
               updateMessage(lastTemp.id, (msg) => ({
-                ...msg, id: message_id, isTemporaryId: false
+                ...msg,
+                id: message_id,
+                isTemporaryId: false,
               }));
             }
           }
@@ -107,15 +104,20 @@ export function useChat(options: UseChatOptions = {}) {
         }
 
         case "model_request_start": {
-          // PydanticAI/LangChain - create message immediately
-          createNewMessage("");
+          // PydanticAI/LangChain - only create message once per turn
+          if (!currentMessageId) {
+            createNewMessage("");
+          }
           break;
         }
 
         case "crew_start":
         case "crew_started": {
-          // CrewAI - generate groupId for this execution, wait for agent events
-          currentGroupIdRef.current = nanoid();
+          // CrewAI - only create message once per turn
+          if (!currentMessageId) {
+            currentGroupIdRef.current = nanoid();
+            createNewMessage("");
+          }
           break;
         }
 
@@ -131,57 +133,55 @@ export function useChat(options: UseChatOptions = {}) {
           break;
         }
 
-        // CrewAI agent events - each agent gets its own message container
+        // CrewAI agent events - update single message content
         case "agent_started": {
-          const { agent } = wsEvent.data as {
-            agent: string;
-            task: string;
-          };
-          // Create NEW message for this agent (groupId read from ref)
-          createNewMessage(`🤖 **${agent}** is starting...`);
-          break;
-        }
-
-        case "agent_completed": {
-          // Finalize current agent's message with output
           if (currentMessageId) {
-            const { agent, output } = wsEvent.data as {
-              agent: string;
-              output: string;
-            };
+            const { agent } = wsEvent.data as { agent: string; task: string };
             updateMessage(currentMessageId, (msg) => ({
               ...msg,
-              content: `✅ **${agent}**\n\n${output}`,
-              isStreaming: false,
+              content: `🤖 **${agent}** 正在处理...`,
             }));
           }
           break;
         }
 
-        // CrewAI task events - create separate message for each task
+        case "agent_completed": {
+          if (currentMessageId) {
+            const { agent, output } = wsEvent.data as { agent: string; output: string };
+            updateMessage(currentMessageId, (msg) => ({
+              ...msg,
+              content: msg.content ? `${msg.content}\n\n${output}` : `✅ **${agent}**\n\n${output}`,
+            }));
+          }
+          break;
+        }
+
+        // CrewAI task events - update single message content
         case "task_started": {
-          const { description, agent } = wsEvent.data as {
-            task_id: string;
-            description: string;
-            agent: string;
-          };
-          // Create NEW message for this task (groupId read from ref)
-          createNewMessage(`📋 **Task** (${agent})\n\n${description}`);
+          if (currentMessageId) {
+            const { description, agent } = wsEvent.data as {
+              task_id: string;
+              description: string;
+              agent: string;
+            };
+            updateMessage(currentMessageId, (msg) => ({
+              ...msg,
+              content: `📋 **${agent}**: ${description}`,
+            }));
+          }
           break;
         }
 
         case "task_completed": {
-          // Finalize the task message
           if (currentMessageId) {
-            const { output, agent } = wsEvent.data as {
+            const { output } = wsEvent.data as {
               task_id: string;
               output: string;
               agent: string;
             };
             updateMessage(currentMessageId, (msg) => ({
               ...msg,
-              content: `✅ **Task completed** (${agent})\n\n${output}`,
-              isStreaming: false,
+              content: msg.content ? `${msg.content}\n\n${output}` : output,
             }));
           }
           break;
@@ -189,50 +189,18 @@ export function useChat(options: UseChatOptions = {}) {
 
         // CrewAI tool events
         case "tool_started": {
-          if (currentMessageId) {
-            const { tool_name, tool_args, agent } = wsEvent.data as {
-              tool_name: string;
-              tool_args: string;
-              agent: string;
-            };
-            const toolCall: ToolCall = {
-              id: nanoid(),
-              name: tool_name,
-              args: { input: tool_args, agent },
-              status: "running",
-            };
-            addToolCall(currentMessageId, toolCall);
-          }
+          // CrewAI tool — show status indicator instead of individual card
+          const { tool_name: crewToolName } = wsEvent.data as {
+            tool_name: string;
+            tool_args: string;
+            agent: string;
+          };
+          setToolStatus({ label: `正在执行 ${crewToolName}`, toolName: crewToolName });
           break;
         }
 
         case "tool_finished": {
-          // Tool finished - update last tool call status
-          if (currentMessageId) {
-            const { tool_name, tool_result } = wsEvent.data as {
-              tool_name: string;
-              tool_result: string;
-              agent: string;
-            };
-            // Find and update the matching tool call
-            updateMessage(currentMessageId, (msg) => {
-              const toolCalls = msg.toolCalls || [];
-              const lastToolCall = toolCalls.find(
-                (tc) => tc.name === tool_name && tc.status === "running"
-              );
-              if (lastToolCall) {
-                return {
-                  ...msg,
-                  toolCalls: toolCalls.map((tc) =>
-                    tc.id === lastToolCall.id
-                      ? { ...tc, result: tool_result, status: "completed" as const }
-                      : tc
-                  ),
-                };
-              }
-              return msg;
-            });
-          }
+          // CrewAI tool finished — status stays until next tool or final_result
           break;
         }
 
@@ -243,41 +211,30 @@ export function useChat(options: UseChatOptions = {}) {
           break;
         }
 
+        case "tool_status": {
+          // ChatGPT-style: update active tool status for display
+          const { label, tool_name: statusToolName } = wsEvent.data as {
+            label: string;
+            tool_name: string;
+          };
+          setToolStatus({ label, toolName: statusToolName });
+          break;
+        }
+
         case "tool_call": {
-          // Add tool call to current message
-          if (currentMessageId) {
-            const { tool_name, args, tool_call_id } = wsEvent.data as {
-              tool_name: string;
-              args: Record<string, unknown>;
-              tool_call_id: string;
-            };
-            const toolCall: ToolCall = {
-              id: tool_call_id,
-              name: tool_name,
-              args,
-              status: "running",
-            };
-            addToolCall(currentMessageId, toolCall);
-          }
+          // Intentionally no-op during streaming — tool_status handles display.
+          // Tool calls are persisted by the backend and loaded from DB on history reload.
           break;
         }
 
         case "tool_result": {
-          // Update tool call with result
-          if (currentMessageId) {
-            const { tool_call_id, content } = wsEvent.data as {
-              tool_call_id: string;
-              content: string;
-            };
-            updateToolCall(currentMessageId, tool_call_id, {
-              result: content,
-              status: "completed",
-            });
-          }
+          // Intentionally no-op during streaming — tool_status handles display.
           break;
         }
 
         case "final_result": {
+          // Clear tool status when final response arrives
+          setToolStatus(null);
           // Finalize message
           if (currentMessageId) {
             const { output } = wsEvent.data as { output: string };
@@ -345,13 +302,22 @@ export function useChat(options: UseChatOptions = {}) {
 
         case "complete": {
           setIsProcessing(false);
-          // Clear currentMessageId after complete (message_saved should have handled ID mapping)
-          setCurrentMessageId(null);
+          // Don't clear currentMessageId here — it persists until the user sends the next message.
+          // This prevents model_request_start from creating duplicate bubbles during tool-call loops.
           break;
         }
       }
     },
-    [currentMessageId, addMessage, updateMessage, addToolCall, updateToolCall, setCurrentConversationId, onConversationCreated, currentConversationIdFromStore, conversationId]
+    [
+      currentMessageId,
+      addMessage,
+      updateMessage,
+      setToolStatus,
+      setCurrentConversationId,
+      onConversationCreated,
+      currentConversationIdFromStore,
+      conversationId,
+    ],
   );
 
   // Access token lives in memory only (populated by login/refresh responses).
@@ -373,6 +339,8 @@ export function useChat(options: UseChatOptions = {}) {
 
   const doSend = useCallback(
     (content: string, fileIds?: string[]) => {
+      // Reset currentMessageId so the next model_request_start creates a fresh bubble
+      setCurrentMessageId(null);
       addMessage({
         id: nanoid(),
         role: "user",
@@ -391,7 +359,7 @@ export function useChat(options: UseChatOptions = {}) {
       if (modelRef.current) payload.model = modelRef.current;
       sendMessage(payload);
     },
-    [addMessage, sendMessage, conversationId, caseId]
+    [addMessage, sendMessage, conversationId, caseId],
   );
 
   const sendChatMessage = useCallback(
@@ -404,13 +372,13 @@ export function useChat(options: UseChatOptions = {}) {
           content,
           timestamp: new Date(),
           conversationId: conversationId || undefined,
-          fileIds
+          fileIds,
         });
         return;
       }
       doSend(content, fileIds);
     },
-    [isProcessing, doSend, addMessage, conversationId]
+    [isProcessing, doSend, addMessage, conversationId],
   );
 
   // Human-in-the-Loop: send resume message with user decisions
@@ -434,7 +402,7 @@ export function useChat(options: UseChatOptions = {}) {
           ...msg,
           content: msg.content.replace(
             /\n\n⏸️ Waiting for approval:.*$/,
-            `\n\n✅ Decisions: ${summaryParts.join(", ")}`
+            `\n\n✅ Decisions: ${summaryParts.join(", ")}`,
           ),
         }));
       }
@@ -453,7 +421,7 @@ export function useChat(options: UseChatOptions = {}) {
         }),
       });
     },
-    [currentMessageId, updateMessage, sendMessage]
+    [currentMessageId, updateMessage, sendMessage],
   );
 
   // Drain message queue when processing finishes
@@ -474,7 +442,9 @@ export function useChat(options: UseChatOptions = {}) {
     disconnect,
     sendMessage: sendChatMessage,
     clearMessages,
-    setModel: (model: string | null) => { modelRef.current = model; },
+    setModel: (model: string | null) => {
+      modelRef.current = model;
+    },
     // Human-in-the-Loop support
     pendingApproval,
     sendResumeDecisions,
