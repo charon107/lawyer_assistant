@@ -130,6 +130,14 @@ def _fetch_provider_models(provider: str, api_key: str, base_url: str | None) ->
 
 manager = AgentConnectionManager()
 
+# User-friendly status labels for tool calls (ChatGPT-style)
+TOOL_STATUS_LABELS: dict[str, str] = {
+    "current_datetime": "获取当前时间",
+    "search_law": "检索法律知识库",
+    "get_law_article": "查询法律条文",
+    "get_domain_expertise": "加载专业分析方法",
+}
+
 
 def _build_case_system_prompt(case_id: str, user_id: str) -> str | None:
     """Build a system prompt that includes case context.
@@ -496,6 +504,18 @@ async def agent_websocket(
                                                 "tool_name": tool_event.part.tool_name,
                                                 "args": tool_event.part.args,
                                             }
+                                        )
+                                        # Send user-friendly status before raw tool_call
+                                        status_label = TOOL_STATUS_LABELS.get(
+                                            tool_event.part.tool_name, "正在处理"
+                                        )
+                                        await manager.send_event(
+                                            websocket,
+                                            "tool_status",
+                                            {
+                                                "tool_name": tool_event.part.tool_name,
+                                                "label": status_label,
+                                            },
                                         )
                                         await manager.send_event(
                                             websocket,

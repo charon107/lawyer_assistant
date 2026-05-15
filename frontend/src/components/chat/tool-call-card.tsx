@@ -22,6 +22,7 @@ import { CopyButton } from "./copy-button";
 
 interface ToolCallCardProps {
   toolCall: ToolCall;
+  defaultCollapsed?: boolean;
 }
 
 // --- Specialized renderers ---
@@ -258,8 +259,9 @@ function WebSearchResults({ result }: { result: string }) {
 
 // --- Main component ---
 
-export function ToolCallCard({ toolCall }: ToolCallCardProps) {
+export function ToolCallCard({ toolCall, defaultCollapsed = false }: ToolCallCardProps) {
   const [showRaw, setShowRaw] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
 
   const statusConfig = {
     pending: { icon: Loader2, color: "text-muted-foreground", animate: true },
@@ -290,6 +292,38 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
 
   const hasSpecialRenderer = isDateTime || isRAGSearch || isWebSearch;
 
+  const toolLabel = isDateTime
+    ? "当前日期和时间"
+    : isRAGSearch
+    ? "知识库检索"
+    : isWebSearch
+    ? "网络搜索"
+    : toolCall.name;
+
+  // Collapsed one-line summary
+  if (isCollapsed) {
+    return (
+      <button
+        type="button"
+        onClick={() => setIsCollapsed(false)}
+        className="flex items-center gap-2 w-full text-left px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
+      >
+        {isDateTime ? (
+          <Clock className="h-3.5 w-3.5 text-primary" />
+        ) : isRAGSearch ? (
+          <Search className="h-3.5 w-3.5 text-primary" />
+        ) : isWebSearch ? (
+          <Globe className="h-3.5 w-3.5 text-primary" />
+        ) : (
+          <Wrench className="h-3.5 w-3.5" />
+        )}
+        <span className="truncate">{toolLabel}</span>
+        <StatusIcon className={cn("h-3 w-3 ml-auto", color)} />
+        <ChevronDown className="h-3 w-3" />
+      </button>
+    );
+  }
+
   return (
     <Card className="bg-muted/50">
       <CardHeader className="py-2 px-3">
@@ -304,15 +338,7 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
             ) : (
               <Wrench className="h-4 w-4 text-muted-foreground" />
             )}
-            <CardTitle className="text-sm font-medium">
-              {isDateTime
-                ? "当前日期和时间"
-                : isRAGSearch
-                ? "知识库检索"
-                : isWebSearch
-                ? "网络搜索"
-                : toolCall.name}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">{toolLabel}</CardTitle>
             {(isRAGSearch || isWebSearch) && toolCall.args?.query ? (
               <span className="text-xs text-muted-foreground italic truncate max-w-[200px]">
                 &ldquo;{String(toolCall.args.query)}&rdquo;
@@ -320,6 +346,17 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
             ) : null}
           </div>
           <div className="flex items-center gap-1">
+            {defaultCollapsed && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => setIsCollapsed(true)}
+                title="收起"
+              >
+                <ChevronUp className="h-3 w-3" />
+              </Button>
+            )}
             {hasSpecialRenderer && toolCall.status === "completed" && (
               <Button
                 variant="ghost"

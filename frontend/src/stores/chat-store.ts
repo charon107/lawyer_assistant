@@ -3,9 +3,15 @@
 import { create } from "zustand";
 import type { ChatMessage, ToolCall } from "@/types";
 
+interface ActiveToolStatus {
+  label: string;
+  toolName: string;
+}
+
 interface ChatState {
   messages: ChatMessage[];
   isStreaming: boolean;
+  activeToolStatus: ActiveToolStatus | null;
 
   addMessage: (message: ChatMessage) => void;
   updateMessage: (
@@ -23,12 +29,14 @@ interface ChatState {
     update: Partial<ToolCall>
   ) => void;
   setStreaming: (streaming: boolean) => void;
+  setToolStatus: (status: ActiveToolStatus | null) => void;
   clearMessages: () => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   isStreaming: false,
+  activeToolStatus: null,
 
   addMessage: (message) =>
     set((state) => ({
@@ -70,5 +78,7 @@ export const useChatStore = create<ChatState>((set) => ({
 
   setStreaming: (streaming) => set({ isStreaming: streaming }),
 
-  clearMessages: () => set({ messages: [] }),
+  setToolStatus: (status) => set({ activeToolStatus: status }),
+
+  clearMessages: () => set({ messages: [], activeToolStatus: null }),
 }));

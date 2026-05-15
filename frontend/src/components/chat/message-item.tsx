@@ -1,13 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/types";
 import { ToolCallCard } from "./tool-call-card";
+import { ToolStatusIndicator } from "./tool-status-indicator";
 import { MarkdownContent } from "./markdown-content";
 import { CopyButton } from "./copy-button";
 import { RatingButtons } from "./rating-buttons";
 import { useChatStore } from "@/stores";
-import { User, Bot } from "lucide-react";
+import { User, Bot, ChevronDown, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useAuthStore } from "@/stores";
 import { getFileUrl } from "@/lib/file-api";
@@ -20,21 +22,24 @@ interface MessageItemProps {
 export function MessageItem({ message, groupPosition }: MessageItemProps) {
   const isUser = message.role === "user";
   const updateMessage = useChatStore((state) => state.updateMessage);
+  const activeToolStatus = useChatStore((state) => state.activeToolStatus);
   const { user: authUser } = useAuthStore();
   const isGrouped = groupPosition && groupPosition !== "single";
+  const [showToolDetails, setShowToolDetails] = useState(false);
+  const hasToolCalls = message.toolCalls && message.toolCalls.length > 0;
 
   return (
     <div
       className={cn(
-        "group flex gap-2 sm:gap-4 relative overflow-visible",
+        "group relative flex gap-2 overflow-visible sm:gap-4",
         isGrouped ? "py-2 sm:py-3" : "py-3 sm:py-4",
-        isUser && "flex-row-reverse"
+        isUser && "flex-row-reverse",
       )}
     >
       {/* Timeline connector line for grouped messages */}
       {isGrouped && !isUser && (
         <div
-          className="absolute left-[15px] sm:left-[17px] w-0.5 bg-orange-500/40"
+          className="absolute left-[15px] w-0.5 bg-orange-500/40 sm:left-[17px]"
           style={
             groupPosition === "first"
               ? { top: "24px", bottom: "0" }
@@ -47,20 +52,33 @@ export function MessageItem({ message, groupPosition }: MessageItemProps) {
 
       <div
         className={cn(
-          "flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center z-10 overflow-hidden",
+          "z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full sm:h-9 sm:w-9",
           isUser ? "bg-primary text-primary-foreground" : "bg-orange-500/10 text-orange-500",
-          isGrouped && !isUser && "ring-2 ring-background"
+          isGrouped && !isUser && "ring-background ring-2",
         )}
       >
         {isUser && authUser?.avatar_url ? (
-          <Image src={`/api/users/avatar/${authUser.id}`} alt="" width={36} height={36} className="h-full w-full object-cover" unoptimized />
-        ) : isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4 sm:h-5 sm:w-5" />}
+          <Image
+            src={`/api/users/avatar/${authUser.id}`}
+            alt=""
+            width={36}
+            height={36}
+            className="h-full w-full object-cover"
+            unoptimized
+          />
+        ) : isUser ? (
+          <User className="h-4 w-4" />
+        ) : (
+          <Bot className="h-4 w-4 sm:h-5 sm:w-5" />
+        )}
       </div>
 
-      <div className={cn(
-        "flex-1 space-y-2 overflow-hidden max-w-[88%] sm:max-w-[85%]",
-        isUser && "flex flex-col items-end"
-      )}>
+      <div
+        className={cn(
+          "max-w-[88%] flex-1 space-y-2 overflow-hidden sm:max-w-[85%]",
+          isUser && "flex flex-col items-end",
+        )}
+      >
         {/* Attached images */}
         {isUser && message.fileIds && message.fileIds.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -77,7 +95,7 @@ export function MessageItem({ message, groupPosition }: MessageItemProps) {
                   alt="已附加文件"
                   width={320}
                   height={256}
-                  className="h-auto w-auto max-h-64 max-w-xs object-contain"
+                  className="h-auto max-h-64 w-auto max-w-xs object-contain"
                   unoptimized
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = "none";
@@ -88,46 +106,59 @@ export function MessageItem({ message, groupPosition }: MessageItemProps) {
           </div>
         )}
 
-        {/* Thinking indicator */}
-        {!isUser && message.isStreaming && !message.content && (!message.toolCalls || message.toolCalls.length === 0) && (
-          <div className="bg-muted flex items-center gap-2 rounded-2xl rounded-tl-sm px-4 py-2.5" role="status" aria-live="polite">
-            <div className="flex gap-1" aria-hidden="true">
-              <span className="bg-muted-foreground/40 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:0ms]" />
-              <span className="bg-muted-foreground/40 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:150ms]" />
-              <span className="bg-muted-foreground/40 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:300ms]" />
-            </div>
-            <span className="text-muted-foreground text-xs">思考中...</span>
-          </div>
-        )}
-
         {/* Message bubble */}
         {message.content && (
-          <div className={cn(
-            "relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5",
-            isUser
-              ? "bg-primary text-primary-foreground rounded-tr-sm"
-              : "bg-muted rounded-tl-sm"
-          )}>
+          <div
+            className={cn(
+              "relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5",
+              isUser
+                ? "bg-primary text-primary-foreground rounded-tr-sm"
+                : "bg-muted rounded-tl-sm",
+            )}
+          >
             {isUser ? (
-              <p className="whitespace-pre-wrap break-words text-sm">
-                {message.content}
-              </p>
+              <p className="text-sm break-words whitespace-pre-wrap">{message.content}</p>
             ) : (
-              <div className="text-sm prose-sm max-w-none">
+              <div className="prose-sm max-w-none text-sm">
                 <MarkdownContent content={message.content} />
                 {message.isStreaming && (
-                  <span className="inline-block w-1.5 h-4 ml-1 bg-current animate-pulse rounded-full" />
+                  <span className="ml-1 inline-block h-4 w-1.5 animate-pulse rounded-full bg-current" />
                 )}
               </div>
             )}
           </div>
         )}
 
-        {message.toolCalls && message.toolCalls.length > 0 && (
-          <div className="space-y-2 w-full">
-            {message.toolCalls.map((toolCall) => (
-              <ToolCallCard key={toolCall.id} toolCall={toolCall} />
-            ))}
+        {/* Tool status indicator during streaming */}
+        {message.isStreaming && activeToolStatus && (
+          <ToolStatusIndicator
+            label={activeToolStatus.label}
+            toolName={activeToolStatus.toolName}
+          />
+        )}
+
+        {/* Collapsible tool call details after completion */}
+        {!message.isStreaming && hasToolCalls && (
+          <div className="w-full">
+            <button
+              type="button"
+              onClick={() => setShowToolDetails(!showToolDetails)}
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 py-1 text-xs transition-colors"
+            >
+              {showToolDetails ? (
+                <ChevronDown className="h-3 w-3" />
+              ) : (
+                <ChevronRight className="h-3 w-3" />
+              )}
+              <span>查看工具调用详情 ({message.toolCalls!.length})</span>
+            </button>
+            {showToolDetails && (
+              <div className="mt-1 space-y-1.5">
+                {message.toolCalls!.map((toolCall) => (
+                  <ToolCallCard key={toolCall.id} toolCall={toolCall} defaultCollapsed />
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -135,14 +166,17 @@ export function MessageItem({ message, groupPosition }: MessageItemProps) {
           <div className={cn("flex items-center gap-2", isUser && "flex-row-reverse")}>
             {message.timestamp && (
               <span className="text-muted-foreground text-[10px]">
-                {new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {new Date(message.timestamp).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </span>
             )}
             <CopyButton
               text={message.content}
               className={cn(
                 "h-6 w-6 rounded-md sm:opacity-0 sm:group-hover:opacity-100",
-                isUser ? "bg-secondary hover:bg-secondary/80" : "bg-muted hover:bg-muted/80"
+                isUser ? "bg-secondary hover:bg-secondary/80" : "bg-muted hover:bg-muted/80",
               )}
             />
             {!isUser && (
