@@ -1,0 +1,71 @@
+"""Configuration for articles_of_association document type."""
+
+from app.agents.rules.articles_of_association_rules import ARTICLES_OF_ASSOCIATION_RULES
+
+CONFIG = {
+        "name": "公司章程",
+        "report_title": "AI 公司章程审查报告",
+        "chapter_keywords": [
+            "公司名称",
+            "公司住所",
+            "经营范围",
+            "注册资本",
+            "股东",
+            "出资",
+            "股东会",
+            "股东大会",
+            "董事会",
+            "执行董事",
+            "监事会",
+            "监事",
+            "法定代表人",
+            "利润分配",
+            "分红",
+            "股权转让",
+            "转让",
+            "章程修改",
+            "修改",
+            "解散",
+            "清算",
+            "争议解决",
+            "其他",
+            "附则",
+        ],
+        "entity_patterns": [
+            r"(?:公司|股东|发起人|董事|监事|Company|Shareholder)[：:\s]*([^\n,，。；;]+?(?:公司|企业|集团|个人|Co\.|Ltd\.|LLP|Inc\.|Corp\.))",
+        ],
+        "fact_tool_schema": {
+            "type": "object",
+            "properties": {
+                "company_name": {"type": "string", "description": "公司名称"},
+                "company_type": {"type": "string", "description": "公司类型"},
+                "registered_capital": {"type": "string", "description": "注册资本"},
+                "business_scope": {"type": "string", "description": "经营范围"},
+                "shareholders": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "股东列表",
+                },
+                "legal_representative": {"type": "string", "description": "法定代表人"},
+                "board_structure": {"type": "string", "description": "董事会结构"},
+                "supervisor_structure": {"type": "string", "description": "监事会结构"},
+            },
+            "required": [],
+        },
+        "risk_rules": ARTICLES_OF_ASSOCIATION_RULES,
+        "rule_keyword_map": {
+            "A1": ["公司名称", "住所", "经营范围"],
+            "A2": ["股东", "出资", "注册资本"],
+            "A3": ["股东会", "董事会", "监事会"],
+            "A4": ["利润", "分红", "分配"],
+            "B1": ["股权转让", "转让", "优先购买"],
+            "B2": ["退出", "回购", "减资"],
+            "B3": ["知情权", "查阅", "监督"],
+            "B4": ["竞业", "同业竞争"],
+            "C1": ["僵局", "解散"],
+            "C2": ["章程修改", "修改"],
+            "C3": ["争议", "dispute"],
+        },
+        "simple_rule_ids": {"A1", "C2", "C3"},
+        "complex_rule_ids": {"A2", "A3", "A4", "B1", "B2", "B3", "B4", "C1"}
+}

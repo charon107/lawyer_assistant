@@ -31,7 +31,7 @@ SECTION_RE = re.compile(
 )
 
 # Import from canonical source to avoid duplication
-from .document_types import _LPA_CHAPTER_KEYWORDS as LPA_CHAPTER_KEYWORDS
+from .configs.lpa import CHAPTER_KEYWORDS as LPA_CHAPTER_KEYWORDS
 
 
 class ChapterSplitter:
