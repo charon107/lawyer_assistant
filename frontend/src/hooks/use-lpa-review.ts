@@ -282,5 +282,6 @@ export function useLPAReview() {
     fetchReport,
     fetchFullResult,
     sendChatMessage,
+    connectWS,
   };
 }

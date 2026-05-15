@@ -16,10 +16,15 @@ export default function ReviewDetailPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [reportMd, setReportMd] = useState("");
 
-  // Fetch full result when page loads (review might already be complete)
+  // Fetch full result when page loads, and connect WS if review is still in progress
   useEffect(() => {
     if (reviewId) {
-      review.fetchFullResult(API_BASE, reviewId);
+      review.fetchFullResult(API_BASE, reviewId).then((data) => {
+        if (data && data.status !== "complete" && data.status !== "error") {
+          // Review is still in progress — connect WebSocket for real-time updates
+          review.connectWS(reviewId, API_BASE);
+        }
+      });
     }
   }, [reviewId]);
 
