@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0.0] - 2026-05-16
+
+### Added
+
+- **ChatGPT-Style Tool Status**: Compact status indicators during tool execution (e.g., "检索法律知识库...") instead of raw tool call cards
+- **Collapsible Tool Details**: Tool call details collapsed by default after completion, expandable via "查看工具调用详情" toggle
+- **ToolStatusIndicator Component**: Spinner + label component for streaming tool status display
+- **Backend tool_status Event**: User-friendly status labels emitted before raw tool_call events
+
+### Fixed
+
+- **Duplicate Agent Icons**: Prevented multiple agent avatars from appearing during tool-call loops — one icon per assistant turn
+- **Duplicate Type Interface**: Removed duplicate `ToolStatusEvent` declaration in chat types
+
 ## [0.4.0.0] - 2026-05-15
 
 ### Added
