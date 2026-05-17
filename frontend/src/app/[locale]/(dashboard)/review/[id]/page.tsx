@@ -25,6 +25,7 @@ export default function ReviewDetailPage() {
       review.fetchFullResult(API_BASE, reviewId).then((data) => {
         setIsLoading(false);
         if (data && data.status !== "complete" && data.status !== "error") {
+          // Review is still in progress — connect WebSocket for real-time updates
           review.connectWS(reviewId, API_BASE);
         }
       });
