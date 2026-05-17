@@ -57,9 +57,6 @@ COMPLEX_RULE_IDS = {"A2", "A3", "B1", "B2", "B3", "B4", "B5", "D1", "D2", "D3", 
 class ChapterReviewer:
     """Review individual chapters with complexity-aware model selection."""
 
-    V3_MODEL = "deepseek-v4-flash"
-    R1_MODEL = "deepseek-v4-pro"
-
     def __init__(
         self,
         llm_client: LLMClient,
@@ -114,8 +111,8 @@ class ChapterReviewer:
             resp = self._llm.chat(
                 system_prompt=system_prompt,
                 user_message=user_prompt,
-                model=self.V3_MODEL,
                 temperature=0.1,
+                max_tokens=8192,
             )
             data = self._parse_json(resp)
             return self._validate_findings(data.get("findings", []), self._simple_rule_ids)
@@ -140,9 +137,8 @@ class ChapterReviewer:
             resp = self._llm.chat(
                 system_prompt=system_prompt,
                 user_message=user_prompt,
-                model=self.R1_MODEL,
                 temperature=0.1,
-                max_tokens=8192,
+                max_tokens=16384,
             )
             data = self._parse_json(resp)
             return self._validate_findings(
@@ -176,10 +172,12 @@ class ChapterReviewer:
     @staticmethod
     def _parse_json(text: str) -> dict:
         text = text.strip()
+        if not text:
+            raise ValueError("Empty response from LLM")
         if "```" in text:
             blocks = re.findall(r"```(?:json)?\s*\n?(.*?)```", text, re.DOTALL)
             if blocks:
-                text = blocks[0]
+                text = blocks[0].strip()
         return json.loads(text)
 
     @staticmethod

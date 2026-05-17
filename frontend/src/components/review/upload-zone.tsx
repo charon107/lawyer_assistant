@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { FileText } from "lucide-react";
 
 interface UploadZoneProps {
   onUpload: (file: File) => void;
@@ -30,15 +31,24 @@ export function UploadZone({ onUpload, disabled }: UploadZoneProps) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label="上传法律文件，支持 PDF、Word、Markdown、TXT 格式"
       className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors
         ${dragging
-          ? "border-blue-500 bg-blue-500/10"
-          : "border-zinc-700 hover:border-zinc-500"}
+          ? "border-brand bg-brand/5"
+          : "border-border hover:border-brand/50"}
         ${disabled ? "opacity-50 pointer-events-none" : "cursor-pointer"}
       `}
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          document.getElementById("lpa-upload")?.click();
+        }
+      }}
     >
       <input
         type="file"
@@ -49,14 +59,18 @@ export function UploadZone({ onUpload, disabled }: UploadZoneProps) {
         disabled={disabled}
       />
       <label htmlFor="lpa-upload" className="cursor-pointer">
-        <div className="text-5xl mb-4">&#x1F4C4;</div>
+        <div className="flex justify-center mb-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/8">
+            <FileText className="h-8 w-8 text-brand" />
+          </div>
+        </div>
         <p className="text-lg font-medium mb-1">
           拖拽法律文件到此处，或点击上传
         </p>
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-muted-foreground">
           支持 PDF、Word、Markdown、TXT
         </p>
-        <p className="text-xs text-zinc-500 mt-2">
+        <p className="text-xs text-muted-foreground/70 mt-2">
           最大 50MB &middot; 文件不会上传到第三方服务器
         </p>
       </label>

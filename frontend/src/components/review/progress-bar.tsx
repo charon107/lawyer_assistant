@@ -26,19 +26,19 @@ export function ReviewProgressBar({ stage, progress, message }: ProgressBarProps
     <div className="w-full space-y-2">
       <div className="flex justify-between text-sm">
         <span className="font-medium">{label}</span>
-        <span className="text-zinc-400">{pct}%</span>
+        <span className="text-muted-foreground">{pct}%</span>
       </div>
-      <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${
-            stage === "error" ? "bg-red-500" :
-            stage === "complete" ? "bg-green-500" :
-            "bg-blue-500"
+            stage === "error" ? "bg-destructive" :
+            stage === "complete" ? "bg-success" :
+            "bg-brand"
           }`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p className="text-xs text-zinc-500">{message}</p>
+      <p className="text-xs text-muted-foreground">{message}</p>
     </div>
   );
 }

@@ -1,9 +1,9 @@
 """
-Stage 2: Fact Extractor — follows learn-claude-code tool-dispatch pattern.
+Stage 2: Fact Extractor — regex scan + LLM tool-call.
 
 Two-pass extraction:
   Pass 1 — regex scan → raw_facts  (zero-cost, no LLM)
-  Pass 2 — LLM(V3) agent-loop with registered tool → labeled_facts
+  Pass 2 — LLM agent-loop with registered tool → labeled_facts
 """
 
 import json
@@ -56,7 +56,7 @@ def _default_handle_label_facts(**kwargs: Any) -> str:
 
 
 # Default LPA tool name
-_DEFAULT_TOOL_NAME = "label_lpa_facts"
+_DEFAULT_TOOL_NAME = "label_facts"
 
 
 class FactExtractor:
@@ -84,7 +84,7 @@ class FactExtractor:
         if self._llm and self._fact_tool_schema:
             self._llm.register_tool(
                 name=self._fact_tool_name,
-                description=f"Label raw facts extracted from a {self._fact_tool_name} document",
+                description="从合同文本中提取关键事实并标注语义角色。请根据合同内容填写你能找到的字段，找不到的省略。示例：{\"party_a\": \"XX公司\", \"contract_value\": \"100万元\"}",
                 input_schema=self._fact_tool_schema,
                 handler=self._fact_tool_handler,
             )
@@ -120,25 +120,107 @@ class FactExtractor:
         }
 
     def label_facts(self, raw_facts: dict[str, Any], source_text: str) -> dict[str, Any]:
-        """Pass 2: LLM(V3) agent-loop with registered label_lpa_facts tool."""
+        """Pass 2: LLM agent-loop with registered tool, fallback to plain chat."""
         if not self._llm:
-            return self._rule_based_label(raw_facts, source_text)
+            raise RuntimeError("未配置 AI 模型，无法提取事实。请在个人中心 → 设置中添加 LLM 提供商。")
 
-        system_prompt = self._build_system_prompt()
+        # Template content goes into user message as context (NOT system prompt)
+        template_prompt = self._build_system_prompt()
         user_prompt = self._build_user_prompt(raw_facts, source_text)
 
+        # Pass 2a: agent_loop with tool calling
+        # System prompt MUST instruct tool use — consistent with the registered tools
+        tool_system_prompt = (
+            "你是合同分析专家。你的任务是从合同文本中提取关键事实。\n"
+            "请使用提供的工具来输出结果，不要直接输出 JSON 或其他文字。\n"
+            "根据合同内容填写你能找到的字段，找不到的字段不要传。"
+        )
+        tool_user_message = (
+            f"{template_prompt}\n\n"
+            f"{user_prompt}"
+        )
         try:
             resp = self._llm.agent_loop(
-                system_prompt=system_prompt,
-                user_message=user_prompt,
-                model="deepseek-v4-flash",
+                system_prompt=tool_system_prompt,
+                user_message=tool_user_message,
                 temperature=0.1,
-                max_turns=5,
+                max_turns=2,
             )
-            return json.loads(resp) if isinstance(resp, str) else resp
+            logger.info("agent_loop returned: type=%s, len=%d, repr=%s",
+                        type(resp).__name__, len(resp or ""), repr((resp or "")[:100]))
+            if resp and resp.strip():
+                try:
+                    parsed = self._parse_json(resp)
+                    if isinstance(parsed, dict) and parsed:
+                        logger.info("agent_loop parse OK, keys=%s", list(parsed.keys()))
+                        return parsed
+                    logger.warning("agent_loop returned empty/non-dict result: %s", type(parsed).__name__)
+                except Exception as parse_err:
+                    logger.warning("agent_loop parse failed: %s (resp was: %s)", parse_err, repr(resp[:200]))
+            else:
+                logger.warning("agent_loop returned empty response")
         except Exception as e:
-            logger.error("LLM fact labeling failed: %s", e)
-            return self._rule_based_label(raw_facts, source_text)
+            logger.warning("agent_loop failed (%s: %s), falling back to chat()", type(e).__name__, e)
+
+        # Pass 2b: plain chat fallback — here we DO want JSON output
+        try:
+            logger.info("Attempting chat() fallback...")
+            chat_prompt = (
+                f"{template_prompt}\n\n"
+                f"{user_prompt}\n\n"
+                f"请直接输出 JSON 格式的事实标注结果。不要输出任何解释，只输出 JSON。"
+            )
+            resp = self._llm.chat(
+                system_prompt="你是合同分析专家。只输出 JSON，不要输出 markdown 代码块或解释文字。",
+                user_message=chat_prompt,
+                temperature=0.1,
+                max_tokens=8192,
+            )
+            logger.info("chat() returned: len=%d, preview=%s", len(resp or ""), repr((resp or "")[:200]))
+            if resp and resp.strip():
+                try:
+                    parsed = self._parse_json(resp)
+                    if isinstance(parsed, dict):
+                        logger.info("chat() parse OK, keys=%s", list(parsed.keys()))
+                        return parsed
+                except Exception as parse_err:
+                    logger.warning("chat() parse failed: %s", parse_err)
+        except Exception as e:
+            logger.warning("chat() fallback also failed: %s", e)
+
+        logger.info("Using rule-based fact labeling as final fallback")
+        return self._rule_based_label(raw_facts, source_text)
+
+    @staticmethod
+    def _parse_json(text: str) -> dict:
+        """Extract JSON from LLM response, handling markdown code blocks and mixed content."""
+
+        text = text.strip()
+        if not text:
+            raise ValueError("Empty response from LLM")
+
+        # Try extracting from markdown code blocks first
+        if "```" in text:
+            blocks = re.findall(r"```(?:json)?\s*\n?(.*?)```", text, re.DOTALL)
+            if blocks:
+                for block in blocks:
+                    block = block.strip()
+                    if block:
+                        try:
+                            return json.loads(block)
+                        except json.JSONDecodeError:
+                            continue
+
+        # Try finding JSON object in mixed text (e.g., after markdown explanation)
+        json_match = re.search(r"\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}", text, re.DOTALL)
+        if json_match:
+            try:
+                return json.loads(json_match.group())
+            except json.JSONDecodeError:
+                pass
+
+        # Last resort: try parsing the whole text
+        return json.loads(text)
 
     def _build_system_prompt(self) -> str:
         if self._prompt_template_path:
@@ -152,10 +234,13 @@ class FactExtractor:
         return path.read_text(encoding="utf-8") if path.exists() else ""
 
     def _build_user_prompt(self, raw_facts: dict[str, Any], source_text: str) -> str:
+        # Truncate to avoid exceeding token limits
+        max_chars = 6000
+        truncated = source_text[:max_chars] + ("..." if len(source_text) > max_chars else "")
         return (
             f"## 预扫描原始事实\n\n```json\n{json.dumps(raw_facts, ensure_ascii=False, indent=2)}\n```\n\n"
-            f"## 合同节选\n\n{source_text}\n\n"
-            f"请调用 {self._fact_tool_name} 工具标注事实。不存在的字段请省略。"
+            f"## 合同节选\n\n{truncated}\n\n"
+            f"请调用 {self._fact_tool_name} 工具标注事实。不存在的字段请省略，不要传空值。"
         )
 
     def _rule_based_label(self, raw_facts: dict[str, Any], source_text: str) -> dict[str, Any]:

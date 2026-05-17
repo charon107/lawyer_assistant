@@ -21,7 +21,7 @@ from app.agents.lpa.configs.sales import CONFIG as SALES_CONFIG
 from app.agents.lpa.configs.service import CONFIG as SERVICE_CONFIG
 from app.agents.lpa.configs.will_estate import CONFIG as WILL_ESTATE_CONFIG
 
-PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent / "prompts"
+PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent.parent / "prompts"
 
 _DEFAULT_PROMPT_TEMPLATES = {
     "chapter_split": str(PROMPTS_DIR / "chapter_split.md"),

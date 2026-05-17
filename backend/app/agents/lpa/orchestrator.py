@@ -2,7 +2,7 @@
 Contract Review Orchestrator — ties Stage 0→5 into a single pipeline.
 
 Usage:
-    orchestrator = DocumentReviewOrchestrator(deepseek_api_key="sk-...", document_type="lpa")
+    orchestrator = DocumentReviewOrchestrator(api_key="sk-...", base_url="https://...", model="...", document_type="lpa")
     result = orchestrator.review(uploaded_file)
     # result["report_markdown"] is the final Markdown report.
 """
@@ -28,12 +28,13 @@ class DocumentReviewOrchestrator:
 
     def __init__(
         self,
-        deepseek_api_key: str | None = None,
-        deepseek_base_url: str = "https://api.deepseek.com",
-        document_type: str = "lpa",
+        api_key: str | None = None,
+        base_url: str = "",
+        model: str = "",
+        document_type: str = "contract",
     ):
-        api_key = deepseek_api_key or os.getenv("DEEPSEEK_API_KEY", "")
-        self._llm = LLMClient(api_key=api_key, base_url=deepseek_base_url) if api_key else None
+        api_key = api_key or os.getenv("OPENAI_API_KEY", "")
+        self._llm = LLMClient(api_key=api_key, base_url=base_url, model=model) if api_key else None
         self._preprocessor = DocumentPreprocessor()
         self._document_type = document_type
         self._doc_config = get_document_type_config(document_type)
@@ -60,10 +61,20 @@ class DocumentReviewOrchestrator:
         config = config or {}
         file_name = getattr(uploaded_file, "name", str(uploaded_file))
 
+        # Guard: no LLM configured
+        if not self._llm:
+            return {
+                "error": "未配置 AI 模型。请在个人中心 → 设置中添加 LLM 提供商（API Key 和模型）。",
+                "stage": 0,
+            }
+
         # Stage 0: Parse document
         self._progress(progress_callback, 0.05, "解析文档...")
         parsed = self._preprocessor.parse(uploaded_file)
         doc_text = parsed["markdown"]
+
+        logger.info("STAGE 0: parsed %d chars, method=%s", len(doc_text), parsed.get('method', 'unknown'))
+        logger.debug("  preview: %r", doc_text[:200])
 
         # Stage 1: Split into chapters
         self._progress(progress_callback, 0.15, "拆分章节...")
@@ -73,6 +84,10 @@ class DocumentReviewOrchestrator:
         )
         split_result = splitter.split(doc_text)
         chapters = split_result["chapters"]
+
+        logger.info("STAGE 1: split method=%s, chapters=%d", split_result.get('method'), len(chapters))
+        for ch in chapters:
+            logger.info("  [%d] %s — %d chars", ch['index'], ch['title'][:50], len(ch['text']))
 
         if not chapters:
             return {"error": "无法拆分合同章节，请确认文件格式正确", "stage": 1}
@@ -91,36 +106,30 @@ class DocumentReviewOrchestrator:
 
         # Stage 3: Per-chapter review
         self._progress(progress_callback, 0.40, "逐章审查中...")
-        if not self._llm:
-            chapter_reviews = self._mock_chapter_reviews(chapters, labeled_facts)
-        else:
-            reviewer = ChapterReviewer(
-                llm_client=self._llm,
-                labeled_facts=labeled_facts,
-                rules=self._doc_config.get("risk_rules"),
-                complex_keywords=self._doc_config.get("complex_keywords"),
-                simple_rule_ids=self._doc_config.get("simple_rule_ids"),
-                complex_rule_ids=self._doc_config.get("complex_rule_ids"),
-                rule_keyword_map=self._doc_config.get("rule_keyword_map"),
-                prompt_templates=self._doc_config.get("prompt_templates"),
+        reviewer = ChapterReviewer(
+            llm_client=self._llm,
+            labeled_facts=labeled_facts,
+            rules=self._doc_config.get("risk_rules"),
+            complex_keywords=self._doc_config.get("complex_keywords"),
+            simple_rule_ids=self._doc_config.get("simple_rule_ids"),
+            complex_rule_ids=self._doc_config.get("complex_rule_ids"),
+            rule_keyword_map=self._doc_config.get("rule_keyword_map"),
+            prompt_templates=self._doc_config.get("prompt_templates"),
+        )
+        chapter_reviews = []
+        total = len(chapters)
+        for i, ch in enumerate(chapters):
+            review = reviewer.review(ch)
+            chapter_reviews.append(review)
+            pct = 0.40 + 0.40 * ((i + 1) / total)
+            self._progress(
+                progress_callback, pct, f"审查第 {i + 1}/{total} 章: {ch.get('title', '')[:30]}"
             )
-            chapter_reviews = []
-            total = len(chapters)
-            for i, ch in enumerate(chapters):
-                review = reviewer.review(ch)
-                chapter_reviews.append(review)
-                pct = 0.40 + 0.40 * ((i + 1) / total)
-                self._progress(
-                    progress_callback, pct, f"审查第 {i + 1}/{total} 章: {ch.get('title', '')[:30]}"
-                )
 
         # Stage 4: Cross-chapter check
         self._progress(progress_callback, 0.85, "跨章交叉检查...")
-        if not self._llm:
-            cross_check = {"contradictions": [], "consistency_issues": [], "missing_items": []}
-        else:
-            checker = CrossChecker(llm_client=self._llm, labeled_facts=labeled_facts)
-            cross_check = checker.check(chapter_reviews)
+        checker = CrossChecker(llm_client=self._llm, labeled_facts=labeled_facts)
+        cross_check = checker.check(chapter_reviews)
 
         # Stage 5: Build report
         self._progress(progress_callback, 0.95, "生成审查报告...")
@@ -152,58 +161,7 @@ class DocumentReviewOrchestrator:
         return self._llm.chat(
             system_prompt="You are a document structure expert. Output JSON only.",
             user_message=prompt,
-            model="deepseek-v4-flash",
         )
-
-    def _mock_chapter_reviews(self, chapters, labeled_facts):
-        """Offline mode: rule-based chapter scanning without LLM calls."""
-        rules = self._doc_config.get("risk_rules", {})
-        rule_keyword_map = self._doc_config.get("rule_keyword_map", {})
-        reviews = []
-        for ch in chapters:
-            text = ch.get("text", "")
-            title = ch.get("title", "")
-            findings = []
-
-            for rule_id, rule in rules.items():
-                check_text = rule.get("check", "")
-                keywords = rule_keyword_map.get(rule_id, [])
-                if not keywords:
-                    keywords = self._rule_keywords(rule_id, check_text)
-                matched = [kw for kw in keywords if kw in text]
-                if matched:
-                    findings.append(
-                        {
-                            "rule_id": rule_id,
-                            "level": rule.get("level", "中风险"),
-                            "finding": f"文本中包含相关关键词: {', '.join(matched[:5])}",
-                            "evidence": self._find_context(text, matched[0]),
-                            "suggestion": rule.get("suggestion_template", "建议人工复核"),
-                        }
-                    )
-
-            reviews.append(
-                {
-                    "chapter": title,
-                    "complexity": ChapterReviewer.classify_complexity(title, text),
-                    "findings": findings,
-                }
-            )
-        return reviews
-
-    @staticmethod
-    def _rule_keywords(rule_id: str, check_text: str) -> list:
-        """Derive keywords from rule check description."""
-        return []
-
-    @staticmethod
-    def _find_context(text: str, keyword: str, window: int = 150) -> str:
-        idx = text.find(keyword)
-        if idx < 0:
-            return ""
-        start = max(0, idx - window // 2)
-        end = min(len(text), idx + len(keyword) + window // 2)
-        return text[start:end].replace("\n", " ").strip()
 
     @staticmethod
     def _progress(callback, pct: float, msg: str):

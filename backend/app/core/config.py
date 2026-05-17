@@ -90,13 +90,10 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = "openai"
     OPENAI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
-    AI_MODEL: str = "deepseek-v4-pro"
+    AI_MODEL: str = ""
     LLM_BASE_URL: str = ""  # Custom base URL for OpenAI-compatible APIs
     AI_TEMPERATURE: float = 0.7
-    AI_AVAILABLE_MODELS: list[str] = [
-        "deepseek-v4-pro",
-        "deepseek-v4-flash",
-    ]
+    AI_AVAILABLE_MODELS: list[str] = []
 
     # === Law RAG ===
     QDRANT_URL: str = "http://localhost:6333"

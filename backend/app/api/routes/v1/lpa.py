@@ -2,10 +2,11 @@
 
 import os
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from app.api.deps import CurrentUser
+from app.core.config import settings
 from app.services.lpa_chat_service import LPAChatService
 from app.services.lpa_service import LPAReviewService
 
@@ -21,20 +22,40 @@ class ChatRequest(BaseModel):
     history: list | None = None
 
 
-def _get_lpa_service() -> LPAReviewService:
-    api_key = os.getenv("DEEPSEEK_API_KEY", "")
-    return LPAReviewService(deepseek_api_key=api_key or None)
+def _resolve_user_llm_config(user) -> tuple[str | None, str, str]:
+    """Resolve LLM config from user settings, falling back to global defaults.
+
+    Returns (api_key, base_url, model). api_key may be None if unconfigured.
+    """
+    if user.llm_configs:
+        cfg = user.llm_configs[0]
+        return (
+            cfg.api_key or None,
+            cfg.base_url or "",
+            cfg.model or settings.AI_MODEL,
+        )
+
+    # Fallback to global settings
+    api_key = settings.OPENAI_API_KEY
+    base_url = settings.LLM_BASE_URL
+    return api_key or None, base_url, settings.AI_MODEL
 
 
-def _get_chat_service() -> LPAChatService:
-    api_key = os.getenv("DEEPSEEK_API_KEY", "")
-    return LPAChatService(deepseek_api_key=api_key or None)
+def _get_lpa_service(user: CurrentUser) -> LPAReviewService:
+    api_key, base_url, model = _resolve_user_llm_config(user)
+    return LPAReviewService(api_key=api_key, base_url=base_url, model=model)
+
+
+def _get_chat_service(user: CurrentUser) -> LPAChatService:
+    api_key, base_url, model = _resolve_user_llm_config(user)
+    return LPAChatService(api_key=api_key or None, base_url=base_url, model=model)
 
 
 @router.post("/review")
 async def start_review(
     current_user: CurrentUser,
     file: UploadFile = File(...),
+    document_type: str = Form("contract"),
     service: LPAReviewService = Depends(_get_lpa_service),
 ):
     """Upload an LPA contract and start the review pipeline."""
@@ -53,7 +74,12 @@ async def start_review(
     if len(content) < 100:
         raise HTTPException(400, "文件内容过短，请上传有效合同")
 
-    review_id = await service.start_review(content, file.filename)
+    # Check LLM config before starting
+    api_key, _, _ = _resolve_user_llm_config(current_user)
+    if not api_key:
+        raise HTTPException(400, "未配置 AI 模型。请在设置中添加 LLM 提供商（API Key）。")
+
+    review_id = await service.start_review(content, file.filename, document_type)
     return {"review_id": review_id, "status": "started"}
 
 

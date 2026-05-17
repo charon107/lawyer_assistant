@@ -27,9 +27,10 @@ class LPAChatService:
 5. 不要声称提供正式法律意见"""
 
     def __init__(
-        self, deepseek_api_key: str | None = None, base_url: str = "https://api.deepseek.com"
+        self, api_key: str | None = None, base_url: str = "", model: str = ""
     ):
-        self._api_key = deepseek_api_key
+        self._api_key = api_key
+        self._model = model
         self._base_url = base_url
 
     async def chat(
@@ -40,7 +41,7 @@ class LPAChatService:
     ) -> str:
         """Answer a follow-up question using the review context."""
         if not self._api_key:
-            return self._offline_response(question, review_context)
+            return "未配置 AI 模型，无法进行对话。请在个人中心 → 设置中添加 LLM 提供商（API Key 和模型）。"
 
         from openai import OpenAI
 
@@ -71,7 +72,7 @@ class LPAChatService:
 
         try:
             resp = client.chat.completions.create(
-                model="deepseek-v4-flash",
+                model=self._model,
                 messages=messages,
                 temperature=0.3,
                 max_tokens=2000,
@@ -80,33 +81,6 @@ class LPAChatService:
         except Exception as e:
             logger.error("Chat failed: %s", e)
             return f"抱歉，对话服务暂时不可用。错误：{e}"
-
-    def _offline_response(self, question: str, context: dict[str, Any]) -> str:
-        """Without API key, return a contextual summary instead."""
-        facts = context.get("facts", {}).get("labeled_facts", {})
-        chapter_reviews = context.get("chapter_reviews", [])
-        total_findings = sum(len(r.get("findings", [])) for r in chapter_reviews)
-
-        if "为什么" in question or "why" in question.lower():
-            # Try to find relevant finding
-            for review in chapter_reviews:
-                for f in review.get("findings", []):
-                    if any(
-                        kw in question for kw in [f.get("rule_id", ""), f.get("finding", "")[:20]]
-                    ):
-                        return (
-                            f"**{f.get('level', '')} | {f.get('rule_id', '')}**\n\n"
-                            f"{f.get('finding', '')}\n\n"
-                            f"原文依据：\n> {f.get('evidence', '')}\n\n"
-                            f"建议：{f.get('suggestion', '')}"
-                        )
-            return f"审查共发现 {total_findings} 个问题。请开启 LLM 模式获取详细回答。"
-
-        return (
-            f"本次审查共发现 {total_findings} 个问题。\n\n"
-            f"关键事实：{json.dumps(facts, ensure_ascii=False, indent=2)}\n\n"
-            f"如需详细分析，请开启 LLM 模式（配置 DEEPSEEK_API_KEY）。"
-        )
 
     def _build_context(self, review_context: dict[str, Any]) -> str:
         """Build a condensed review context for the LLM."""

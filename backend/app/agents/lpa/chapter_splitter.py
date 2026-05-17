@@ -20,6 +20,12 @@ CHAPTER_RE = re.compile(
     re.MULTILINE,
 )
 
+# Pattern for "一、"、"二、" numbered sections (common in contracts)
+SECTION_NUM_RE = re.compile(
+    r"^[  \t]*([一二三四五六七八九十]+)[、.．][  \t]*(.*)",
+    re.MULTILINE,
+)
+
 # English fallback patterns
 ARTICLE_RE = re.compile(
     r"^[  \t]*(?:Article|ARTICLE|Art\.?)[  \t]+([IVXLCDM\d]+)[  \t]*[：:.\s-]*(.*)",
@@ -69,6 +75,14 @@ class ChapterSplitter:
             title = match.group(2).strip()
             full = f"{num} {title}" if title else num
             markers.append((match.start(), full))
+
+        if not markers:
+            # Try "一、" numbered sections (common in Chinese contracts)
+            for match in SECTION_NUM_RE.finditer(text):
+                num = match.group(1)
+                title = match.group(2).strip()
+                full = f"{num}、{title}" if title else f"{num}、"
+                markers.append((match.start(), full))
 
         if not markers:
             # Try English patterns

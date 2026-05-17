@@ -99,10 +99,10 @@ class TestRuleBasedLabel:
 
 
 class TestFactExtractorOffline:
-    def test_extract_without_llm(self):
+    def test_extract_without_llm_raises(self):
+        import pytest
+
         text = "普通合伙人：ABC基金管理有限公司。管理费率为每年2%。"
         extractor = FactExtractor(llm_client=None)
-        result = extractor.extract(text)
-        assert "raw_facts" in result
-        assert "labeled_facts" in result
-        assert result["labeled_facts"].get("gp_name") is not None
+        with pytest.raises(RuntimeError, match="未配置 AI 模型"):
+            extractor.extract(text)
