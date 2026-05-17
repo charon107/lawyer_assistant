@@ -10,7 +10,7 @@ import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from app.api.deps import get_current_user_ws
+from app.api.deps import _extract_ws_auth, get_current_user_ws
 from app.services.lpa_service import _sessions
 
 logger = logging.getLogger(__name__)
@@ -31,12 +31,21 @@ async def lpa_review_websocket(websocket: WebSocket, review_id: str):
       {event: "complete", report_url: "/api/v1/lpa/review/{id}/report"}
       {event: "error", message: "..."}
     """
-    # Authenticate via token in Sec-WebSocket-Protocol header
-    user = await get_current_user_ws(websocket)
-    if user is None:
-        return
+    # Extract subprotocol from headers and accept connection
+    _, app_subprotocol = _extract_ws_auth(websocket)
+    await websocket.accept(subprotocol=app_subprotocol)
 
-    await websocket.accept()
+    # Authenticate via token in Sec-WebSocket-Protocol header
+    try:
+        await get_current_user_ws(websocket)
+    except Exception:
+        # Auth failed — send error and close gracefully
+        try:
+            await websocket.send_json({"event": "error", "message": "认证失败，请重新登录"})
+            await websocket.close()
+        except Exception:
+            pass
+        return
 
     last_progress = -1.0
     last_chapters_count = 0
@@ -65,6 +74,7 @@ async def lpa_review_websocket(websocket: WebSocket, review_id: str):
                         "msg": msg,
                     }
                 )
+                logger.info("→ %s %d%% %s", review_id, int(progress * 100), msg)
                 last_progress = progress
 
             # Push chapters when available (Stage 1 complete)

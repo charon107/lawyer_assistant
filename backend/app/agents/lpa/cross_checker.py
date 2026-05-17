@@ -18,9 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class CrossChecker:
-    """Global cross-chapter checker using DeepSeek-R1."""
-
-    R1_MODEL = "deepseek-v4-pro"
+    """Global cross-chapter consistency checker."""
 
     def __init__(self, llm_client: LLMClient, labeled_facts: dict[str, Any]):
         self._llm = llm_client
@@ -54,9 +52,8 @@ class CrossChecker:
             resp = self._llm.chat(
                 system_prompt="你是一位精通私募基金法律文件的资深律师。请严格按 JSON schema 输出分析结果。",
                 user_message=prompt,
-                model=self.R1_MODEL,
                 temperature=0.1,
-                max_tokens=8192,
+                max_tokens=16384,
             )
             data = self._parse_response(resp)
             return {
@@ -133,10 +130,12 @@ class CrossChecker:
     @staticmethod
     def _parse_response(text: str) -> dict:
         text = text.strip()
+        if not text:
+            raise ValueError("Empty response from LLM")
         if "```" in text:
             blocks = re.findall(r"```(?:json)?\s*\n?(.*?)```", text, re.DOTALL)
             if blocks:
-                text = blocks[0]
+                text = blocks[0].strip()
         return json.loads(text)
 
     @staticmethod

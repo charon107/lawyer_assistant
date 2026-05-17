@@ -11,6 +11,7 @@ import {
   Download,
   Star,
   List,
+  User,
 } from "lucide-react";
 
 function getGreeting(): string {
@@ -41,7 +42,7 @@ export default function DashboardPage() {
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[13px] font-medium text-muted-foreground">账户</span>
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950">
-              <span className="text-sm">👤</span>
+              <User className="h-4 w-4 text-amber-600" />
             </div>
           </div>
           {user?.email ? (

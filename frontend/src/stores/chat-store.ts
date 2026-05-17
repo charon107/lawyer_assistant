@@ -14,20 +14,13 @@ interface ChatState {
   activeToolStatus: ActiveToolStatus | null;
 
   addMessage: (message: ChatMessage) => void;
-  updateMessage: (
-    id: string,
-    updater: (msg: ChatMessage) => ChatMessage
-  ) => void;
+  updateMessage: (id: string, updater: (msg: ChatMessage) => ChatMessage) => void;
   updateMessagesWhere: (
     predicate: (msg: ChatMessage) => boolean,
-    updater: (msg: ChatMessage) => ChatMessage
+    updater: (msg: ChatMessage) => ChatMessage,
   ) => void;
   addToolCall: (messageId: string, toolCall: ToolCall) => void;
-  updateToolCall: (
-    messageId: string,
-    toolCallId: string,
-    update: Partial<ToolCall>
-  ) => void;
+  updateToolCall: (messageId: string, toolCallId: string, update: Partial<ToolCall>) => void;
   setStreaming: (streaming: boolean) => void;
   setToolStatus: (status: ActiveToolStatus | null) => void;
   clearMessages: () => void;
@@ -56,9 +49,7 @@ export const useChatStore = create<ChatState>((set) => ({
   addToolCall: (messageId, toolCall) =>
     set((state) => ({
       messages: state.messages.map((msg) =>
-        msg.id === messageId
-          ? { ...msg, toolCalls: [...(msg.toolCalls || []), toolCall] }
-          : msg
+        msg.id === messageId ? { ...msg, toolCalls: [...(msg.toolCalls || []), toolCall] } : msg,
       ),
     })),
 
@@ -69,10 +60,10 @@ export const useChatStore = create<ChatState>((set) => ({
           ? {
               ...msg,
               toolCalls: msg.toolCalls?.map((tc) =>
-                tc.id === toolCallId ? { ...tc, ...update } : tc
+                tc.id === toolCallId ? { ...tc, ...update } : tc,
               ),
             }
-          : msg
+          : msg,
       ),
     })),
 

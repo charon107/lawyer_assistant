@@ -9,8 +9,8 @@ interface ToolStatusIndicatorProps {
 
 export function ToolStatusIndicator({ label, toolName }: ToolStatusIndicatorProps) {
   return (
-    <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground animate-pulse">
-      <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+    <div className="text-muted-foreground flex animate-pulse items-center gap-2 px-3 py-2 text-sm">
+      <Loader2 className="text-primary h-3.5 w-3.5 animate-spin" />
       <span>{label}</span>
       <span className="text-xs opacity-60">{toolName}</span>
     </div>

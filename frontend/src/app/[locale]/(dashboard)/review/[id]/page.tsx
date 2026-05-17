@@ -6,6 +6,8 @@ import { useLPAReview } from "@/hooks/use-lpa-review";
 import { ReviewProgressBar } from "@/components/review/progress-bar";
 import { FindingCard } from "@/components/review/finding-card";
 import { ChatWidget } from "@/components/chat/chat-widget";
+import { Button, Skeleton } from "@/components/ui";
+import { FileSearch, Download, AlertTriangle } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "/api/v1";
 
@@ -15,11 +17,13 @@ export default function ReviewDetailPage() {
   const review = useLPAReview();
   const [activeTab, setActiveTab] = useState("overview");
   const [reportMd, setReportMd] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch full result when page loads, and connect WS if review is still in progress
   useEffect(() => {
     if (reviewId) {
       review.fetchFullResult(API_BASE, reviewId).then((data) => {
+        setIsLoading(false);
         if (data && data.status !== "complete" && data.status !== "error") {
           // Review is still in progress — connect WebSocket for real-time updates
           review.connectWS(reviewId, API_BASE);
@@ -48,25 +52,96 @@ export default function ReviewDetailPage() {
     (sum, r) => sum + r.findings.filter((f: any) => f.level === "低风险").length, 0
   );
 
+  const FACT_LABELS: Record<string, string> = {
+    party_a: "甲方",
+    party_b: "乙方",
+    party_a_role: "甲方角色",
+    party_b_role: "乙方角色",
+    contract_subject: "合同标的",
+    contract_value: "合同金额",
+    contract_value_raw: "合同金额原文",
+    currency: "币种",
+    payment_terms: "付款条件",
+    payment_schedule: "付款安排",
+    contract_start_date: "合同起始日期",
+    contract_end_date: "合同终止日期",
+    contract_term: "合同期限",
+    delivery_date: "交付日期",
+    delivery_location: "交付地点",
+    governing_law: "适用法律",
+    dispute_resolution: "争议解决",
+    confidentiality_term: "保密期限",
+    penalty_clause: "违约金条款",
+    warranty_period: "质保期",
+    renewal_terms: "续约条件",
+    termination_conditions: "终止条件",
+    special_conditions: "特别约定",
+    // LPA fields
+    fund_name: "基金名称",
+    fund_type: "基金类型",
+    domicile: "注册地",
+    gp_name: "普通合伙人",
+    manager_name: "管理人",
+    gp_is_manager: "GP是否兼任管理人",
+    committed_capital: "认缴出资总额",
+    management_fee_rate: "管理费率",
+    management_fee_basis: "管理费计算基数",
+    hurdle_rate: "优先回报率",
+    gp_carry: "GP业绩报酬",
+    investment_period_years: "投资期",
+    exit_period_years: "退出期",
+    extension_period_years: "延长期",
+    lpac_approval_threshold: "LPAC审批门槛",
+    lp_min_commitment: "LP最低出资",
+    gp_removal_for_cause: "GP有因除名",
+    gp_removal_nofault_threshold: "GP无过错除名比例",
+    key_persons: "关键人士",
+  };
+
   const tabs = [
     { key: "overview", label: "概览" },
-    { key: "facts", label: "关键事实" },
+    { key: "facts", label: "合同摘要" },
     { key: "findings", label: `逐章发现 (${review.chapterReviews.length})` },
     { key: "cross", label: "跨章检查" },
     { key: "report", label: "完整报告" },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-lg" />
+          ))}
+        </div>
+        <Skeleton className="h-10 w-full" />
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-5xl mx-auto py-8 px-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold">&#x1F50D; 文件审查报告</h1>
-        <p className="text-sm text-zinc-500 mt-1">Session: {reviewId}</p>
+      <div>
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <FileSearch className="h-6 w-6 text-brand" />
+          文件审查报告
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">Session: {reviewId}</p>
       </div>
 
       {/* Progress (during review) */}
       {review.status !== "complete" && review.status !== "error" && (
-        <div className="mb-8 p-6 border border-zinc-800 rounded-xl">
+        <div className="p-6 border border-border rounded-xl" aria-live="polite">
           <ReviewProgressBar
             stage={review.status}
             progress={review.progress}
@@ -75,24 +150,21 @@ export default function ReviewDetailPage() {
 
           {/* Chapter confirmation */}
           {review.awaitingChapters && (
-            <div className="mt-6 p-4 border border-blue-500/30 bg-blue-500/5 rounded-lg">
+            <div className="mt-6 p-4 border border-brand/30 bg-brand/5 rounded-lg">
               <p className="text-sm font-medium mb-3">
                 已识别 {review.chapters.length} 个章节，请确认章节边界后继续：
               </p>
               <div className="max-h-60 overflow-y-auto space-y-1 mb-4">
                 {review.chapters.map((ch: any, i: number) => (
-                  <div key={i} className="text-sm text-zinc-400 flex justify-between">
+                  <div key={i} className="text-sm text-muted-foreground flex justify-between">
                     <span>{ch.title}</span>
-                    <span className="text-zinc-600">{ch.char_count} 字</span>
+                    <span className="text-muted-foreground/70">{ch.char_count} 字</span>
                   </div>
                 ))}
               </div>
-              <button
-                onClick={handleChapterConfirm}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-500"
-              >
+              <Button onClick={handleChapterConfirm}>
                 确认并继续审查
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -100,9 +172,10 @@ export default function ReviewDetailPage() {
 
       {/* Error state */}
       {review.status === "error" && (
-        <div className="border border-red-500/50 bg-red-500/10 rounded-xl p-6 text-center mb-8">
-          <p className="text-red-400 mb-2">审查出错</p>
-          <p className="text-sm text-zinc-400">{review.error}</p>
+        <div className="border border-destructive/30 bg-destructive/5 rounded-xl p-6 text-center" aria-live="assertive">
+          <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-2" />
+          <p className="text-destructive font-medium mb-2">审查出错</p>
+          <p className="text-sm text-muted-foreground">{review.error}</p>
         </div>
       )}
 
@@ -110,35 +183,37 @@ export default function ReviewDetailPage() {
       {review.status === "complete" && (
         <>
           {/* Risk summary */}
-          <div className="grid grid-cols-4 gap-4 mb-8">
-            <div className="border border-red-500/30 bg-red-500/5 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-red-400">{highCount}</div>
-              <div className="text-xs text-zinc-500">高风险</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4" aria-label="风险统计">
+            <div className="border border-destructive/20 bg-destructive/5 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-destructive">{highCount}</div>
+              <div className="text-xs text-muted-foreground">高风险</div>
             </div>
-            <div className="border border-orange-500/30 bg-orange-500/5 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-orange-400">{midCount}</div>
-              <div className="text-xs text-zinc-500">中风险</div>
+            <div className="border border-warning/20 bg-warning/5 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-warning">{midCount}</div>
+              <div className="text-xs text-muted-foreground">中风险</div>
             </div>
-            <div className="border border-yellow-500/30 bg-yellow-500/5 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-400">{lowCount}</div>
-              <div className="text-xs text-zinc-500">低风险</div>
+            <div className="border border-warning/20 bg-warning/5 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-warning">{lowCount}</div>
+              <div className="text-xs text-muted-foreground">低风险</div>
             </div>
-            <div className="border border-zinc-700 bg-zinc-900 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-zinc-300">{review.chapters.length}</div>
-              <div className="text-xs text-zinc-500">审查章节</div>
+            <div className="border border-border bg-card rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-foreground">{review.chapters.length}</div>
+              <div className="text-xs text-muted-foreground">审查章节</div>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 border-b border-zinc-800 mb-6">
+          <div role="tablist" className="flex gap-1 border-b border-border">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
+                role="tab"
+                aria-selected={activeTab === tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`px-4 py-2 text-sm rounded-t-lg transition-colors
                   ${activeTab === tab.key
-                    ? "bg-zinc-800 text-white"
-                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900"
+                    ? "bg-card text-foreground font-medium border border-border border-b-white dark:border-b-card"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
               >
                 {tab.label}
@@ -148,7 +223,7 @@ export default function ReviewDetailPage() {
 
           {/* Tab: Overview */}
           {activeTab === "overview" && (
-            <div className="space-y-4">
+            <div role="tabpanel" className="space-y-4">
               <h2 className="text-lg font-semibold">Top 风险发现</h2>
               {review.chapterReviews
                 .flatMap((r) => r.findings)
@@ -162,19 +237,19 @@ export default function ReviewDetailPage() {
 
           {/* Tab: Facts */}
           {activeTab === "facts" && (
-            <div className="overflow-x-auto">
+            <div role="tabpanel" className="overflow-x-auto">
               {review.facts ? (
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-800">
-                      <th className="text-left py-2 px-3 text-zinc-400">项目</th>
-                      <th className="text-left py-2 px-3 text-zinc-400">内容</th>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 px-3 text-muted-foreground">项目</th>
+                      <th className="text-left py-2 px-3 text-muted-foreground">内容</th>
                     </tr>
                   </thead>
                   <tbody>
                     {Object.entries(review.facts).map(([key, val]) => (
-                      <tr key={key} className="border-b border-zinc-900">
-                        <td className="py-2 px-3 text-zinc-500 font-mono text-xs">{key}</td>
+                      <tr key={key} className="border-b border-border/50">
+                        <td className="py-2 px-3 text-muted-foreground">{FACT_LABELS[key] || key}</td>
                         <td className="py-2 px-3">
                           {typeof val === "boolean" ? (val ? "是" : "否") :
                            Array.isArray(val) ? val.join(", ") :
@@ -186,28 +261,28 @@ export default function ReviewDetailPage() {
                   </tbody>
                 </table>
               ) : (
-                <p className="text-zinc-500">未提取到结构化事实</p>
+                <p className="text-muted-foreground">未提取到结构化事实</p>
               )}
             </div>
           )}
 
           {/* Tab: Findings */}
           {activeTab === "findings" && (
-            <div className="space-y-6">
+            <div role="tabpanel" className="space-y-6">
               {review.chapterReviews.map((review: any, i: number) => (
                 <div key={i}>
                   <h3 className="text-md font-medium mb-3">
                     {review.chapter}
                     <span className={`ml-2 text-xs px-2 py-0.5 rounded ${
                       review.complexity === "complex"
-                        ? "bg-purple-500/20 text-purple-400"
-                        : "bg-zinc-700 text-zinc-400"
+                        ? "bg-brand-muted text-brand"
+                        : "bg-muted text-muted-foreground"
                     }`}>
                       {review.complexity === "complex" ? "深度审查" : "快速扫描"}
                     </span>
                   </h3>
                   {review.findings.length === 0 ? (
-                    <p className="text-sm text-green-400 mb-4">未发现风险</p>
+                    <p className="text-sm text-success mb-4">未发现风险</p>
                   ) : (
                     <div className="space-y-3">
                       {review.findings.map((f: any, j: number) => (
@@ -222,38 +297,38 @@ export default function ReviewDetailPage() {
 
           {/* Tab: Cross-check */}
           {activeTab === "cross" && (
-            <div className="space-y-4">
+            <div role="tabpanel" className="space-y-4">
               {review.crossCheck ? (
                 <>
                   {review.crossCheck.contradictions?.length > 0 && (
                     <div>
-                      <h3 className="text-md font-medium mb-3 text-red-400">跨章矛盾</h3>
+                      <h3 className="text-md font-medium mb-3 text-destructive">跨章矛盾</h3>
                       {review.crossCheck.contradictions.map((c: any, i: number) => (
-                        <div key={i} className="border border-red-500/20 bg-red-500/5 rounded-lg p-4 mb-2">
+                        <div key={i} className="border border-destructive/20 bg-destructive/5 rounded-lg p-4 mb-2">
                           <p className="text-sm font-medium">[{c.level}] {c.id} — {c.description}</p>
-                          <p className="text-xs text-zinc-500 mt-1">{c.resolution}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{c.resolution}</p>
                         </div>
                       ))}
                     </div>
                   )}
                   {review.crossCheck.consistency_issues?.length > 0 && (
                     <div>
-                      <h3 className="text-md font-medium mb-3 text-orange-400">一致性问题</h3>
+                      <h3 className="text-md font-medium mb-3 text-warning">一致性问题</h3>
                       {review.crossCheck.consistency_issues.map((ci: any, i: number) => (
-                        <div key={i} className="border border-orange-500/20 bg-orange-500/5 rounded-lg p-4 mb-2">
+                        <div key={i} className="border border-warning/20 bg-warning/5 rounded-lg p-4 mb-2">
                           <p className="text-sm font-medium">[{ci.level}] {ci.id}</p>
-                          <p className="text-xs text-zinc-400 mt-1">{ci.description}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{ci.description}</p>
                         </div>
                       ))}
                     </div>
                   )}
                   {review.crossCheck.missing_items?.length > 0 && (
                     <div>
-                      <h3 className="text-md font-medium mb-3 text-yellow-400">建议补充条款</h3>
+                      <h3 className="text-md font-medium mb-3 text-warning">建议补充条款</h3>
                       {review.crossCheck.missing_items.map((mi: any, i: number) => (
-                        <div key={i} className="border border-yellow-500/20 bg-yellow-500/5 rounded-lg p-4 mb-2">
+                        <div key={i} className="border border-warning/20 bg-warning/5 rounded-lg p-4 mb-2">
                           <p className="text-sm font-medium">[{mi.severity}] {mi.id} — {mi.item}</p>
-                          <p className="text-xs text-zinc-500 mt-1">{mi.suggestion}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{mi.suggestion}</p>
                         </div>
                       ))}
                     </div>
@@ -261,19 +336,20 @@ export default function ReviewDetailPage() {
                   {!review.crossCheck.contradictions?.length &&
                    !review.crossCheck.consistency_issues?.length &&
                    !review.crossCheck.missing_items?.length && (
-                    <p className="text-green-400">跨章检查未发现特别问题</p>
+                    <p className="text-success">跨章检查未发现特别问题</p>
                   )}
                 </>
               ) : (
-                <p className="text-zinc-500">交叉检查结果尚未生成</p>
+                <p className="text-muted-foreground">交叉检查结果尚未生成</p>
               )}
             </div>
           )}
 
           {/* Tab: Full Report */}
           {activeTab === "report" && (
-            <div>
-              <button
+            <div role="tabpanel">
+              <Button
+                variant="outline"
                 onClick={() => {
                   if (reportMd) {
                     const blob = new Blob([reportMd], { type: "text/markdown" });
@@ -285,16 +361,17 @@ export default function ReviewDetailPage() {
                     URL.revokeObjectURL(url);
                   }
                 }}
-                className="mb-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-500"
+                className="mb-4"
               >
-                &#x1F4E5; 下载 Markdown 报告
-              </button>
+                <Download className="h-4 w-4 mr-2" />
+                下载 Markdown 报告
+              </Button>
               {reportMd ? (
-                <pre className="text-xs text-zinc-400 whitespace-pre-wrap bg-zinc-900 p-6 rounded-lg max-h-[600px] overflow-y-auto">
+                <pre className="text-xs text-muted-foreground whitespace-pre-wrap bg-card border border-border p-6 rounded-lg max-h-[600px] overflow-y-auto">
                   {reportMd}
                 </pre>
               ) : (
-                <p className="text-zinc-500">加载报告中...</p>
+                <p className="text-muted-foreground">加载报告中...</p>
               )}
             </div>
           )}

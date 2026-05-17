@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0.0] - 2026-05-18
+
+### Added
+
+- **Universal Document Review**: Prompts rewritten for generic contract review (租赁、买卖、服务等), LPA-specific prompts preserved in `prompts/lpa/`
+- **Document Type Support**: API route accepts `document_type` parameter, 14 document types configured
+- **Chapter Splitting for Chinese Contracts**: New regex pattern for "一、"、"二、" numbered sections
+- **Contract Summary Tab**: "关键事实" renamed to "合同摘要" with Chinese field labels
+
+### Fixed
+
+- **MiMo Tool Calling**: Fixed empty arguments by improving tool description, system prompt consistency, and adding empty args detection with retry
+- **Progress Bar Stuck at 0%**: Fixed async callback that silently swallowed progress updates
+- **Duplicate Findings**: WebSocket and fetchFullResult data no longer accumulate duplicates
+- **Report Not Loading**: fetchFullResult now stores reportMarkdown from backend
+- **JSON Truncation**: Increased max_tokens for complex review and cross-check (8192→16384)
+- **Chapter Title Garbled**: Fixed regex to properly identify Chinese contract section headers
+
 ## [0.5.0.0] - 2026-05-16
 
 ### Added

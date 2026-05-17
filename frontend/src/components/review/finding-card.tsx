@@ -1,5 +1,7 @@
 "use client";
 
+import { Lightbulb } from "lucide-react";
+
 interface Finding {
   rule_id: string;
   level: string;
@@ -9,17 +11,17 @@ interface Finding {
 }
 
 const LEVEL_COLORS: Record<string, string> = {
-  "高风险": "border-red-500/50 bg-red-500/10",
-  "中风险": "border-orange-500/50 bg-orange-500/10",
-  "低风险": "border-yellow-500/50 bg-yellow-500/10",
-  "未发现问题": "border-green-500/50 bg-green-500/10",
+  "高风险": "border-destructive/30 bg-destructive/5",
+  "中风险": "border-warning/30 bg-warning/5",
+  "低风险": "border-warning/20 bg-warning/5",
+  "未发现问题": "border-success/30 bg-success/5",
 };
 
 const LEVEL_DOT: Record<string, string> = {
-  "高风险": "bg-red-500",
-  "中风险": "bg-orange-500",
-  "低风险": "bg-yellow-500",
-  "未发现问题": "bg-green-500",
+  "高风险": "bg-destructive",
+  "中风险": "bg-warning",
+  "低风险": "bg-warning",
+  "未发现问题": "bg-success",
 };
 
 export function FindingCard({ finding }: { finding: Finding }) {
@@ -31,20 +33,21 @@ export function FindingCard({ finding }: { finding: Finding }) {
       <div className="flex items-center gap-2 mb-2">
         <span className={`w-2 h-2 rounded-full ${dotColor}`} />
         <span className="text-sm font-bold">{finding.level}</span>
-        <span className="text-xs text-zinc-500">[{finding.rule_id}]</span>
+        <span className="text-xs text-muted-foreground">[{finding.rule_id}]</span>
       </div>
       <p className="text-sm mb-2">{finding.finding}</p>
       {finding.evidence && (
         <details className="mb-2">
-          <summary className="text-xs text-zinc-400 cursor-pointer">原文引用</summary>
-          <blockquote className="mt-1 p-2 bg-zinc-900 rounded text-xs text-zinc-300 border-l-2 border-zinc-600">
+          <summary className="text-xs text-muted-foreground cursor-pointer">原文引用</summary>
+          <blockquote className="mt-1 p-2 bg-muted rounded text-xs text-muted-foreground border-l-2 border-border">
             {finding.evidence}
           </blockquote>
         </details>
       )}
       {finding.suggestion && (
-        <p className="text-xs text-blue-400">
-          &#x1F4A1; {finding.suggestion}
+        <p className="text-xs text-brand flex items-center gap-1">
+          <Lightbulb className="h-3 w-3 shrink-0" />
+          {finding.suggestion}
         </p>
       )}
     </div>

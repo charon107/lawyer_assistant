@@ -4,7 +4,7 @@ from pathlib import Path
 
 from app.agents.lpa.risk_rules import LPA_RULES
 
-PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent / "prompts"
+PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent.parent / "prompts"
 
 CHAPTER_KEYWORDS = [
     "定义",
@@ -141,7 +141,7 @@ def _build_fact_tool_schema() -> dict:
             },
             "dispute_resolution": {"type": "string", "description": "争议解决机构"},
         },
-        "required": [],
+        "required": ["fund_name", "gp_name"],
     }
 
 
@@ -156,10 +156,10 @@ CONFIG = {
     "simple_rule_ids": SIMPLE_RULE_IDS,
     "complex_rule_ids": COMPLEX_RULE_IDS,
     "prompt_templates": {
-        "chapter_split": str(PROMPTS_DIR / "chapter_split.md"),
-        "fact_labeling": str(PROMPTS_DIR / "fact_labeling.md"),
-        "simple_review": str(PROMPTS_DIR / "simple_review.md"),
-        "complex_review": str(PROMPTS_DIR / "complex_review.md"),
-        "cross_check": str(PROMPTS_DIR / "cross_check.md"),
+        "chapter_split": str(PROMPTS_DIR / "lpa" / "chapter_split.md"),
+        "fact_labeling": str(PROMPTS_DIR / "lpa" / "fact_labeling.md"),
+        "simple_review": str(PROMPTS_DIR / "lpa" / "simple_review.md"),
+        "complex_review": str(PROMPTS_DIR / "lpa" / "complex_review.md"),
+        "cross_check": str(PROMPTS_DIR / "lpa" / "cross_check.md"),
     },
 }

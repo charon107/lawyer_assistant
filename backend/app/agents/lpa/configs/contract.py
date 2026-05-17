@@ -73,7 +73,7 @@ CONFIG = {
                 "confidentiality": {"type": "boolean", "description": "是否包含保密条款"},
                 "termination_conditions": {"type": "string", "description": "终止条件"},
             },
-            "required": [],
+            "required": ["party_a", "party_b"],
         },
         "risk_rules": CONTRACT_RULES,
         "rule_keyword_map": {

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { UploadZone } from "@/components/review";
 import { useLPAReview } from "@/hooks/use-lpa-review";
 import { ReviewProgressBar } from "@/components/review/progress-bar";
+import { Button } from "@/components/ui";
+import { FileSearch, Loader2 } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "/api/v1";
 
@@ -24,8 +26,11 @@ export default function ReviewPage() {
   return (
     <div className="max-w-2xl mx-auto py-16 px-4">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">&#x1F50D; 智能文件审查</h1>
-        <p className="text-zinc-400">
+        <h1 className="text-2xl font-bold mb-2 flex items-center gap-2">
+          <FileSearch className="h-6 w-6 text-brand" />
+          智能文件审查
+        </h1>
+        <p className="text-muted-foreground">
           上传法律文件（合同、协议、NDA 等），AI 将自动提取关键条款、识别风险点并生成审查报告。
         </p>
       </div>
@@ -36,21 +41,22 @@ export default function ReviewPage() {
 
       {review.status === "uploading" && (
         <div className="flex flex-col items-center gap-4 py-12">
-          <div className="animate-spin text-3xl">&#x2699;</div>
-          <p className="text-zinc-400">正在上传 {fileName}...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+          <p className="text-muted-foreground">正在上传 {fileName}...</p>
         </div>
       )}
 
       {review.error && (
-        <div className="border border-red-500/50 bg-red-500/10 rounded-xl p-6 text-center">
-          <p className="text-red-400 mb-2">上传失败</p>
-          <p className="text-sm text-zinc-400">{review.error}</p>
-          <button
+        <div className="border border-destructive/30 bg-destructive/5 rounded-xl p-6 text-center">
+          <p className="text-destructive font-medium mb-2">上传失败</p>
+          <p className="text-sm text-muted-foreground">{review.error}</p>
+          <Button
+            variant="outline"
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-zinc-800 rounded-lg text-sm hover:bg-zinc-700"
+            className="mt-4"
           >
             重试
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -30,10 +30,19 @@ def _evict_expired_sessions() -> None:
 class LPAReviewService:
     """Manages LPA review lifecycle: create, run, poll, retrieve."""
 
-    def __init__(self, deepseek_api_key: str | None = None):
-        self._api_key = deepseek_api_key
+    def __init__(
+        self,
+        api_key: str | None = None,
+        base_url: str = "",
+        model: str = "",
+    ):
+        self._api_key = api_key
+        self._base_url = base_url
+        self._model = model
 
-    async def start_review(self, file_content: bytes, filename: str) -> str:
+    async def start_review(
+        self, file_content: bytes, filename: str, document_type: str = "contract"
+    ) -> str:
         """Start a new review. Returns review_id immediately."""
         _evict_expired_sessions()
         review_id = str(uuid.uuid4())[:12]
@@ -43,8 +52,12 @@ class LPAReviewService:
             "id": review_id,
             "status": "uploaded",
             "filename": filename,
+            "document_type": document_type,
             "progress": 0.0,
             "progress_msg": "已上传，等待开始...",
+            "api_key": self._api_key,
+            "base_url": self._base_url,
+            "model": self._model,
             "file_content": file_content,
             "result": None,
             "chapters": None,
@@ -59,7 +72,10 @@ class LPAReviewService:
         }
 
         # Fire-and-forget pipeline execution
-        asyncio.create_task(self._run_pipeline(review_id))
+        logger.info("Creating pipeline task for review_id=%s", review_id)
+        task = asyncio.create_task(self._run_pipeline(review_id))
+        task.add_done_callback(lambda t: logger.error("Pipeline task FAILED: %s", t.exception()) if t.exception() else None)
+        logger.info("Pipeline task created for review_id=%s", review_id)
         return review_id
 
     async def confirm_chapters(self, review_id: str, chapters: list) -> bool:
@@ -107,24 +123,37 @@ class LPAReviewService:
             return None
         return {
             "id": session["id"],
-            "status": session["status"],
+            "status": session.get("status", "uploaded"),
+            "progress": session.get("progress", 0.0),
+            "progress_msg": session.get("progress_msg", ""),
             "chapters": session.get("chapters"),
             "chapter_reviews": session.get("chapter_reviews"),
             "facts": session.get("facts"),
             "cross_check": session.get("cross_check"),
             "report_markdown": session.get("report_markdown"),
+            "error": session.get("error"),
         }
 
     async def _run_pipeline(self, review_id: str):
         """Run all 5 stages in background, publishing progress updates."""
+        logger.info("_run_pipeline START for review_id=%s", review_id)
         session = _sessions.get(review_id)
         if not session:
+            logger.error("_run_pipeline: session %s not found in _sessions", review_id)
+            return
+
+        # Validate API key before starting
+        if not session.get("api_key"):
+            logger.error("_run_pipeline: no api_key in session %s", review_id)
+            session["status"] = "error"
+            session["error"] = "未配置 AI 模型。请在设置中添加 LLM 提供商（API Key）。"
             return
 
         try:
             from app.agents.lpa.orchestrator import LPAReviewOrchestrator
 
             def progress_callback(pct: float, msg: str):
+                logger.info("PROGRESS: %.2f — %s", pct, msg)
                 session["progress"] = pct
                 session["progress_msg"] = msg
                 # Update status based on stage
@@ -141,11 +170,11 @@ class LPAReviewService:
                 else:
                     session["status"] = "complete"
 
-            async def async_progress(pct: float, msg: str):
-                progress_callback(pct, msg)
-
             orchestrator = LPAReviewOrchestrator(
-                deepseek_api_key=self._api_key,
+                api_key=session.get("api_key"),
+                base_url=session.get("base_url", ""),
+                model=session.get("model", ""),
+                document_type=session.get("document_type", "contract"),
             )
 
             # Create a file-like object for the orchestrator
@@ -160,7 +189,7 @@ class LPAReviewService:
                 None,
                 lambda: orchestrator.review(
                     file_obj,
-                    progress_callback=async_progress if self._api_key else None,
+                    progress_callback=progress_callback,
                 ),
             )
 
