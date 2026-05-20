@@ -16,7 +16,7 @@ class TestSettings:
 
     def test_project_name_is_set(self):
         """Test project name is configured."""
-        assert settings.PROJECT_NAME == "lpa_review_app"
+        assert settings.PROJECT_NAME == "lexmind"
 
     def test_api_v1_str_is_set(self):
         """Test API version string is set."""
