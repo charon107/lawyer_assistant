@@ -4,8 +4,7 @@ Each sub-module exports a CONFIG dict with type-specific settings.
 This module assembles them into DOCUMENT_TYPE_CONFIGS with shared defaults.
 """
 
-from pathlib import Path
-
+from app.agents.lpa import prompts_dir as _get_prompts_dir
 from app.agents.lpa.configs.articles_of_association import CONFIG as ARTICLES_OF_ASSOCIATION_CONFIG
 from app.agents.lpa.configs.construction import CONFIG as CONSTRUCTION_CONFIG
 from app.agents.lpa.configs.contract import CONFIG as CONTRACT_CONFIG
@@ -21,7 +20,7 @@ from app.agents.lpa.configs.sales import CONFIG as SALES_CONFIG
 from app.agents.lpa.configs.service import CONFIG as SERVICE_CONFIG
 from app.agents.lpa.configs.will_estate import CONFIG as WILL_ESTATE_CONFIG
 
-PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent.parent / "prompts"
+PROMPTS_DIR = _get_prompts_dir()
 
 _DEFAULT_PROMPT_TEMPLATES = {
     "chapter_split": str(PROMPTS_DIR / "chapter_split.md"),
