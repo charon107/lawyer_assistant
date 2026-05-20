@@ -13,7 +13,7 @@ from typing import Any
 
 from fastapi import APIRouter, Query
 
-from app.api.deps import ConversationSvc, CurrentAdmin, UserSvc
+from app.api.deps import ConversationSvc, CurrentAdmin, SystemLogSvc, UserSvc
 from app.schemas.conversation import ConversationReadWithMessages
 from app.schemas.conversation_share import AdminConversationList, AdminUserList
 
@@ -23,7 +23,8 @@ router = APIRouter()
 @router.get("", response_model=AdminConversationList)
 def admin_list_conversations(
     service: ConversationSvc,
-    _: CurrentAdmin,
+    admin: CurrentAdmin,
+    log_service: SystemLogSvc,
     skip: int = Query(0, ge=0, description="Items to skip"),
     limit: int = Query(50, ge=1, le=100, description="Max items to return"),
     search: str | None = Query(default=None, description="Search by title"),
@@ -31,6 +32,12 @@ def admin_list_conversations(
     include_archived: bool = Query(False, description="Include archived conversations"),
 ) -> Any:
     """List all conversations across all users (admin only)."""
+    log_service.log(
+        "admin",
+        "list_conversations",
+        user_id=str(admin.id),
+        metadata={"search": search, "user_id": user_id, "skip": skip, "limit": limit},
+    )
     return service.admin_list_with_users(
         skip=skip,
         limit=limit,
@@ -43,12 +50,14 @@ def admin_list_conversations(
 @router.get("/users", response_model=AdminUserList)
 def admin_list_users(
     user_service: UserSvc,
-    _: CurrentAdmin,
+    admin: CurrentAdmin,
+    log_service: SystemLogSvc,
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     search: str | None = Query(default=None, description="Search by email or name"),
 ) -> Any:
     """List all users with conversation counts (admin only)."""
+    log_service.log("admin", "list_users", user_id=str(admin.id), metadata={"search": search})
     return user_service.admin_list_with_counts(skip=skip, limit=limit, search=search)
 
 
@@ -56,7 +65,15 @@ def admin_list_users(
 def admin_get_conversation(
     conversation_id: str,
     service: ConversationSvc,
-    _: CurrentAdmin,
+    admin: CurrentAdmin,
+    log_service: SystemLogSvc,
 ) -> Any:
     """Get any conversation with messages (admin read-only access)."""
+    log_service.log(
+        "admin",
+        "view_conversation",
+        user_id=str(admin.id),
+        resource_type="conversation",
+        resource_id=conversation_id,
+    )
     return service.get_conversation_with_messages(conversation_id)

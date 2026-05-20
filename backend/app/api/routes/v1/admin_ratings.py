@@ -14,7 +14,7 @@ from typing import Any
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from app.api.deps import CurrentAdmin, MessageRatingSvc
+from app.api.deps import CurrentAdmin, MessageRatingSvc, SystemLogSvc
 from app.schemas.message_rating import MessageRatingList, RatingSummary
 
 router = APIRouter()
@@ -23,7 +23,8 @@ router = APIRouter()
 @router.get("", response_model=MessageRatingList)
 def list_ratings_admin(
     rating_service: MessageRatingSvc,
-    _: CurrentAdmin,
+    admin: CurrentAdmin,
+    log_service: SystemLogSvc,
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     rating_filter: int | None = Query(None, ge=-1, le=1, description="Filter by rating value"),
@@ -37,6 +38,7 @@ def list_ratings_admin(
 
     Results are ordered by creation date (newest first).
     """
+    log_service.log("admin", "list_ratings", user_id=str(admin.id))
     items, total = rating_service.list_ratings(
         skip=skip,
         limit=limit,
@@ -69,7 +71,8 @@ def get_rating_summary(
 @router.get("/export")
 def export_ratings(
     rating_service: MessageRatingSvc,
-    _: CurrentAdmin,
+    admin: CurrentAdmin,
+    log_service: SystemLogSvc,
     export_format: str = Query("json", description="Export format: 'json' or 'csv'"),
     rating_filter: int | None = Query(None, ge=-1, le=1, description="Filter by rating value"),
     with_comments_only: bool = Query(False, description="Only show ratings with comments"),
@@ -78,6 +81,12 @@ def export_ratings(
 
     CSV is streamed row-by-row; JSON collects into a single document.
     """
+    log_service.log(
+        "admin",
+        "export_ratings",
+        user_id=str(admin.id),
+        metadata={"format": export_format},
+    )
     result = rating_service.export_ratings(
         export_format=export_format,
         rating_filter=rating_filter,

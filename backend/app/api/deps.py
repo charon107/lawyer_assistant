@@ -81,6 +81,18 @@ def get_law_search_service() -> LawSearchService:
 LawSearchSvc = Annotated[LawSearchService, Depends(get_law_search_service)]
 
 
+# === System Log Service ===
+
+from app.services.system_log_service import SystemLogService
+
+
+def get_system_log_service(db: DBSession) -> SystemLogService:
+    return SystemLogService(db)
+
+
+SystemLogSvc = Annotated[SystemLogService, Depends(get_system_log_service)]
+
+
 # === Authentication Dependencies ===
 
 from app.core.exceptions import AuthenticationError, AuthorizationError

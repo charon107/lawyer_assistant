@@ -32,6 +32,8 @@
     "review": "文件审查",
     "adminRatings": "回复评分",
     "adminConversations": "全部对话",
+    "adminLogs": "系统日志",
+    "adminSystem": "系统状态",
     "cases": "案件"
   },
   "auth": {
