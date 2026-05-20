@@ -64,7 +64,7 @@ const nextConfig: NextConfig = {
 
   // Environment variables available on both server and client
   publicRuntimeConfig: {
-    appName: "lpa_review_app",
+    appName: "lexmind",
   },
 };
 

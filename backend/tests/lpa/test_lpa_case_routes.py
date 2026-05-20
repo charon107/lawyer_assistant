@@ -93,7 +93,7 @@ class TestCreateCase:
         self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
     ):
         _setup_overrides(mock_db_session, mock_user)
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service):
             response = await client.post(
                 f"{settings.API_V1_STR}/lpa-cases",
                 json={"name": "Test Case", "description": "desc"},
@@ -110,7 +110,7 @@ class TestCreateCase:
         self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
     ):
         _setup_overrides(mock_db_session, mock_user)
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service):
             response = await client.post(
                 f"{settings.API_V1_STR}/lpa-cases",
                 json={"name": "Minimal"},
@@ -131,7 +131,7 @@ class TestCreateCase:
         self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
     ):
         _setup_overrides(mock_db_session, mock_user)
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service):
             response = await client.post(
                 f"{settings.API_V1_STR}/lpa-cases",
                 json={"name": ""},
@@ -146,7 +146,7 @@ class TestListCases:
         self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
     ):
         _setup_overrides(mock_db_session, mock_user)
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service):
             response = await client.get(
                 f"{settings.API_V1_STR}/lpa-cases",
                 headers=auth_headers,
@@ -163,7 +163,7 @@ class TestListCases:
         self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
     ):
         _setup_overrides(mock_db_session, mock_user)
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service):
             response = await client.get(
                 f"{settings.API_V1_STR}/lpa-cases?skip=0&limit=10",
                 headers=auth_headers,
@@ -177,7 +177,7 @@ class TestListCases:
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.list.return_value = ([], 0)
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=service):
             response = await client.get(
                 f"{settings.API_V1_STR}/lpa-cases",
                 headers=auth_headers,
@@ -192,7 +192,7 @@ class TestGetCase:
         self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
     ):
         _setup_overrides(mock_db_session, mock_user)
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service):
             response = await client.get(
                 f"{settings.API_V1_STR}/lpa-cases/case-123",
                 headers=auth_headers,
@@ -211,7 +211,7 @@ class TestGetCase:
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.get.side_effect = NotFoundError(message="Case not found")
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=service):
             response = await client.get(
                 f"{settings.API_V1_STR}/lpa-cases/nonexistent",
                 headers=auth_headers,
@@ -225,7 +225,7 @@ class TestUpdateCase:
         self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
     ):
         _setup_overrides(mock_db_session, mock_user)
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service):
             response = await client.patch(
                 f"{settings.API_V1_STR}/lpa-cases/case-123",
                 json={"name": "Updated"},
@@ -242,7 +242,7 @@ class TestUpdateCase:
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.update.side_effect = NotFoundError(message="Case not found")
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=service):
             response = await client.patch(
                 f"{settings.API_V1_STR}/lpa-cases/nonexistent",
                 json={"name": "Updated"},
@@ -257,7 +257,7 @@ class TestDeleteCase:
         self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
     ):
         _setup_overrides(mock_db_session, mock_user)
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service):
             response = await client.delete(
                 f"{settings.API_V1_STR}/lpa-cases/case-123",
                 headers=auth_headers,
@@ -273,7 +273,7 @@ class TestDeleteCase:
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.delete.side_effect = NotFoundError(message="Case not found")
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=service):
             response = await client.delete(
                 f"{settings.API_V1_STR}/lpa-cases/nonexistent",
                 headers=auth_headers,
@@ -293,7 +293,7 @@ class TestUploadDocument:
         storage = MagicMock()
         storage.save = AsyncMock(return_value="user-123/abc_test.pdf")
         with (
-            patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service),
+            patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service),
             patch("app.services.file_storage.get_file_storage", return_value=storage),
             patch("app.api.routes.v1.lpa_cases.schedule_summary_generation"),
             patch("app.api.routes.v1.lpa_cases.schedule_analysis_generation"),
@@ -319,7 +319,7 @@ class TestUploadDocument:
         storage = MagicMock()
         storage.save = AsyncMock(return_value="path")
         with (
-            patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=service),
+            patch("app.api.routes.v1.lpa_cases.CaseService", return_value=service),
             patch("app.services.file_storage.get_file_storage", return_value=storage),
         ):
             response = await client.post(
@@ -336,7 +336,7 @@ class TestListDocuments:
         self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
     ):
         _setup_overrides(mock_db_session, mock_user)
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service):
             response = await client.get(
                 f"{settings.API_V1_STR}/lpa-cases/case-123/documents",
                 headers=auth_headers,
@@ -353,7 +353,7 @@ class TestDeleteDocument:
         self, client: AsyncClient, auth_headers, mock_service, mock_db_session, mock_user
     ):
         _setup_overrides(mock_db_session, mock_user)
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service):
             response = await client.delete(
                 f"{settings.API_V1_STR}/lpa-cases/case-123/documents/doc-123",
                 headers=auth_headers,
@@ -369,7 +369,7 @@ class TestDeleteDocument:
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.delete_document.side_effect = NotFoundError(message="Doc not found")
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=service):
             response = await client.delete(
                 f"{settings.API_V1_STR}/lpa-cases/case-123/documents/nonexistent",
                 headers=auth_headers,
@@ -392,7 +392,7 @@ class TestCaseConversations:
         mock_conv_service.create_conversation.return_value = mock_conv
 
         with (
-            patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=mock_service),
+            patch("app.api.routes.v1.lpa_cases.CaseService", return_value=mock_service),
             patch("app.services.conversation.ConversationService", return_value=mock_conv_service),
         ):
             response = await client.post(
@@ -413,7 +413,7 @@ class TestCaseConversations:
         _setup_overrides(mock_db_session, mock_user)
         service = MagicMock()
         service.get_without_docs.side_effect = NotFoundError(message="Case not found")
-        with patch("app.api.routes.v1.lpa_cases.LPACaseService", return_value=service):
+        with patch("app.api.routes.v1.lpa_cases.CaseService", return_value=service):
             response = await client.post(
                 f"{settings.API_V1_STR}/lpa-cases/nonexistent/conversations",
                 headers=auth_headers,

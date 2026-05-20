@@ -46,7 +46,7 @@ export function UploadZone({ onUpload, disabled }: UploadZoneProps) {
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          document.getElementById("lpa-upload")?.click();
+          document.getElementById("document-upload")?.click();
         }
       }}
     >
@@ -55,10 +55,10 @@ export function UploadZone({ onUpload, disabled }: UploadZoneProps) {
         accept=".pdf,.docx,.txt,.md"
         onChange={handleChange}
         className="hidden"
-        id="lpa-upload"
+        id="document-upload"
         disabled={disabled}
       />
-      <label htmlFor="lpa-upload" className="cursor-pointer">
+      <label htmlFor="document-upload" className="cursor-pointer">
         <div className="flex justify-center mb-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/8">
             <FileText className="h-8 w-8 text-brand" />

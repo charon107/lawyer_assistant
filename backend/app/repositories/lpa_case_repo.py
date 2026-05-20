@@ -1,4 +1,4 @@
-"""LPA Case repository (SQLite sync)."""
+"""Case repository (SQLite sync)."""
 
 from typing import Any
 
@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.db.models.chat_file import ChatFile
 from app.db.models.conversation import Conversation
 from app.db.models.document_analysis import DocumentAnalysis
-from app.db.models.lpa_case import LPACase
+from app.db.models.lpa_case import Case
 
 
 def create_case(
@@ -18,23 +18,23 @@ def create_case(
     name: str,
     description: str | None = None,
     document_type: str = "lpa",
-) -> LPACase:
+) -> Case:
     """Create a new LPA case."""
-    case = LPACase(user_id=user_id, name=name, description=description, document_type=document_type)
+    case = Case(user_id=user_id, name=name, description=description, document_type=document_type)
     db.add(case)
     db.flush()
     db.refresh(case)
     return case
 
 
-def get_case_by_id(db: Session, case_id: str) -> LPACase | None:
+def get_case_by_id(db: Session, case_id: str) -> Case | None:
     """Get an LPA case by ID."""
-    return db.get(LPACase, case_id)
+    return db.get(Case, case_id)
 
 
-def get_case_by_id_with_documents(db: Session, case_id: str) -> LPACase | None:
+def get_case_by_id_with_documents(db: Session, case_id: str) -> Case | None:
     """Get an LPA case by ID with documents eagerly loaded."""
-    query = select(LPACase).options(selectinload(LPACase.documents)).where(LPACase.id == case_id)
+    query = select(Case).options(selectinload(Case.documents)).where(Case.id == case_id)
     result = db.execute(query)
     return result.scalar_one_or_none()
 
@@ -45,7 +45,7 @@ def get_cases_by_user(
     *,
     skip: int = 0,
     limit: int = 50,
-) -> list[tuple[LPACase, int]]:
+) -> list[tuple[Case, int]]:
     """Get LPA cases for a user with document count.
 
     Returns list of (case, document_count) tuples.
@@ -53,16 +53,16 @@ def get_cases_by_user(
     """
     doc_count_subq = (
         select(func.count(ChatFile.id))
-        .where(ChatFile.case_id == LPACase.id)
-        .correlate(LPACase)
+        .where(ChatFile.case_id == Case.id)
+        .correlate(Case)
         .scalar_subquery()
     )
 
     query = (
-        select(LPACase, doc_count_subq.label("document_count"))
-        .where(LPACase.user_id == user_id)
-        .where(LPACase.status == "active")
-        .order_by(LPACase.updated_at.desc().nullslast(), LPACase.created_at.desc())
+        select(Case, doc_count_subq.label("document_count"))
+        .where(Case.user_id == user_id)
+        .where(Case.status == "active")
+        .order_by(Case.updated_at.desc().nullslast(), Case.created_at.desc())
         .offset(skip)
         .limit(limit)
     )
@@ -72,18 +72,16 @@ def get_cases_by_user(
 
 def count_cases_by_user(db: Session, user_id: str) -> int:
     """Count active cases for a user."""
-    query = select(func.count(LPACase.id)).where(
-        LPACase.user_id == user_id, LPACase.status == "active"
-    )
+    query = select(func.count(Case.id)).where(Case.user_id == user_id, Case.status == "active")
     return db.execute(query).scalar() or 0
 
 
 def update_case(
     db: Session,
     *,
-    db_case: LPACase,
+    db_case: Case,
     update_data: dict[str, Any],
-) -> LPACase:
+) -> Case:
     """Update an LPA case."""
     for field, value in update_data.items():
         setattr(db_case, field, value)
@@ -240,3 +238,7 @@ def get_analyses_by_case(db: Session, case_id: str) -> dict[str, DocumentAnalysi
     )
     result = db.execute(query)
     return {a.chat_file_id: a for a in result.scalars().all()}
+
+
+# Backward compatibility alias
+LPACase = Case

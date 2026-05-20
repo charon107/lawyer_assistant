@@ -10,7 +10,7 @@ from app.core.config import settings
 from app.services.lpa_chat_service import LPAChatService
 from app.services.lpa_service import LPAReviewService
 
-router = APIRouter(prefix="/lpa", tags=["lpa"])
+router = APIRouter(prefix="/review", tags=["lpa"])
 
 
 class ChapterUpdate(BaseModel):
@@ -51,7 +51,7 @@ def _get_chat_service(user: CurrentUser) -> LPAChatService:
     return LPAChatService(api_key=api_key or None, base_url=base_url, model=model)
 
 
-@router.post("/review")
+@router.post("")
 async def start_review(
     current_user: CurrentUser,
     file: UploadFile = File(...),
@@ -83,7 +83,7 @@ async def start_review(
     return {"review_id": review_id, "status": "started"}
 
 
-@router.get("/review/{review_id}")
+@router.get("/{review_id}")
 async def get_review_status(
     review_id: str,
     current_user: CurrentUser,
@@ -96,7 +96,7 @@ async def get_review_status(
     return status
 
 
-@router.put("/review/{review_id}/chapters")
+@router.put("/{review_id}/chapters")
 async def update_chapters(
     review_id: str,
     body: ChapterUpdate,
@@ -110,7 +110,7 @@ async def update_chapters(
     return {"status": "confirmed"}
 
 
-@router.get("/review/{review_id}/report")
+@router.get("/{review_id}/report")
 async def get_report(
     review_id: str,
     current_user: CurrentUser,
@@ -123,7 +123,7 @@ async def get_report(
     return {"report_markdown": report}
 
 
-@router.get("/review/{review_id}/full")
+@router.get("/{review_id}/full")
 async def get_full_result(
     review_id: str,
     current_user: CurrentUser,
@@ -136,7 +136,7 @@ async def get_full_result(
     return result
 
 
-@router.post("/review/{review_id}/chat")
+@router.post("/{review_id}/chat")
 async def chat_followup(
     review_id: str,
     body: ChatRequest,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { useLPAReview } from "@/hooks/use-lpa-review";
+import { useDocumentReview } from "@/hooks/use-document-review";
 import { ReviewProgressBar } from "@/components/review/progress-bar";
 import { FindingCard } from "@/components/review/finding-card";
 import { ChatWidget } from "@/components/chat/chat-widget";
@@ -14,7 +14,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "/api/v1";
 export default function ReviewDetailPage() {
   const params = useParams();
   const reviewId = params.id as string;
-  const review = useLPAReview();
+  const review = useDocumentReview();
   const [activeTab, setActiveTab] = useState("overview");
   const [reportMd, setReportMd] = useState("");
   const [isLoading, setIsLoading] = useState(true);

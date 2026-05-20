@@ -39,16 +39,18 @@ export const ROUTES = {
   ADMIN_CONVERSATIONS: "/admin/conversations",
 } as const;
 
-// WebSocket URL — auto-detect from browser location, or use NEXT_PUBLIC_WS_URL
+// WebSocket URL — prefer NEXT_PUBLIC_WS_URL, then auto-detect from browser location
 export function getWsUrl(): string {
+  if (process.env.NEXT_PUBLIC_WS_URL) {
+    return process.env.NEXT_PUBLIC_WS_URL;
+  }
   if (typeof window !== "undefined") {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    // In local dev, the Next.js dev server is on :3000 but WebSocket backend is on :8000
-    const port = window.location.port === "3000" ? "8000" : window.location.port;
-    const host = port ? `${window.location.hostname}:${port}` : window.location.host;
+    const port = window.location.port || (protocol === "wss:" ? "443" : "80");
+    const host = `${window.location.hostname}:${port}`;
     return `${protocol}//${host}`;
   }
-  return process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
+  return "ws://localhost:8080";
 }
 
 // Backend API URL (public, for direct links like API docs)

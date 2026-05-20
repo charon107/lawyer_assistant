@@ -8,7 +8,7 @@ from pydantic import Field
 from app.schemas.base import BaseSchema, TimestampSchema
 
 
-class LPACaseCreate(BaseSchema):
+class CaseCreate(BaseSchema):
     """Schema for creating an LPA case."""
 
     name: str = Field(..., max_length=255, min_length=1, description="Case name")
@@ -31,7 +31,7 @@ class LPACaseCreate(BaseSchema):
     ] = Field(default="lpa", description="Document type")
 
 
-class LPACaseUpdate(BaseSchema):
+class CaseUpdate(BaseSchema):
     """Schema for updating an LPA case."""
 
     name: str | None = Field(default=None, max_length=255, min_length=1)
@@ -39,7 +39,7 @@ class LPACaseUpdate(BaseSchema):
     status: Literal["active", "archived"] | None = None
 
 
-class LPADocumentRead(BaseSchema):
+class DocumentRead(BaseSchema):
     """Schema for reading a document attached to a case."""
 
     id: str
@@ -53,7 +53,7 @@ class LPADocumentRead(BaseSchema):
     created_at: datetime
 
 
-class LPACaseRead(BaseSchema, TimestampSchema):
+class CaseRead(BaseSchema, TimestampSchema):
     """Schema for reading an LPA case."""
 
     id: str
@@ -65,21 +65,31 @@ class LPACaseRead(BaseSchema, TimestampSchema):
     document_count: int = 0
 
 
-class LPACaseDetailRead(LPACaseRead):
+class CaseDetailRead(CaseRead):
     """Schema for reading an LPA case with documents."""
 
-    documents: list[LPADocumentRead] = Field(default_factory=list)
+    documents: list[DocumentRead] = Field(default_factory=list)
 
 
-class LPACaseList(BaseSchema):
+class CaseList(BaseSchema):
     """Schema for listing LPA cases."""
 
-    items: list[LPACaseRead]
+    items: list[CaseRead]
     total: int
 
 
-class LPADocumentList(BaseSchema):
+class DocumentList(BaseSchema):
     """Schema for listing documents in a case."""
 
-    items: list[LPADocumentRead]
+    items: list[DocumentRead]
     total: int
+
+
+# Backward compatibility aliases
+LPACaseCreate = CaseCreate
+LPACaseUpdate = CaseUpdate
+LPADocumentRead = DocumentRead
+LPACaseRead = CaseRead
+LPACaseDetailRead = CaseDetailRead
+LPACaseList = CaseList
+LPADocumentList = DocumentList

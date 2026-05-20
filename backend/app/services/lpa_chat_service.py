@@ -12,7 +12,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-class LPAChatService:
+class ChatService:
     """Answer follow-up questions based on review context."""
 
     SYSTEM_PROMPT = """你是一位精通私募基金法律文件的律师。你刚刚完成了对一份 LPA 合同的审查。
@@ -26,9 +26,7 @@ class LPAChatService:
 4. 引用具体条款编号和原文
 5. 不要声称提供正式法律意见"""
 
-    def __init__(
-        self, api_key: str | None = None, base_url: str = "", model: str = ""
-    ):
+    def __init__(self, api_key: str | None = None, base_url: str = "", model: str = ""):
         self._api_key = api_key
         self._model = model
         self._base_url = base_url
@@ -126,3 +124,7 @@ class LPAChatService:
             role = "律师" if entry.get("role") == "user" else "AI"
             lines.append(f"{role}: {entry.get('content', '')[:300]}")
         return "\n".join(lines)
+
+
+# Backward compatibility alias
+LPAChatService = ChatService

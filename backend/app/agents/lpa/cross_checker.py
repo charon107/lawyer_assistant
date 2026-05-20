@@ -12,7 +12,7 @@ import logging
 import re
 from typing import Any
 
-from .llm_client import LLMClient
+from app.agents.shared.llm_client import LLMClient
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class CrossChecker:
                 temperature=0.1,
                 max_tokens=16384,
             )
-            data = self._parse_response(resp)
+            data = self._parse_json(resp)
             return {
                 "contradictions": data.get("contradictions", []),
                 "consistency_issues": data.get("consistency_issues", []),

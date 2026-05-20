@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 
-def build_lpa_report(
+def build_report(
     file_name: str,
     labeled_facts: dict[str, Any],
     chapter_reviews: list[dict[str, Any]],
@@ -347,3 +347,7 @@ def _flatten_findings(
                 }
             )
     return all_findings
+
+
+# Backward compatibility alias
+build_lpa_report = build_report

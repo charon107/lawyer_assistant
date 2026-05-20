@@ -26,7 +26,7 @@ class Conversation(Base, TimestampMixin):
         index=True,
     )
     case_id: Mapped[str | None] = mapped_column(
-        String(36), ForeignKey("lpa_cases.id", ondelete="CASCADE"), nullable=True, index=True
+        String(36), ForeignKey("cases.id", ondelete="CASCADE"), nullable=True, index=True
     )
     title: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

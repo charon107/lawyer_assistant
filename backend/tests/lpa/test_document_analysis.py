@@ -70,12 +70,12 @@ class TestDocumentAnalysisResult:
 
     def test_missing_contract_type_raises(self):
         data = {"summary": "摘要"}
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             DocumentAnalysisResult.model_validate(data)
 
     def test_missing_summary_raises(self):
         data = {"contract_type": "合同"}
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             DocumentAnalysisResult.model_validate(data)
 
 
@@ -123,7 +123,7 @@ class TestUpdateDocumentAnalysisStatus:
         mock_session.flush = MagicMock()
         mock_session.refresh = MagicMock()
 
-        result = lpa_case_repo.update_document_analysis_status(
+        lpa_case_repo.update_document_analysis_status(
             mock_session,
             analysis_id="analysis-123",
             status="completed",
@@ -139,7 +139,7 @@ class TestUpdateDocumentAnalysisStatus:
         mock_session.flush = MagicMock()
         mock_session.refresh = MagicMock()
 
-        result = lpa_case_repo.update_document_analysis_status(
+        lpa_case_repo.update_document_analysis_status(
             mock_session,
             analysis_id="analysis-123",
             status="failed",

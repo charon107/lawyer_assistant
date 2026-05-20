@@ -39,7 +39,7 @@ export function ChatWidget({ reviewId, apiBase, enabled }: ChatWidgetProps) {
         content: m.content,
       }));
 
-      const res = await fetch(`${apiBase}/lpa/review/${reviewId}/chat`, {
+      const res = await fetch(`${apiBase}/review/${reviewId}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question, history }),

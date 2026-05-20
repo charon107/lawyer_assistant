@@ -38,47 +38,47 @@ test-cov:
 
 # === Database ===
 db-init:
-	cd backend && uv run lpa_review_app db migrate -m "initial" || true
-	cd backend && uv run lpa_review_app db upgrade
+	cd backend && uv run lexmind db migrate -m "initial" || true
+	cd backend && uv run lexmind db upgrade
 	@echo ""
 	@echo "✅ Database initialized!"
 
 db-migrate:
 	@read -p "Migration message: " msg; \
-	uv run --directory backend lpa_review_app db migrate -m "$$msg"
+	uv run --directory backend lexmind db migrate -m "$$msg"
 
 db-upgrade:
-	uv run --directory backend lpa_review_app db upgrade
+	uv run --directory backend lexmind db upgrade
 
 db-downgrade:
-	uv run --directory backend lpa_review_app db downgrade
+	uv run --directory backend lexmind db downgrade
 
 db-current:
-	uv run --directory backend lpa_review_app db current
+	uv run --directory backend lexmind db current
 
 db-history:
-	uv run --directory backend lpa_review_app db history
+	uv run --directory backend lexmind db history
 
 # === Server ===
 run:
-	uv run --directory backend lpa_review_app server run --reload
+	uv run --directory backend lexmind server run --reload
 
 run-prod:
-	uv run --directory backend lpa_review_app server run --host 0.0.0.0 --port 8000
+	uv run --directory backend lexmind server run --host 0.0.0.0 --port 8000
 
 routes:
-	uv run --directory backend lpa_review_app server routes
+	uv run --directory backend lexmind server routes
 
 # === Users ===
 create-admin:
 	@echo "Creating admin user..."
-	uv run --directory backend lpa_review_app user create-admin
+	uv run --directory backend lexmind user create-admin
 
 user-create:
-	uv run --directory backend lpa_review_app user create
+	uv run --directory backend lexmind user create
 
 user-list:
-	uv run --directory backend lpa_review_app user list
+	uv run --directory backend lexmind user list
 
 # === Cleanup ===
 clean:
@@ -91,7 +91,7 @@ clean:
 # === Help ===
 help:
 	@echo ""
-	@echo "lpa_review_app - Available Commands"
+	@echo "lexmind - Available Commands"
 	@echo "======================================"
 	@echo ""
 	@echo "Setup:"

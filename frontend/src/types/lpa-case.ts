@@ -2,7 +2,7 @@
  * LPA Case types.
  */
 
-export interface LPACase {
+export interface Case {
   id: string;
   user_id: string;
   name: string;
@@ -14,11 +14,11 @@ export interface LPACase {
   updated_at: string | null;
 }
 
-export interface LPACaseDetail extends LPACase {
-  documents: LPADocument[];
+export interface CaseDetail extends Case {
+  documents: Document[];
 }
 
-export interface LPADocument {
+export interface Document {
   id: string;
   filename: string;
   mime_type: string;
@@ -29,12 +29,19 @@ export interface LPADocument {
   created_at: string;
 }
 
-export interface LPACaseListResponse {
-  items: LPACase[];
+export interface CaseListResponse {
+  items: Case[];
   total: number;
 }
 
-export interface LPADocumentListResponse {
-  items: LPADocument[];
+export interface DocumentListResponse {
+  items: Document[];
   total: number;
 }
+
+// Backward compatibility aliases
+export type LPACase = Case;
+export type LPACaseDetail = CaseDetail;
+export type LPADocument = Document;
+export type LPACaseListResponse = CaseListResponse;
+export type LPADocumentListResponse = DocumentListResponse;

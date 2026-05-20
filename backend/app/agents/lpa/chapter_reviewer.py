@@ -11,7 +11,7 @@ import logging
 import re
 from typing import Any
 
-from .llm_client import LLMClient
+from app.agents.shared.llm_client import LLMClient
 
 logger = logging.getLogger(__name__)
 

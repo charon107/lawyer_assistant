@@ -7,18 +7,20 @@ Usage:
     # result["report_markdown"] is the final Markdown report.
 """
 
+import contextlib
 import logging
 import os
 from typing import Any
 
+from app.agents.shared.chapter_splitter import ChapterSplitter
+from app.agents.shared.document_preprocessor import DocumentPreprocessor
+from app.agents.shared.fact_extractor import FactExtractor
+from app.agents.shared.llm_client import LLMClient
+
 from .chapter_reviewer import ChapterReviewer
-from .chapter_splitter import ChapterSplitter
 from .cross_checker import CrossChecker
-from .document_preprocessor import DocumentPreprocessor
 from .document_types import get_document_type_config
-from .fact_extractor import FactExtractor
-from .llm_client import LLMClient
-from .report import build_lpa_report
+from .report import build_report
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +75,9 @@ class DocumentReviewOrchestrator:
         parsed = self._preprocessor.parse(uploaded_file)
         doc_text = parsed["markdown"]
 
-        logger.info("STAGE 0: parsed %d chars, method=%s", len(doc_text), parsed.get('method', 'unknown'))
+        logger.info(
+            "STAGE 0: parsed %d chars, method=%s", len(doc_text), parsed.get("method", "unknown")
+        )
         logger.debug("  preview: %r", doc_text[:200])
 
         # Stage 1: Split into chapters
@@ -85,9 +89,11 @@ class DocumentReviewOrchestrator:
         split_result = splitter.split(doc_text)
         chapters = split_result["chapters"]
 
-        logger.info("STAGE 1: split method=%s, chapters=%d", split_result.get('method'), len(chapters))
+        logger.info(
+            "STAGE 1: split method=%s, chapters=%d", split_result.get("method"), len(chapters)
+        )
         for ch in chapters:
-            logger.info("  [%d] %s — %d chars", ch['index'], ch['title'][:50], len(ch['text']))
+            logger.info("  [%d] %s — %d chars", ch["index"], ch["title"][:50], len(ch["text"]))
 
         if not chapters:
             return {"error": "无法拆分合同章节，请确认文件格式正确", "stage": 1}
@@ -135,7 +141,7 @@ class DocumentReviewOrchestrator:
         self._progress(progress_callback, 0.95, "生成审查报告...")
         doc_name = self._doc_config.get("name", self._document_type)
         report_title = self._doc_config.get("report_title", f"AI {doc_name} 审查报告")
-        report_md = build_lpa_report(
+        report_md = build_report(
             file_name=file_name,
             labeled_facts=labeled_facts,
             chapter_reviews=chapter_reviews,
@@ -166,10 +172,8 @@ class DocumentReviewOrchestrator:
     @staticmethod
     def _progress(callback, pct: float, msg: str):
         if callback:
-            try:
+            with contextlib.suppress(Exception):
                 callback(pct, msg)
-            except Exception:
-                pass
 
 
 # Backward compatibility alias
