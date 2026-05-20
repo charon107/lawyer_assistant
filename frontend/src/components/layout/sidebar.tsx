@@ -5,13 +5,15 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { APP_NAME, ROUTES } from "@/lib/constants";
-import { LayoutDashboard, MessageSquare, UserCircle, FileSearch, Briefcase } from "lucide-react";
+import { LayoutDashboard, MessageSquare, UserCircle, FileSearch, Briefcase, Star, List } from "lucide-react";
 import { useSidebarStore } from "@/stores";
+import { useAuth } from "@/hooks";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui";
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const t = useTranslations("navigation");
+  const { user } = useAuth();
 
   const navigation = [
     { name: t("dashboard"), href: ROUTES.DASHBOARD, icon: LayoutDashboard },
@@ -21,28 +23,41 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     { name: t("profile"), href: ROUTES.PROFILE, icon: UserCircle },
   ];
 
+  const adminNav = [
+    { name: t("adminRatings"), href: ROUTES.ADMIN_RATINGS, icon: Star },
+    { name: t("adminConversations"), href: ROUTES.ADMIN_CONVERSATIONS, icon: List },
+  ];
+
+  const linkClass = (href: string) =>
+    cn(
+      "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+      "min-h-[44px]",
+      pathname === href
+        ? "bg-secondary text-secondary-foreground"
+        : "text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground",
+    );
+
   return (
     <nav className="flex-1 space-y-1 p-4">
-      {navigation.map((item) => {
-        const isActive = pathname === item.href;
-        return (
-          <Link
-            key={item.name}
-            href={item.href}
-            onClick={onNavigate}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
-              "min-h-[44px]",
-              isActive
-                ? "bg-secondary text-secondary-foreground"
-                : "text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground",
-            )}
-          >
-            <item.icon className="h-5 w-5" />
-            {item.name}
-          </Link>
-        );
-      })}
+      {navigation.map((item) => (
+        <Link key={item.name} href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
+          <item.icon className="h-5 w-5" />
+          {item.name}
+        </Link>
+      ))}
+      {user?.role === "admin" && (
+        <div className="mt-4">
+          <span className="text-muted-foreground mb-1 block px-3 text-[11px] font-semibold tracking-widest uppercase">
+            {t("admin")}
+          </span>
+          {adminNav.map((item) => (
+            <Link key={item.name} href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
+              <item.icon className="h-5 w-5" />
+              {item.name}
+            </Link>
+          ))}
+        </div>
+      )}
     </nav>
   );
 }
