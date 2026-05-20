@@ -96,7 +96,11 @@ GENERIC_CHAPTER_KEYWORDS = [
 class ChapterSplitter:
     """Split a parsed document into logical chapters."""
 
-    def __init__(self, llm_client: Callable[[str], str] | None = None, chapter_keywords: list[str] | None = None):
+    def __init__(
+        self,
+        llm_client: Callable[[str], str] | None = None,
+        chapter_keywords: list[str] | None = None,
+    ):
         self._llm = llm_client
         self._chapter_keywords = chapter_keywords or GENERIC_CHAPTER_KEYWORDS
 

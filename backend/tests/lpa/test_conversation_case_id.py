@@ -33,9 +33,7 @@ class TestConversationCaseId:
                 "app.repositories.conversation.Conversation",
                 lambda **kwargs: mock_conv,
             )
-            create_conversation(
-                mock_db, user_id="user-1", title="Test", case_id="case-123"
-            )
+            create_conversation(mock_db, user_id="user-1", title="Test", case_id="case-123")
 
         mock_db.add.assert_called_once()
         mock_db.flush.assert_called_once()

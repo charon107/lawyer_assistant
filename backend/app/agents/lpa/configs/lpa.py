@@ -1,10 +1,9 @@
 """Configuration for LPA (Limited Partnership Agreement) document type."""
 
-from pathlib import Path
-
+from app.agents.lpa import prompts_dir as _get_prompts_dir
 from app.agents.lpa.risk_rules import LPA_RULES
 
-PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent.parent.parent.parent / "prompts"
+PROMPTS_DIR = _get_prompts_dir()
 
 CHAPTER_KEYWORDS = [
     "定义",

@@ -82,6 +82,18 @@ jobs:
           script: |
             set -euo pipefail
 
+            # Handle one-time migration from the old deployment path
+            if [ ! -d /opt/lexmind ]; then
+              if [ -d /opt/lpa_review_app ]; then
+                echo "=== Migrating server directory: lpa_review_app → lexmind ==="
+                mv /opt/lpa_review_app /opt/lexmind
+              else
+                echo "ERROR: /opt/lexmind does not exist." >&2
+                echo "Run: git clone <repo-url> /opt/lexmind && cp /path/to/backend/.env /opt/lexmind/backend/.env" >&2
+                exit 1
+              fi
+            fi
+
             cd /opt/lexmind
 
             # Pull latest code
@@ -107,9 +119,24 @@ jobs:
             echo "=== Starting services ==="
             docker compose -f docker-compose.prod.yml up -d --remove-orphans || { echo "ERROR: deploy failed"; exit 1; }
 
+            # Wait for backend container to be running before running migrations
+            echo "=== Waiting for backend container ==="
+            for i in 1 2 3 4 5 6; do
+              if docker ps --filter name=lexmind-backend --filter status=running --format '{{.Names}}' | grep -q lexmind-backend; then
+                break
+              fi
+              echo "Waiting for backend container... ($i/6)"
+              sleep 5
+            done
+
+            # Run database migrations inside the running backend container
+            echo "=== Running database migrations ==="
+            docker exec lexmind-backend uv run alembic upgrade head \
+              || echo "WARNING: Migration step failed — check container logs"
+
             # Wait for health checks
             echo "=== Waiting for services to be healthy ==="
-            sleep 15
+            sleep 10
 
             # Verify backend
             for i in 1 2 3 4 5; do
