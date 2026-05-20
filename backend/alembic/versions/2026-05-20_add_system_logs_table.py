@@ -1,6 +1,6 @@
 """add system_logs table
 
-Revision ID: a1b2c3d4e5f6
+Revision ID: 9f8e7d6c5b4a
 Revises: fb1e5e73ee3a
 Create Date: 2026-05-20 00:00:00.000000
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "a1b2c3d4e5f6"
+revision: str = "9f8e7d6c5b4a"
 down_revision: str | None = "fb1e5e73ee3a"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
