@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useAuthStore } from "@/stores";
-import { useRouter } from "next/navigation";
 import { useAdminLogs, type SystemLog } from "@/hooks/use-admin-logs";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/utils";
@@ -341,14 +340,15 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 
 export default function AdminLogsPage() {
   const { user } = useAuthStore();
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("auth");
 
-  useEffect(() => {
-    if (user && user.role !== "admin") {
-      router.replace("/dashboard");
-    }
-  }, [user, router]);
+  if (user?.role !== "admin") {
+    return (
+      <div className="p-6 max-w-5xl mx-auto">
+        <div className="text-center text-muted-foreground py-12">无权访问</div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
