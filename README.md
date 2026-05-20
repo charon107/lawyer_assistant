@@ -1,4 +1,4 @@
-# lpa_review_app
+# LexMind
 
 A FastAPI project
 

@@ -191,7 +191,7 @@ def my_command(name: str):
     success(f"Done: {name}")
 ```
 
-Run with: `uv run lpa_review_app cmd my-command --name test`
+Run with: `uv run lexmind cmd my-command --name test`
 
 ## Adding an AI Agent Tool (PydanticAI)
 
@@ -215,6 +215,6 @@ uv run alembic revision --autogenerate -m "Add notifications table"
 uv run alembic upgrade head
 
 # Or use CLI
-uv run lpa_review_app db migrate -m "Add notifications table"
-uv run lpa_review_app db upgrade
+uv run lexmind db migrate -m "Add notifications table"
+uv run lexmind db upgrade
 ```

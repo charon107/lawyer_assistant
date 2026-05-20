@@ -4,7 +4,7 @@ This file provides guidance for AI coding agents (Codex, Copilot, Cursor, Zed, O
 
 ## Project Overview
 
-**lpa_review_app** - FastAPI application generated with [Full-Stack AI Agent Template](https://github.com/vstorm-co/full-stack-ai-agent-template).
+**LexMind** - FastAPI application generated with [Full-Stack AI Agent Template](https://github.com/vstorm-co/full-stack-ai-agent-template).
 
 **Stack:** FastAPI + Pydantic v2, SQLite
 , JWT + API Key auth

@@ -19,7 +19,7 @@ DEFAULT_SYSTEM_PROMPT = """You are a helpful assistant."""
 ### 1. Be specific about the agent's role
 
 ```python
-DEFAULT_SYSTEM_PROMPT = """You are a customer support agent for lpa_review_app.
+DEFAULT_SYSTEM_PROMPT = """You are a customer support agent for LexMind.
 
 Your responsibilities:
 - Answer questions about our products and services
