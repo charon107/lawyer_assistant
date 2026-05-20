@@ -1,5 +1,6 @@
 import { Sidebar, AppSidebar } from "@/components/layout";
 import { AuthGuard } from "@/components/layout/auth-guard";
+import { Header } from "@/components/layout/header";
 import { PageTransition } from "@/components/layout/page-transition";
 
 export default function DashboardLayout({
@@ -13,6 +14,9 @@ export default function DashboardLayout({
         <AppSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Sidebar />
+          <div className="md:hidden">
+            <Header />
+          </div>
           <main className="flex min-h-0 flex-1 flex-col overflow-auto p-4 sm:p-6">
             <PageTransition>{children}</PageTransition>
           </main>
