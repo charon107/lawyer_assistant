@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { APP_NAME, ROUTES } from "@/lib/constants";
 import { useAuth } from "@/hooks";
-import { LayoutDashboard, MessageSquare, FileSearch, UserCircle, Star, List } from "lucide-react";
+import { LayoutDashboard, MessageSquare, FileSearch, UserCircle, Star, List, Briefcase } from "lucide-react";
 import { ThemeToggle } from "@/components/theme";
 import { LanguageSwitcherCompact } from "@/components/language-switcher";
 
@@ -53,9 +53,10 @@ export function AppSidebar() {
 
   const navigation = [
     { name: t("dashboard"), href: ROUTES.DASHBOARD, icon: LayoutDashboard },
+    { name: t("cases"), href: ROUTES.CASES, icon: Briefcase },
     { name: t("review"), href: ROUTES.REVIEW, icon: FileSearch },
     { name: t("conversations"), href: ROUTES.CHAT, icon: MessageSquare },
-    { name: t("profile"), href: ROUTES.SETTINGS, icon: UserCircle },
+    { name: t("profile"), href: ROUTES.PROFILE, icon: UserCircle },
   ];
 
   const adminNav = [
