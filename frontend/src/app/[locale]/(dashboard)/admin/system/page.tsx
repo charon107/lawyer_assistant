@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/stores";
-import { useRouter } from "next/navigation";
 import { useAdminLogs, type RagStatus } from "@/hooks/use-admin-logs";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, XCircle, AlertCircle, RefreshCw, Activity, Database, Cpu, Server } from "lucide-react";
@@ -51,17 +50,10 @@ function StatCard({
 
 export default function AdminSystemPage() {
   const { user } = useAuthStore();
-  const router = useRouter();
   const { fetchRagStatus } = useAdminLogs();
   const [status, setStatus] = useState<RagStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkedAt, setCheckedAt] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (user && user.role !== "admin") {
-      router.replace("/dashboard");
-    }
-  }, [user, router]);
 
   const load = async () => {
     setLoading(true);
@@ -72,8 +64,17 @@ export default function AdminSystemPage() {
   };
 
   useEffect(() => {
+    if (user?.role !== "admin") return;
     load();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (user?.role !== "admin") {
+    return (
+      <div className="p-6 max-w-3xl mx-auto">
+        <div className="text-center text-muted-foreground py-12">无权访问</div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
