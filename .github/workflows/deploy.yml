@@ -130,6 +130,11 @@ jobs:
               done
             done
 
+            # Remove stale containers to avoid "No such container" race on recreate
+            echo "=== Removing stale containers ==="
+            docker compose -f docker-compose.prod.yml stop backend frontend 2>/dev/null || true
+            docker compose -f docker-compose.prod.yml rm -f backend frontend 2>/dev/null || true
+
             # Restart services
             echo "=== Starting services ==="
             docker compose -f docker-compose.prod.yml up -d --remove-orphans || { echo "ERROR: deploy failed"; exit 1; }
