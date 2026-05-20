@@ -173,6 +173,27 @@ jobs:
               sleep 10
             done
 
+            # Verify host :80 → nginx → backend.
+            # Catches the "container Up but PortBindings set, Ports empty" bug
+            # where docker silently fails to bind the host port. The in-container
+            # checks above pass even in that state, so we must hit :80 from the
+            # host to confirm the public path actually works.
+            echo "=== Verifying host :80 reachability ==="
+            for i in 1 2 3 4 5; do
+              if curl -sf http://127.0.0.1/api/v1/health > /dev/null 2>&1; then
+                echo "Host :80: healthy"
+                break
+              fi
+              if [ "$i" = "5" ]; then
+                echo "ERROR: host :80 unreachable after $i attempts." >&2
+                echo "  Diagnose: docker inspect lexmind-nginx --format '{{json .NetworkSettings.Ports}}'" >&2
+                echo "  Fix:      docker compose -f docker-compose.prod.yml up -d --force-recreate nginx" >&2
+                exit 1
+              fi
+              echo "Host :80: waiting... (attempt $i/5)"
+              sleep 10
+            done
+
             # Show running containers
             echo "=== Running containers ==="
             docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}'

@@ -154,13 +154,13 @@ server-to-server communication.
 
 ```bash
 # Create a regular user
-uv run lpa_review_app user create --email user@example.com --password secret
+uv run lexmind user create --email user@example.com --password secret
 
 # Create an admin user
-uv run lpa_review_app user create-admin --email admin@example.com --password secret
+uv run lexmind user create-admin --email admin@example.com --password secret
 
 # Change user role
-uv run lpa_review_app user set-role user@example.com --role admin
+uv run lexmind user set-role user@example.com --role admin
 ```
 
 ### Via Make

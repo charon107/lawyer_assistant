@@ -30,7 +30,7 @@ openssl rand -hex 32
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PROJECT_NAME` | `lpa_review_app` | Display name for the project |
+| `PROJECT_NAME` | `lexmind` | Display name for the project |
 | `API_V1_STR` | `/api/v1` | API version prefix |
 | `DEBUG` | `false` | Enable debug mode (verbose errors, auto-reload) |
 | `ENVIRONMENT` | `local` | One of: `development`, `local`, `staging`, `production` |
@@ -67,7 +67,7 @@ Production validation: `API_KEY` cannot use the default value in
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `SQLITE_PATH` | `./data/lpa_review_app.db` | Path to SQLite database file |
+| `SQLITE_PATH` | `./data/lexmind.db` | Path to SQLite database file |
 
 ## AI Agent
 
