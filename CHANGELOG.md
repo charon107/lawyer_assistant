@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0.1] - 2026-05-21
+
+### Fixed
+
+- **Alembic Migration Conflict**: Fixed `sqlite3.OperationalError: table already exists` during deployment. `create_all()` now runs only in dev/local environments; production relies solely on Alembic migrations.
+- **Idempotent Migrations**: `law_metadata` and `document_analyses` table migrations now safely skip if tables already exist from prior `create_all` runs.
+
 ## [0.6.0.0] - 2026-05-18
 
 ### Added

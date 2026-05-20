@@ -118,6 +118,27 @@ class TestMigrations:
             result = _alembic([action, target], db_path)
             assert result.returncode == 0, f"alembic {cmd} failed:\n{result.stderr}"
 
+    def test_upgrade_idempotent_when_table_exists(self, tmp_path: Path):
+        """Migration safely no-ops when table already exists (e.g. from create_all in dev).
+
+        Bootstraps all tables via create_all (which creates law_metadata), stamps at
+        the revision just before the law_metadata migration, then upgrades. The
+        migration should detect the existing table and return early.
+        """
+        db_path = str(tmp_path / "test.db")
+        _bootstrap(db_path)
+
+        # Stamp at the revision just before the law_metadata migration
+        stamp = _alembic(["stamp", "618bc6dc5e76"], db_path)
+        assert stamp.returncode == 0, f"Stamp failed:\n{stamp.stderr}"
+
+        # Upgrade to head — the law_metadata migration (f030249bd9eb) will
+        # find the table already exists and return early (Path A of idempotency guard)
+        result = _alembic(["upgrade", "head"], db_path)
+        assert result.returncode == 0, (
+            f"Migration upgrade with existing table failed:\n{result.stderr}"
+        )
+
     @pytest.mark.skip(reason="SQLite in-memory DB does not persist between subprocess calls")
     def test_current_matches_head(self, tmp_path: Path):
         """Current revision matches head after upgrade."""

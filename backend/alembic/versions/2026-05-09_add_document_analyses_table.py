@@ -20,6 +20,11 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    # Skip if table already exists (may have been created by create_all in dev)
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    if "document_analyses" in inspector.get_table_names():
+        return
     op.create_table(
         "document_analyses",
         sa.Column("id", sa.String(36), primary_key=True),
