@@ -15,7 +15,9 @@ from app.db.models.user import User  # noqa: F401
 from app.db.models.conversation import Conversation, Message, ToolCall  # noqa: F401
 from app.db.models.message_rating import MessageRating  # noqa: F401
 from app.db.models.chat_file import ChatFile  # noqa: F401
-from app.db.models.lpa_case import Case  # noqa: F401  # noqa: F401
+from app.db.models.lpa_case import Case  # noqa: F401
+from app.db.models.law_metadata import LawMetadata  # noqa: F401
+from app.db.models.document_analysis import DocumentAnalysis  # noqa: F401
 
 config = context.config
 
