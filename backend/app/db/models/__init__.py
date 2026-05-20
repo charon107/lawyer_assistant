@@ -10,6 +10,7 @@ from app.db.models.conversation_share import ConversationShare
 from app.db.models.law_metadata import LawMetadata
 from app.db.models.document_analysis import DocumentAnalysis
 from app.db.models.lpa_case import Case
+from app.db.models.system_log import SystemLog
 
 __all__ = [
     "User",
@@ -23,4 +24,5 @@ __all__ = [
     "LawMetadata",
     "DocumentAnalysis",
     "Case",
+    "SystemLog",
 ]

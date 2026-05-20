@@ -9,6 +9,7 @@ from app.repositories import chat_file as chat_file_repo
 from app.repositories import conversation_share as conversation_share_repo
 from app.repositories import message_rating as message_rating_repo
 from app.repositories import lpa_case_repo
+from app.repositories import system_log_repo
 
 __all__ = [
     "user_repo",
@@ -17,4 +18,5 @@ __all__ = [
     "conversation_share_repo",
     "message_rating_repo",
     "lpa_case_repo",
+    "system_log_repo",
 ]

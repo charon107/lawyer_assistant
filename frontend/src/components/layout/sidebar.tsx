@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { APP_NAME, ROUTES } from "@/lib/constants";
-import { LayoutDashboard, MessageSquare, UserCircle, FileSearch, Briefcase, Star, List } from "lucide-react";
+import { LayoutDashboard, MessageSquare, UserCircle, FileSearch, Briefcase, Star, List, ScrollText, Activity } from "lucide-react";
 import { useSidebarStore } from "@/stores";
 import { useAuth } from "@/hooks";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui";
@@ -26,6 +26,8 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const adminNav = [
     { name: t("adminRatings"), href: ROUTES.ADMIN_RATINGS, icon: Star },
     { name: t("adminConversations"), href: ROUTES.ADMIN_CONVERSATIONS, icon: List },
+    { name: t("adminLogs"), href: ROUTES.ADMIN_LOGS, icon: ScrollText },
+    { name: t("adminSystem"), href: ROUTES.ADMIN_SYSTEM, icon: Activity },
   ];
 
   const linkClass = (href: string) =>

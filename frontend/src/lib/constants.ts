@@ -37,6 +37,8 @@ export const ROUTES = {
   SETTINGS: "/settings",
   ADMIN_RATINGS: "/admin/ratings",
   ADMIN_CONVERSATIONS: "/admin/conversations",
+  ADMIN_LOGS: "/admin/logs",
+  ADMIN_SYSTEM: "/admin/system",
 } as const;
 
 // WebSocket URL — prefer NEXT_PUBLIC_WS_URL, then auto-detect from browser location

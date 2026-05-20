@@ -32,6 +32,8 @@
     "review": "Review",
     "adminRatings": "Ratings",
     "adminConversations": "All Conversations",
+    "adminLogs": "System Logs",
+    "adminSystem": "System Status",
     "cases": "Cases"
   },
   "auth": {
