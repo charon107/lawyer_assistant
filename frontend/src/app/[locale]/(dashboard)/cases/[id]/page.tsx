@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useCaseDetail } from "@/hooks/use-cases";
 import { ROUTES } from "@/lib/constants";
 import {
@@ -31,6 +31,7 @@ export default function CaseDetailPage() {
   const params = useParams();
   const router = useRouter();
   const t = useTranslations("cases");
+  const locale = useLocale();
   const caseId = params.id as string;
   const { caseDetail, isLoading, error, fetchCase, uploadDocument, deleteDocument, refreshDocuments } =
     useCaseDetail(caseId);
@@ -87,7 +88,7 @@ export default function CaseDetailPage() {
           )}
         </div>
         <Button asChild>
-          <Link href={`${ROUTES.CASES}/${caseId}/chat`}>
+          <Link href={`/${locale}${ROUTES.CASES}/${caseId}/chat`}>
             <MessageSquare className="mr-2 h-4 w-4" />
             {t("startChat")}
           </Link>
