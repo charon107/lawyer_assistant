@@ -10,14 +10,17 @@ from app.api.deps import (
     CurrentAdmin,
     CurrentUser,
     DBSession,
+    SystemLogSvc,
     UserSvc,
 )
+from app.core.exceptions import AuthorizationError
 from app.db.models.user import UserRole
 from app.db.models.user_llm_config import UserLLMConfig
 from app.schemas.user import (
     LLMConfigCreate,
     LLMConfigRead,
     LLMConfigUpdate,
+    UserList,
     UserRead,
     UserUpdate,
 )
@@ -302,16 +305,24 @@ def _fetch_models(provider: str, api_key: str, base_url: str | None) -> dict[str
 # === Admin endpoints ===
 
 
-@router.get("", response_model=list[UserRead])
+@router.get("", response_model=UserList)
 def read_users(
     user_service: UserSvc,
-    _: CurrentAdmin,
+    log_service: SystemLogSvc,
+    admin: CurrentAdmin,
     skip: int = Query(0, ge=0, description="Items to skip"),
-    limit: int = Query(100, ge=1, le=200, description="Max items to return"),
+    limit: int = Query(50, ge=1, le=200, description="Max items to return"),
+    search: str | None = Query(None, description="Fuzzy search on email or full_name"),
 ) -> Any:
-    """Get all users (admin only)."""
-    users = user_service.get_multi(skip=skip, limit=limit)
-    return users
+    """List all users (admin only)."""
+    items, total = user_service.admin_list(skip=skip, limit=limit, search=search)
+    log_service.log(
+        "admin",
+        "list_users_admin",
+        user_id=str(admin.id),
+        metadata={"search": search, "skip": skip, "limit": limit},
+    )
+    return UserList(items=items, total=total)
 
 
 @router.get("/{user_id}", response_model=UserRead)
@@ -333,15 +344,55 @@ def update_user_by_id(
     user_id: str,
     user_in: UserUpdate,
     user_service: UserSvc,
-    _: CurrentAdmin,
+    log_service: SystemLogSvc,
+    admin: CurrentAdmin,
 ) -> Any:
     """Update user by ID (admin only).
 
-    Admins can update any user including their role.
+    Admins can update any user, including role, status, email, full_name, and
+    password. Admins cannot demote or disable themselves (lock-out protection).
+    Role changes are recorded to system_logs at level=warning.
 
     Raises NotFoundError if user does not exist.
     """
+    is_self = user_id == str(admin.id)
+    if is_self:
+        if user_in.role is not None and user_in.role != UserRole.ADMIN:
+            raise AuthorizationError(message="不能修改自己的管理员角色")
+        if user_in.is_active is False:
+            raise AuthorizationError(message="不能禁用自己的账号")
+
+    before = user_service.get_by_id(user_id)
+    before_snapshot = {
+        "email": before.email,
+        "full_name": before.full_name,
+        "role": before.role,
+        "is_active": before.is_active,
+    }
     user = user_service.update(user_id, user_in)
+
+    changes: dict[str, Any] = {}
+    for field in ("email", "full_name", "role", "is_active"):
+        new_val = getattr(user_in, field, None)
+        if new_val is None:
+            continue
+        new_val_str = new_val.value if hasattr(new_val, "value") else new_val
+        if before_snapshot[field] != new_val_str:
+            changes[field] = {"from": before_snapshot[field], "to": new_val_str}
+    if user_in.password is not None:
+        changes["password"] = "reset"
+
+    if changes:
+        level = "warning" if "role" in changes else "info"
+        log_service.log(
+            "admin",
+            "update_user",
+            level=level,
+            user_id=str(admin.id),
+            resource_type="user",
+            resource_id=user_id,
+            metadata=changes,
+        )
     return user
 
 
@@ -349,10 +400,24 @@ def update_user_by_id(
 def delete_user_by_id(
     user_id: str,
     user_service: UserSvc,
-    _: CurrentAdmin,
+    log_service: SystemLogSvc,
+    admin: CurrentAdmin,
 ) -> None:
     """Delete user by ID (admin only).
 
+    Admins cannot delete themselves. Deletion is recorded to system_logs at
+    level=warning.
+
     Raises NotFoundError if user does not exist.
     """
+    if user_id == str(admin.id):
+        raise AuthorizationError(message="不能删除自己的账号")
     user_service.delete(user_id)
+    log_service.log(
+        "admin",
+        "delete_user",
+        level="warning",
+        user_id=str(admin.id),
+        resource_type="user",
+        resource_id=user_id,
+    )

@@ -108,6 +108,33 @@ def has_any(db: Session) -> bool:
     return result.scalars().first() is not None
 
 
+def admin_list(
+    db: Session,
+    *,
+    skip: int = 0,
+    limit: int = 50,
+    search: str | None = None,
+) -> tuple[list[User], int]:
+    """Admin: list users with optional fuzzy search on email/full_name.
+
+    Returns (users, total).
+    """
+    from sqlalchemy import func
+
+    query = select(User)
+    count_query = select(func.count()).select_from(User)
+
+    if search:
+        condition = User.email.ilike(f"%{search}%") | User.full_name.ilike(f"%{search}%")
+        query = query.where(condition)
+        count_query = count_query.where(condition)
+
+    query = query.order_by(User.created_at.desc()).offset(skip).limit(limit)
+    total = db.scalar(count_query) or 0
+    rows = list(db.execute(query).scalars().all())
+    return rows, total
+
+
 def admin_list_with_counts(
     db: Session,
     *,

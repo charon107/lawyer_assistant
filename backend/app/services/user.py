@@ -64,6 +64,16 @@ class UserService:
         """Return True if at least one user exists."""
         return user_repo.has_any(self.db)
 
+    def admin_list(
+        self,
+        *,
+        skip: int = 0,
+        limit: int = 50,
+        search: str | None = None,
+    ) -> tuple[list[User], int]:
+        """Admin: list users with optional fuzzy search."""
+        return user_repo.admin_list(self.db, skip=skip, limit=limit, search=search)
+
     def admin_list_with_counts(
         self,
         *,

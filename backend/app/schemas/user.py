@@ -136,3 +136,10 @@ class UserInDB(UserRead):
     """User schema with hashed password (internal use)."""
 
     hashed_password: str
+
+
+class UserList(BaseSchema):
+    """Paginated list of users for admin endpoints."""
+
+    items: list[UserRead]
+    total: int

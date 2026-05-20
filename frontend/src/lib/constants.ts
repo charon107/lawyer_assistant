@@ -36,6 +36,7 @@ export const ROUTES = {
   REVIEW: "/review",
   SETTINGS: "/settings",
   ADMIN_RATINGS: "/admin/ratings",
+  ADMIN_USERS: "/admin/users",
   ADMIN_CONVERSATIONS: "/admin/conversations",
   ADMIN_LOGS: "/admin/logs",
   ADMIN_SYSTEM: "/admin/system",
