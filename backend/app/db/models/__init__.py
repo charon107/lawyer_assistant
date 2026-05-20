@@ -9,6 +9,7 @@ from app.db.models.message_rating import MessageRating
 from app.db.models.conversation_share import ConversationShare
 from app.db.models.law_metadata import LawMetadata
 from app.db.models.document_analysis import DocumentAnalysis
+from app.db.models.lpa_case import Case
 
 __all__ = [
     "User",
@@ -21,4 +22,5 @@ __all__ = [
     "ConversationShare",
     "LawMetadata",
     "DocumentAnalysis",
+    "Case",
 ]

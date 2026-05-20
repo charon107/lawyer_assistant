@@ -6,9 +6,11 @@ All sync calls wrapped with asyncio.to_thread() to avoid blocking the event loop
 
 import asyncio
 import logging
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 from qdrant_client import QdrantClient
+from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.models import FieldCondition, Filter, MatchValue
 
 from app.core.config import settings
@@ -30,6 +32,8 @@ class LawSearchService:
 
     _instance: "LawSearchService | None" = None
 
+    _HEALTH_CHECK_INTERVAL = 60.0  # seconds between availability rechecks
+
     def __init__(
         self,
         qdrant_url: str,
@@ -43,6 +47,8 @@ class LawSearchService:
         self._embedder = None
         self._executor = ThreadPoolExecutor(max_workers=2)
         self._redis = None
+        self._qdrant_ok: bool | None = None  # None = not yet checked
+        self._qdrant_last_check: float = 0.0
 
     @property
     def embedder(self):
@@ -93,6 +99,27 @@ class LawSearchService:
         """Reset singleton. Used for testing or config changes."""
         cls._instance = None
 
+    def _qdrant_available(self) -> bool:
+        """Return True if Qdrant responded OK on the last health check.
+
+        Re-checks at most once every _HEALTH_CHECK_INTERVAL seconds so a
+        downed service doesn't cause a blocking round-trip on every request.
+        """
+        now = time.monotonic()
+        if (
+            self._qdrant_ok is not None
+            and (now - self._qdrant_last_check) < self._HEALTH_CHECK_INTERVAL
+        ):
+            return self._qdrant_ok
+        try:
+            self.client.get_collections()
+            self._qdrant_ok = True
+        except Exception:
+            self._qdrant_ok = False
+            logger.warning("Qdrant unavailable at %s — law search disabled", settings.QDRANT_URL)
+        self._qdrant_last_check = now
+        return bool(self._qdrant_ok)
+
     def _cache_key(self, query: str, **kwargs) -> str:
         """Build cache key from query and filter params."""
         parts = [f"law_search:{query}"]
@@ -132,9 +159,13 @@ class LawSearchService:
         if cached is not None:
             return cached
 
+        loop = asyncio.get_event_loop()
+        available = await loop.run_in_executor(self._executor, self._qdrant_available)
+        if not available:
+            return []
+
         try:
             # Embed query in thread pool (CPU-bound)
-            loop = asyncio.get_event_loop()
             vector = await loop.run_in_executor(self._executor, self.embedder.encode, query)
             vector = vector.tolist()
 
@@ -155,7 +186,7 @@ class LawSearchService:
             query_filter = Filter(must=must_conditions) if must_conditions else None
 
             # Qdrant search (sync, wrapped in thread)
-            search_kwargs = {
+            search_kwargs: dict = {
                 "collection_name": COLLECTION_NAME,
                 "query": vector,
                 "limit": k,
@@ -182,6 +213,11 @@ class LawSearchService:
 
             return search_results
 
+        except (UnexpectedResponse, OSError) as e:
+            logger.warning("Qdrant request failed for query %r: %s", query, e)
+            self._qdrant_ok = False
+            self._qdrant_last_check = time.monotonic()
+            return []
         except Exception as e:
             logger.exception("Law search failed for query: %s", query)
             raise RuntimeError(f"法律搜索失败: {e}") from e
@@ -192,8 +228,12 @@ class LawSearchService:
         article_id: str,
     ) -> LawArticle | None:
         """Exact lookup by law_id + article_id. No embedding needed."""
+        loop = asyncio.get_event_loop()
+        available = await loop.run_in_executor(self._executor, self._qdrant_available)
+        if not available:
+            return None
+
         try:
-            loop = asyncio.get_event_loop()
             results = await loop.run_in_executor(
                 self._executor,
                 lambda: self.client.scroll(
@@ -211,6 +251,11 @@ class LawSearchService:
             if not points:
                 return None
             return _payload_to_article(points[0].payload)
+        except (UnexpectedResponse, OSError) as e:
+            logger.warning("Qdrant request failed for article %s %s: %s", law_id, article_id, e)
+            self._qdrant_ok = False
+            self._qdrant_last_check = time.monotonic()
+            return None
         except Exception as e:
             logger.exception("get_article failed: %s %s", law_id, article_id)
             raise RuntimeError(f"法律条文查询失败: {e}") from e

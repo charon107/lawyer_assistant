@@ -5,9 +5,9 @@ from tabulate import tabulate
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="lpa_review_app")
+@click.version_option(version="0.1.0", prog_name="lexmind")
 def cli():
-    """lpa_review_app management CLI."""
+    """lexmind management CLI."""
     pass
 
 

@@ -1,5 +1,5 @@
 [project]
-name = "lpa_review_app"
+name = "lexmind"
 version = "0.1.0"
 description = "A FastAPI project"
 requires-python = ">=3.12"
@@ -46,7 +46,7 @@ dev = [
 ]
 
 [project.scripts]
-lpa_review_app = "cli.commands:main"
+lexmind = "cli.commands:main"
 
 [build-system]
 requires = ["hatchling"]

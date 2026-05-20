@@ -33,7 +33,7 @@ class TestConversationCaseId:
                 "app.repositories.conversation.Conversation",
                 lambda **kwargs: mock_conv,
             )
-            result = create_conversation(
+            create_conversation(
                 mock_db, user_id="user-1", title="Test", case_id="case-123"
             )
 
@@ -54,7 +54,7 @@ class TestConversationCaseId:
                 "app.repositories.conversation.Conversation",
                 lambda **kwargs: mock_conv,
             )
-            result = create_conversation(mock_db, user_id="user-1", title="Test")
+            create_conversation(mock_db, user_id="user-1", title="Test")
 
         mock_db.add.assert_called_once()
 
@@ -72,7 +72,7 @@ class TestConversationCaseId:
             mock_repo.create_conversation = MagicMock(return_value=mock_conv)
 
             data = ConversationCreate(user_id="user-1", case_id="case-123", title="Test")
-            result = service.create_conversation(data)
+            service.create_conversation(data)
 
             mock_repo.create_conversation.assert_called_once()
             call_args = mock_repo.create_conversation.call_args

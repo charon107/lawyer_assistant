@@ -6,6 +6,7 @@ and pushes structured progress events until review completes or errors.
 """
 
 import asyncio
+import contextlib
 import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.websocket("/lpa/review/{review_id}/ws")
+@router.websocket("/review/{review_id}/ws")
 async def lpa_review_websocket(websocket: WebSocket, review_id: str):
     """WebSocket endpoint for real-time LPA review progress.
 
@@ -163,7 +164,5 @@ async def lpa_review_websocket(websocket: WebSocket, review_id: str):
         logger.info("WebSocket disconnected for review %s", review_id)
     except Exception as e:
         logger.exception("WebSocket error for review %s", review_id)
-        try:
+        with contextlib.suppress(Exception):
             await websocket.send_json({"event": "error", "message": str(e)})
-        except Exception:
-            pass

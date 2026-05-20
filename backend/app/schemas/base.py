@@ -25,6 +25,7 @@ class BaseSchema(BaseModel):
         json_encoders={datetime: serialize_datetime},
     )
 
+
 class TimestampSchema(BaseModel):
     """Schema with timestamp fields."""
 

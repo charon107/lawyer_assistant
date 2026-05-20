@@ -8,7 +8,7 @@ function getAuthHeaders(accessToken: string): Record<string, string> {
 function buildBackendUrl(pathSegments: string[], searchParams: URLSearchParams): string {
   const path = pathSegments.join("/");
   const qs = searchParams.toString();
-  const base = path ? `/api/v1/lpa/review/${path}` : "/api/v1/lpa/review";
+  const base = path ? `/api/v1/review/${path}` : "/api/v1/review";
   return `${base}${qs ? `?${qs}` : ""}`;
 }
 

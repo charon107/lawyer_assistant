@@ -71,7 +71,7 @@ class TestStartReview:
     async def test_start_review_success(self, client: AsyncClient, auth_headers, mock_lpa_service):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.post(
-            "/api/v1/lpa/review",
+            "/api/v1/review",
             files={"file": ("test.pdf", b"x" * 200, "application/pdf")},
             headers=auth_headers,
         )
@@ -86,7 +86,7 @@ class TestStartReview:
     ):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.post(
-            "/api/v1/lpa/review",
+            "/api/v1/review",
             files={"file": ("", b"x" * 200, "application/pdf")},
             headers=auth_headers,
         )
@@ -99,7 +99,7 @@ class TestStartReview:
     ):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.post(
-            "/api/v1/lpa/review",
+            "/api/v1/review",
             files={"file": ("test.exe", b"x" * 200, "application/octet-stream")},
             headers=auth_headers,
         )
@@ -111,7 +111,7 @@ class TestStartReview:
     ):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.post(
-            "/api/v1/lpa/review",
+            "/api/v1/review",
             files={"file": ("test.pdf", b"short", "application/pdf")},
             headers=auth_headers,
         )
@@ -123,7 +123,7 @@ class TestGetReviewStatus:
     async def test_get_status_success(self, client: AsyncClient, auth_headers, mock_lpa_service):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.get(
-            "/api/v1/lpa/review/test-review-123",
+            "/api/v1/review/test-review-123",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -137,7 +137,7 @@ class TestGetReviewStatus:
         service.get_status = MagicMock(return_value=None)
         app.dependency_overrides[_get_lpa_service] = lambda: service
         response = await client.get(
-            "/api/v1/lpa/review/nonexistent",
+            "/api/v1/review/nonexistent",
             headers=auth_headers,
         )
         assert response.status_code == 404
@@ -148,7 +148,7 @@ class TestGetReport:
     async def test_get_report_success(self, client: AsyncClient, auth_headers, mock_lpa_service):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.get(
-            "/api/v1/lpa/review/test-review-123/report",
+            "/api/v1/review/test-review-123/report",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -160,7 +160,7 @@ class TestGetReport:
         service.get_report = MagicMock(return_value=None)
         app.dependency_overrides[_get_lpa_service] = lambda: service
         response = await client.get(
-            "/api/v1/lpa/review/test-review-123/report",
+            "/api/v1/review/test-review-123/report",
             headers=auth_headers,
         )
         assert response.status_code == 404
@@ -173,7 +173,7 @@ class TestGetFullResult:
     ):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.get(
-            "/api/v1/lpa/review/test-review-123/full",
+            "/api/v1/review/test-review-123/full",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -189,7 +189,7 @@ class TestConfirmChapters:
     ):
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         response = await client.put(
-            "/api/v1/lpa/review/test-review-123/chapters",
+            "/api/v1/review/test-review-123/chapters",
             json={"chapters": [{"index": 1, "title": "第一章", "text": "内容"}]},
             headers=auth_headers,
         )
@@ -205,7 +205,7 @@ class TestChatFollowup:
         app.dependency_overrides[_get_lpa_service] = lambda: mock_lpa_service
         app.dependency_overrides[_get_chat_service] = lambda: mock_chat_service
         response = await client.post(
-            "/api/v1/lpa/review/test-review-123/chat",
+            "/api/v1/review/test-review-123/chat",
             json={"question": "管理费率是多少?"},
             headers=auth_headers,
         )
@@ -220,7 +220,7 @@ class TestChatFollowup:
         app.dependency_overrides[_get_lpa_service] = lambda: service
         app.dependency_overrides[_get_chat_service] = lambda: chat_service
         response = await client.post(
-            "/api/v1/lpa/review/nonexistent/chat",
+            "/api/v1/review/nonexistent/chat",
             json={"question": "test"},
             headers=auth_headers,
         )

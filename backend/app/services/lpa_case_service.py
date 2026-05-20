@@ -1,4 +1,4 @@
-"""LPA Case service (SQLite sync)."""
+"""Case service (SQLite sync)."""
 
 from __future__ import annotations
 
@@ -10,20 +10,20 @@ from sqlalchemy.orm import Session
 from app.core.exceptions import NotFoundError
 from app.db.models.chat_file import ChatFile
 from app.db.models.document_analysis import DocumentAnalysis
-from app.db.models.lpa_case import LPACase
+from app.db.models.lpa_case import Case
 from app.repositories import lpa_case_repo
-from app.schemas.lpa_case import LPACaseCreate, LPACaseUpdate
+from app.schemas.lpa_case import CaseCreate, CaseUpdate
 
 logger = logging.getLogger(__name__)
 
 
-class LPACaseService:
+class CaseService:
     """Service for LPA case business logic."""
 
     def __init__(self, db: Session):
         self.db = db
 
-    def create(self, data: LPACaseCreate, user_id: str) -> LPACase:
+    def create(self, data: CaseCreate, user_id: str) -> Case:
         """Create a new LPA case."""
         return lpa_case_repo.create_case(
             self.db,
@@ -33,7 +33,7 @@ class LPACaseService:
             document_type=data.document_type,
         )
 
-    def get(self, case_id: str, user_id: str) -> LPACase:
+    def get(self, case_id: str, user_id: str) -> Case:
         """Get an LPA case by ID with documents.
 
         Raises:
@@ -44,7 +44,7 @@ class LPACaseService:
             raise NotFoundError(message="Case not found", details={"case_id": case_id})
         return case
 
-    def get_without_docs(self, case_id: str, user_id: str) -> LPACase:
+    def get_without_docs(self, case_id: str, user_id: str) -> Case:
         """Get an LPA case by ID without documents.
 
         Raises:
@@ -57,7 +57,7 @@ class LPACaseService:
 
     def list(
         self, user_id: str, *, skip: int = 0, limit: int = 50
-    ) -> tuple[list[tuple[LPACase, int]], int]:
+    ) -> tuple[list[tuple[Case, int]], int]:
         """List LPA cases with document count.
 
         Returns:
@@ -67,7 +67,7 @@ class LPACaseService:
         total = lpa_case_repo.count_cases_by_user(self.db, user_id)
         return items, total
 
-    def update(self, case_id: str, data: LPACaseUpdate, user_id: str) -> LPACase:
+    def update(self, case_id: str, data: CaseUpdate, user_id: str) -> Case:
         """Update an LPA case.
 
         Raises:
@@ -195,3 +195,9 @@ class LPACaseService:
         if not doc or str(doc.case_id) != str(case_id):
             raise NotFoundError(message="Document not found", details={"doc_id": doc_id})
         return lpa_case_repo.get_document_analysis(self.db, doc_id)
+
+
+# Backward compatibility aliases
+LPACaseService = CaseService
+LPACaseCreate = CaseCreate
+LPACaseUpdate = CaseUpdate

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UploadZone } from "@/components/review";
-import { useLPAReview } from "@/hooks/use-lpa-review";
+import { useDocumentReview } from "@/hooks/use-document-review";
 import { ReviewProgressBar } from "@/components/review/progress-bar";
 import { Button } from "@/components/ui";
 import { FileSearch, Loader2 } from "lucide-react";
@@ -12,7 +12,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "/api/v1";
 
 export default function ReviewPage() {
   const router = useRouter();
-  const review = useLPAReview();
+  const review = useDocumentReview();
   const [fileName, setFileName] = useState("");
 
   const handleUpload = async (file: File) => {

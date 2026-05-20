@@ -1,4 +1,4 @@
-# LPA Review App — Production deployment
+# LexMind — Production deployment
 #
 # Images built by GitHub Actions and pushed to Alibaba Cloud ACR.
 # Server pulls pre-built images — no local build needed.
@@ -10,8 +10,8 @@
 
 services:
   backend:
-    image: lpa-backend:latest
-    container_name: lpa-backend
+    image: lexmind-backend:latest
+    container_name: lexmind-backend
     restart: unless-stopped
     env_file:
       - ./backend/.env
@@ -25,7 +25,7 @@ services:
       - backend_data:/app/data
       - backend_media:/app/media
     networks:
-      - lpa-network
+      - lexmind-network
     depends_on:
       qdrant:
         condition: service_healthy
@@ -38,36 +38,36 @@ services:
       retries: 3
 
   frontend:
-    image: lpa-frontend:latest
-    container_name: lpa-frontend
+    image: lexmind-frontend:latest
+    container_name: lexmind-frontend
     restart: unless-stopped
     environment:
       - NODE_ENV=production
       - PORT=3000
       - BACKEND_URL=http://backend:8000
     networks:
-      - lpa-network
+      - lexmind-network
     depends_on:
       backend:
         condition: service_healthy
 
   nginx:
     image: nginx:alpine
-    container_name: lpa-nginx
+    container_name: lexmind-nginx
     restart: unless-stopped
     ports:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
-      - lpa-network
+      - lexmind-network
     depends_on:
       - backend
       - frontend
 
   qdrant:
     image: qdrant/qdrant:latest
-    container_name: lpa-qdrant
+    container_name: lexmind-qdrant
     restart: unless-stopped
     volumes:
       - qdrant_data:/qdrant/storage
@@ -79,11 +79,11 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      - lpa-network
+      - lexmind-network
 
   redis:
     image: redis:7-alpine
-    container_name: lpa-redis
+    container_name: lexmind-redis
     restart: unless-stopped
     volumes:
       - redis_data:/data
@@ -93,10 +93,10 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      - lpa-network
+      - lexmind-network
 
 networks:
-  lpa-network:
+  lexmind-network:
     driver: bridge
 
 volumes:

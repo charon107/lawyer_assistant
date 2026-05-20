@@ -13,10 +13,10 @@ if TYPE_CHECKING:
     from app.db.models.conversation import Conversation
 
 
-class LPACase(Base, TimestampMixin):
+class Case(Base, TimestampMixin):
     """Legal case model - groups documents and conversations."""
 
-    __tablename__ = "lpa_cases"
+    __tablename__ = "cases"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id: Mapped[str] = mapped_column(
@@ -41,3 +41,7 @@ class LPACase(Base, TimestampMixin):
 
     def __repr__(self) -> str:
         return f"<LPACase(id={self.id}, name={self.name})>"
+
+
+# Backward compatibility alias
+LPACase = Case

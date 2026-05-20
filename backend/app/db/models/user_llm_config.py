@@ -1,11 +1,15 @@
 """User LLM configuration model — one row per provider config."""
 
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.db.models.user import User
 
 
 class UserLLMConfig(Base, TimestampMixin):

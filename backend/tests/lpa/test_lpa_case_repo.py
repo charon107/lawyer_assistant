@@ -54,7 +54,7 @@ class TestCreateCase:
         mock_session.flush = MagicMock()
         mock_session.refresh = MagicMock()
 
-        with patch("app.repositories.lpa_case_repo.LPACase", return_value=mock_case):
+        with patch("app.repositories.lpa_case_repo.Case", return_value=mock_case):
             result = lpa_case_repo.create_case(
                 mock_session, user_id="user-123", name="Test Case", description="desc"
             )
@@ -69,7 +69,7 @@ class TestCreateCase:
         mock_session.flush = MagicMock()
         mock_session.refresh = MagicMock()
 
-        with patch("app.repositories.lpa_case_repo.LPACase", return_value=mock_case):
+        with patch("app.repositories.lpa_case_repo.Case", return_value=mock_case):
             result = lpa_case_repo.create_case(mock_session, user_id="user-123", name="Minimal")
         assert result == mock_case
 

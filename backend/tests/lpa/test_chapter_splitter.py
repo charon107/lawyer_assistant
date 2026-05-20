@@ -39,8 +39,7 @@ class TestChapterSplitterRegex:
         )
         splitter = ChapterSplitter()
         result = splitter.split(text)
-        for ch in result["chapters"]:
-            # After merging, chapters should be longer (unless it's the last one)
+        for _ch in result["chapters"]:
             pass  # merge logic may or may not trigger depending on lengths
 
     def test_chapters_have_required_fields(self):

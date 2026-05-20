@@ -27,7 +27,7 @@ def _evict_expired_sessions() -> None:
         logger.info("Evicted %d expired sessions", len(expired))
 
 
-class LPAReviewService:
+class ReviewService:
     """Manages LPA review lifecycle: create, run, poll, retrieve."""
 
     def __init__(
@@ -74,7 +74,11 @@ class LPAReviewService:
         # Fire-and-forget pipeline execution
         logger.info("Creating pipeline task for review_id=%s", review_id)
         task = asyncio.create_task(self._run_pipeline(review_id))
-        task.add_done_callback(lambda t: logger.error("Pipeline task FAILED: %s", t.exception()) if t.exception() else None)
+        task.add_done_callback(
+            lambda t: (
+                logger.error("Pipeline task FAILED: %s", t.exception()) if t.exception() else None
+            )
+        )
         logger.info("Pipeline task created for review_id=%s", review_id)
         return review_id
 
@@ -150,7 +154,7 @@ class LPAReviewService:
             return
 
         try:
-            from app.agents.lpa.orchestrator import LPAReviewOrchestrator
+            from app.agents.lpa.orchestrator import DocumentReviewOrchestrator
 
             def progress_callback(pct: float, msg: str):
                 logger.info("PROGRESS: %.2f — %s", pct, msg)
@@ -170,7 +174,7 @@ class LPAReviewService:
                 else:
                     session["status"] = "complete"
 
-            orchestrator = LPAReviewOrchestrator(
+            orchestrator = DocumentReviewOrchestrator(
                 api_key=session.get("api_key"),
                 base_url=session.get("base_url", ""),
                 model=session.get("model", ""),
@@ -212,3 +216,7 @@ class LPAReviewService:
             logger.exception("Pipeline failed for review %s", review_id)
             session["status"] = "error"
             session["error"] = str(e)
+
+
+# Backward compatibility alias
+LPAReviewService = ReviewService

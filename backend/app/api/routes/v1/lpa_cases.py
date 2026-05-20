@@ -8,42 +8,42 @@ from fastapi import APIRouter, File, Query, UploadFile, status
 from app.api.deps import CurrentUser, DBSession
 from app.schemas.document_analysis import DocumentAnalysisRead
 from app.schemas.lpa_case import (
-    LPACaseCreate,
-    LPACaseDetailRead,
-    LPACaseList,
-    LPACaseRead,
-    LPACaseUpdate,
-    LPADocumentList,
-    LPADocumentRead,
+    CaseCreate,
+    CaseDetailRead,
+    CaseList,
+    CaseRead,
+    CaseUpdate,
+    DocumentList,
+    DocumentRead,
 )
 from app.services.lpa_analysis_service import (
     schedule_analysis_generation,
     schedule_summary_generation,
 )
-from app.services.lpa_case_service import LPACaseService
+from app.services.lpa_case_service import CaseService
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
-def _get_service(db: DBSession) -> LPACaseService:
-    return LPACaseService(db)
+def _get_service(db: DBSession) -> CaseService:
+    return CaseService(db)
 
 
 # --- Case CRUD ---
 
 
-@router.post("", response_model=LPACaseRead, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=CaseRead, status_code=status.HTTP_201_CREATED)
 async def create_case(
-    data: LPACaseCreate,
+    data: CaseCreate,
     db: DBSession,
     user: CurrentUser,
 ) -> Any:
     """Create a new LPA case."""
     service = _get_service(db)
     case = service.create(data, user_id=str(user.id))
-    return LPACaseRead(
+    return CaseRead(
         id=case.id,
         user_id=case.user_id,
         name=case.name,
@@ -56,7 +56,7 @@ async def create_case(
     )
 
 
-@router.get("", response_model=LPACaseList)
+@router.get("", response_model=CaseList)
 async def list_cases(
     db: DBSession,
     user: CurrentUser,
@@ -67,7 +67,7 @@ async def list_cases(
     service = _get_service(db)
     items, total = service.list(str(user.id), skip=skip, limit=limit)
     case_reads = [
-        LPACaseRead(
+        CaseRead(
             id=case.id,
             user_id=case.user_id,
             name=case.name,
@@ -80,10 +80,10 @@ async def list_cases(
         )
         for case, doc_count in items
     ]
-    return LPACaseList(items=case_reads, total=total)
+    return CaseList(items=case_reads, total=total)
 
 
-@router.get("/{case_id}", response_model=LPACaseDetailRead)
+@router.get("/{case_id}", response_model=CaseDetailRead)
 async def get_case(
     case_id: str,
     db: DBSession,
@@ -94,7 +94,7 @@ async def get_case(
     case = service.get(case_id, user_id=str(user.id))
     analyses = service.get_analyses_by_case(case_id, user_id=str(user.id))
     documents = [
-        LPADocumentRead(
+        DocumentRead(
             id=doc.id,
             filename=doc.filename,
             mime_type=doc.mime_type,
@@ -107,7 +107,7 @@ async def get_case(
         )
         for doc in case.documents
     ]
-    return LPACaseDetailRead(
+    return CaseDetailRead(
         id=case.id,
         user_id=case.user_id,
         name=case.name,
@@ -121,10 +121,10 @@ async def get_case(
     )
 
 
-@router.patch("/{case_id}", response_model=LPACaseRead)
+@router.patch("/{case_id}", response_model=CaseRead)
 async def update_case(
     case_id: str,
-    data: LPACaseUpdate,
+    data: CaseUpdate,
     db: DBSession,
     user: CurrentUser,
 ) -> Any:
@@ -132,7 +132,7 @@ async def update_case(
     service = _get_service(db)
     case = service.update(case_id, data, user_id=str(user.id))
     doc_count = len(case.documents) if hasattr(case, "documents") and case.documents else 0
-    return LPACaseRead(
+    return CaseRead(
         id=case.id,
         user_id=case.user_id,
         name=case.name,
@@ -161,7 +161,7 @@ async def delete_case(
 
 @router.post(
     "/{case_id}/documents",
-    response_model=LPADocumentRead,
+    response_model=DocumentRead,
     status_code=status.HTTP_201_CREATED,
 )
 async def upload_document(
@@ -195,7 +195,7 @@ async def upload_document(
     schedule_summary_generation(doc.id, doc.parsed_content)
     schedule_analysis_generation(doc.id, doc.parsed_content)
 
-    return LPADocumentRead(
+    return DocumentRead(
         id=doc.id,
         filename=doc.filename,
         mime_type=doc.mime_type,
@@ -207,7 +207,7 @@ async def upload_document(
     )
 
 
-@router.get("/{case_id}/documents", response_model=LPADocumentList)
+@router.get("/{case_id}/documents", response_model=DocumentList)
 async def list_documents(
     case_id: str,
     db: DBSession,
@@ -218,7 +218,7 @@ async def list_documents(
     documents = service.get_documents(case_id, user_id=str(user.id))
     analyses = service.get_analyses_by_case(case_id, user_id=str(user.id))
     items = [
-        LPADocumentRead(
+        DocumentRead(
             id=doc.id,
             filename=doc.filename,
             mime_type=doc.mime_type,
@@ -231,7 +231,7 @@ async def list_documents(
         )
         for doc in documents
     ]
-    return LPADocumentList(items=items, total=len(items))
+    return DocumentList(items=items, total=len(items))
 
 
 @router.delete(

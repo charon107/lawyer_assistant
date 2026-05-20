@@ -89,7 +89,11 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index("conversations_case_id_idx", table_name="conversations")
-    op.drop_index("chat_files_case_id_idx", table_name="chat_files")
-    op.drop_index("lpa_cases_user_id_idx", table_name="lpa_cases")
-    op.drop_table("lpa_cases")
+    if _index_exists("conversations_case_id_idx"):
+        op.drop_index("conversations_case_id_idx", table_name="conversations")
+    if _index_exists("chat_files_case_id_idx"):
+        op.drop_index("chat_files_case_id_idx", table_name="chat_files")
+    if _table_exists("lpa_cases"):
+        if _index_exists("lpa_cases_user_id_idx"):
+            op.drop_index("lpa_cases_user_id_idx", table_name="lpa_cases")
+        op.drop_table("lpa_cases")
