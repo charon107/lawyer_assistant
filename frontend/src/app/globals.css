@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Use .dark class (not system media query) for dark: variants */
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Brand — Deep Indigo */
   --color-brand: #1E40AF;
