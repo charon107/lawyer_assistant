@@ -100,6 +100,13 @@ jobs:
             echo "=== Pulling latest code ==="
             git pull origin main || { echo "ERROR: git pull failed"; exit 1; }
 
+            # Free disk space before pulling new images
+            echo "=== Freeing disk space ==="
+            docker image prune -af --filter "until=24h" || true
+            docker container prune -f || true
+            docker volume prune -f || true
+            df -h /var/lib/containerd 2>/dev/null || df -h /var/lib/docker || true
+
             # Login to ACR
             echo "=== Logging into ACR ==="
             echo "${{ secrets.ACR_PASSWORD }}" | docker login \
