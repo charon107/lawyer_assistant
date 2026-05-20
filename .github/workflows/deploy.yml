@@ -115,6 +115,21 @@ jobs:
             docker tag ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/backend:latest lexmind-backend:latest
             docker tag ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/frontend:latest lexmind-frontend:latest
 
+            # Stop any legacy containers holding ports 80/443 (e.g., from the
+            # old lpa_review_app compose project that --remove-orphans cannot
+            # see because the project name changed to lexmind).
+            echo "=== Releasing ports 80/443 from legacy containers ==="
+            for port in 80 443; do
+              for cid in $(docker ps --filter "publish=$port" -q); do
+                name=$(docker inspect -f '{{.Name}}' "$cid" | sed 's|^/||')
+                if [ "$name" != "lexmind-nginx" ]; then
+                  echo "Stopping legacy container $name ($cid) holding port $port"
+                  docker stop "$cid" || true
+                  docker rm "$cid" || true
+                fi
+              done
+            done
+
             # Restart services
             echo "=== Starting services ==="
             docker compose -f docker-compose.prod.yml up -d --remove-orphans || { echo "ERROR: deploy failed"; exit 1; }
