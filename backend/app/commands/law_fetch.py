@@ -1,18 +1,28 @@
-"""Crawler for flk.npc.gov.cn — downloads Chinese law full texts as markdown.
+"""Crawler for zh.wikisource.org — downloads Chinese law full texts as markdown.
 
 Usage (via law_db.py CLI):
     uv run law-db fetch                          # download all 17 laws
     uv run law-db fetch --source /tmp/laws       # custom output dir
     uv run law-db fetch --force                  # overwrite existing files
+
+Source note:
+    Originally targeted flk.npc.gov.cn, but that site migrated to a SPA whose
+    new API no longer exposes article body text (only a chapter/article title
+    tree). Wikisource hosts stable HTML versions of all major Chinese laws and
+    is freely accessible, so we fetch from there and convert to the markdown
+    format consumed by ``app.services.law_data.parser``.
 """
+
+from __future__ import annotations
 
 import logging
 import re
 import time
+import urllib.parse
 from pathlib import Path
 
 import httpx
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from app.commands import error, info, success, warning
 
@@ -21,287 +31,292 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Target law list (covers all 8 skill domains)
 # ---------------------------------------------------------------------------
+# ``wikisource_title`` is the page slug under https://zh.wikisource.org/wiki/.
+# The page must contain the full article text inline (verified for all entries).
 
 LAW_TARGETS: list[dict[str, str]] = [
     # 民法
-    {"keyword": "中华人民共和国民法典", "law_id": "民法典", "type": "law"},
+    {"law_id": "民法典", "wikisource_title": "中华人民共和国民法典", "type": "law"},
     # 劳动法
-    {"keyword": "中华人民共和国劳动合同法", "law_id": "劳动合同法", "type": "law"},
-    {"keyword": "中华人民共和国劳动法", "law_id": "劳动法", "type": "law"},
-    {"keyword": "中华人民共和国社会保险法", "law_id": "社会保险法", "type": "law"},
+    {"law_id": "劳动合同法", "wikisource_title": "中华人民共和国劳动合同法", "type": "law"},
+    {"law_id": "劳动法", "wikisource_title": "中华人民共和国劳动法", "type": "law"},
+    {"law_id": "社会保险法", "wikisource_title": "中华人民共和国社会保险法", "type": "law"},
     # 商法
-    {"keyword": "中华人民共和国公司法", "law_id": "公司法", "type": "law"},
-    {"keyword": "中华人民共和国合伙企业法", "law_id": "合伙企业法", "type": "law"},
+    {"law_id": "公司法", "wikisource_title": "中华人民共和国公司法", "type": "law"},
+    {"law_id": "合伙企业法", "wikisource_title": "中华人民共和国合伙企业法", "type": "law"},
     # 知识产权
-    {"keyword": "中华人民共和国著作权法", "law_id": "著作权法", "type": "law"},
-    {"keyword": "中华人民共和国专利法", "law_id": "专利法", "type": "law"},
-    {"keyword": "中华人民共和国商标法", "law_id": "商标法", "type": "law"},
+    {"law_id": "著作权法", "wikisource_title": "中华人民共和国著作权法", "type": "law"},
+    {"law_id": "专利法", "wikisource_title": "中华人民共和国专利法", "type": "law"},
+    {"law_id": "商标法", "wikisource_title": "中华人民共和国商标法", "type": "law"},
     # 行政法
-    {"keyword": "中华人民共和国行政许可法", "law_id": "行政许可法", "type": "law"},
-    {"keyword": "中华人民共和国行政处罚法", "law_id": "行政处罚法", "type": "law"},
-    {"keyword": "中华人民共和国行政复议法", "law_id": "行政复议法", "type": "law"},
-    {"keyword": "中华人民共和国行政诉讼法", "law_id": "行政诉讼法", "type": "law"},
+    {"law_id": "行政许可法", "wikisource_title": "中华人民共和国行政许可法", "type": "law"},
+    {"law_id": "行政处罚法", "wikisource_title": "中华人民共和国行政处罚法", "type": "law"},
+    {"law_id": "行政复议法", "wikisource_title": "中华人民共和国行政复议法", "type": "law"},
+    {"law_id": "行政诉讼法", "wikisource_title": "中华人民共和国行政诉讼法", "type": "law"},
     # 刑法
-    {"keyword": "中华人民共和国刑法", "law_id": "刑法", "type": "law"},
+    {"law_id": "刑法", "wikisource_title": "中华人民共和国刑法", "type": "law"},
     # 保密法
-    {"keyword": "中华人民共和国保守国家秘密法", "law_id": "保守国家秘密法", "type": "law"},
+    {
+        "law_id": "保守国家秘密法",
+        "wikisource_title": "中华人民共和国保守国家秘密法",
+        "type": "law",
+    },
     # 社会法
-    {"keyword": "中华人民共和国就业促进法", "law_id": "就业促进法", "type": "law"},
+    {"law_id": "就业促进法", "wikisource_title": "中华人民共和国就业促进法", "type": "law"},
     # 行政法规
-    {"keyword": "工伤保险条例", "law_id": "工伤保险条例", "type": "regulation"},
+    {"law_id": "工伤保险条例", "wikisource_title": "工伤保险条例", "type": "regulation"},
 ]
 
-_BASE_URL = "https://flk.npc.gov.cn"
+_BASE_URL = "https://zh.wikisource.org"
+_PAGE_URL_TEMPLATE = _BASE_URL + "/wiki/{slug}"
+_PREFLIGHT_TITLE = "中华人民共和国宪法"  # stable, never going away
+_MIN_ARTICLES_PER_LAW = 5  # sanity floor; if fewer parsed, warn
+
 _HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; LexMind/1.0; legal-research-bot)",
-    "Accept": "application/json",
-    "Referer": "https://flk.npc.gov.cn/",
+    "User-Agent": "Mozilla/5.0 (compatible; LexMind/1.0; +https://lexmind.example)",
+    "Accept": "text/html,application/xhtml+xml",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.5",
 }
 
-# Article number regex: 第一条, 第一百零二条, 第一条之一 ...
-_ARTICLE_RE = re.compile(r"^第[零一二三四五六七八九十百千]+条(?:之[零一二三四五六七八九]+)?")
-_CHAPTER_RE = re.compile(r"^第[零一二三四五六七八九十]+(?:编|章)\s*")
-_SECTION_RE = re.compile(r"^第[零一二三四五六七八九十]+节\s*")
+# Structural regex used while walking the parsed HTML
+_ARTICLE_RE = re.compile(r"^第[零一二三四五六七八九十百千]+条(?:之[零一二三四五六七八九十百千]+)?")
+_CHAPTER_RE = re.compile(r"^第[零一二三四五六七八九十百千]+(?:编|章)(?:\s|$|[一-鿿])")
+_SECTION_RE = re.compile(r"^第[零一二三四五六七八九十百千]+节(?:\s|$|[一-鿿])")
+_EDIT_TAG = "[编辑]"
 
 
-class IPBlockedError(RuntimeError):
-    """flk.npc.gov.cn blocked our IP (typically non-China source)."""
+class FetchError(RuntimeError):
+    """Raised when the upstream source cannot be reached or parsed."""
 
 
-def _request_json(
-    url: str, params: dict, client: httpx.Client, *, attempts: int = 3
-) -> dict | None:
-    """GET + JSON-decode with retry, surfacing HTTP/body context on failure."""
-    last_err: str | None = None
+def _request_html(url: str, client: httpx.Client, *, attempts: int = 3) -> str | None:
+    """GET an HTML page with retry on transient failures.
+
+    Returns the decoded body on HTTP 200, otherwise ``None``. Logs context on
+    every failure so callers can surface useful diagnostics.
+    """
     for attempt in range(1, attempts + 1):
         try:
-            resp = client.get(url, params=params, headers=_HEADERS)
-        except (httpx.TimeoutException, httpx.TransportError) as e:
-            last_err = f"network error ({type(e).__name__}): {e}"
+            resp = client.get(url, headers=_HEADERS)
+        except (httpx.TimeoutException, httpx.TransportError) as exc:
+            logger.warning(
+                "Network error fetching %s (attempt %d/%d): %s",
+                url,
+                attempt,
+                attempts,
+                exc,
+            )
             if attempt < attempts:
                 time.sleep(2 * attempt)
                 continue
-            logger.warning("Request to %s failed: %s", url, last_err)
             return None
 
-        body_snippet = resp.text[:200].replace("\n", " ")
-        if resp.status_code == 403 and "allowlist" in resp.text.lower():
-            raise IPBlockedError(
-                "flk.npc.gov.cn returned 403 'Host not in allowlist'. "
-                "Your IP is blocked. Run this command from a Chinese mainland IP."
-            )
         if resp.status_code >= 500 and attempt < attempts:
-            time.sleep(2 * attempt)
-            continue
-        if resp.status_code != 200:
-            logger.warning("%s returned HTTP %s: %s", url, resp.status_code, body_snippet)
-            return None
-
-        try:
-            return resp.json()
-        except ValueError:
             logger.warning(
-                "%s returned non-JSON (HTTP %s, content-type=%s): %s",
+                "Upstream %s returned HTTP %d (attempt %d/%d), retrying.",
                 url,
                 resp.status_code,
-                resp.headers.get("content-type"),
-                body_snippet,
+                attempt,
+                attempts,
             )
+            time.sleep(2 * attempt)
+            continue
+
+        if resp.status_code != 200:
+            body_snippet = resp.text[:200].replace("\n", " ")
+            logger.warning("Unexpected HTTP %d from %s: %s", resp.status_code, url, body_snippet)
             return None
+
+        return resp.text
     return None
 
 
-def _search_law(keyword: str, law_type: str, client: httpx.Client) -> dict | None:
-    """Search flk.npc.gov.cn and return best matching entry."""
-    params = {
-        "type": law_type,
-        "searchType": "title",
-        "keyword": keyword,
-        "sortTp": "0",
-        "page": "1",
-        "pageSize": "10",
-    }
-    data = _request_json(f"{_BASE_URL}/api/", params, client)
-    if data is None:
-        return None
-
-    items: list[dict] = []
-    result = data.get("result", {})
-    if isinstance(result, dict):
-        items = result.get("data", [])
-    elif isinstance(result, list):
-        items = result
-
-    if not items:
-        return None
-
-    # Prefer exact title match (keyword contained in title), then most recent
-    candidates = [it for it in items if keyword in it.get("title", "")]
-    if not candidates:
-        candidates = items
-    # Sort by publish date descending (most recent first)
-    candidates.sort(key=lambda x: x.get("publish", "") or "", reverse=True)
-    return candidates[0]
-
-
-def _fetch_detail(entry_id: str, client: httpx.Client) -> str | None:
-    """Fetch HTML body from /api/detail?id=..."""
-    data = _request_json(f"{_BASE_URL}/api/detail", {"id": entry_id}, client)
-    if data is None:
-        return None
-
-    result = data.get("result", {})
-    if isinstance(result, dict):
-        return result.get("body") or result.get("content")
-    return None
+def _build_url(wikisource_title: str) -> str:
+    """Construct the canonical Wikisource page URL for a Chinese title."""
+    slug = urllib.parse.quote(wikisource_title, safe="")
+    return _PAGE_URL_TEMPLATE.format(slug=slug)
 
 
 def _preflight_check(client: httpx.Client) -> None:
-    """Verify flk.npc.gov.cn API is reachable before iterating all targets.
-
-    Raises IPBlockedError if our IP is blocked, so user fails fast on first
-    request instead of running through all 17 laws.
-    """
-    info("Preflight: testing flk.npc.gov.cn API reachability...")
-    data = _request_json(
-        f"{_BASE_URL}/api/",
-        {
-            "type": "law",
-            "searchType": "title",
-            "keyword": "宪法",
-            "page": "1",
-            "pageSize": "1",
-        },
-        client,
-        attempts=1,
-    )
-    if data is None:
-        raise RuntimeError(
-            "Preflight failed: flk.npc.gov.cn API returned no usable JSON. "
-            "Check network or API endpoint changes."
+    """Verify zh.wikisource.org is reachable before iterating all targets."""
+    info("Preflight: testing zh.wikisource.org reachability...")
+    html = _request_html(_build_url(_PREFLIGHT_TITLE), client, attempts=1)
+    if html is None:
+        raise FetchError(
+            "Preflight failed: zh.wikisource.org is unreachable. "
+            "Check your network connectivity (the site is not behind a firewall, "
+            "but DNS or routing may be blocking it)."
         )
-    success("Preflight OK: API is reachable.")
+    if "mw-parser-output" not in html:
+        raise FetchError(
+            "Preflight failed: zh.wikisource.org returned an unexpected page "
+            "structure (mw-parser-output marker missing). The site layout may "
+            "have changed — please update law_fetch.py."
+        )
+    success("Preflight OK: Wikisource is reachable.")
 
 
 def _clean_text(text: str) -> str:
     """Normalize whitespace in law text."""
-    text = text.replace("　", " ")  # full-width space → regular space
+    text = text.replace("　", " ")  # ideographic space → regular space
     text = text.replace("\xa0", " ")  # &nbsp;
-    text = re.sub(r" {2,}", " ", text)  # collapse multiple spaces
+    text = re.sub(r"\s+", " ", text)
     return text.strip()
 
 
+def _strip_edit_markers(tag: Tag) -> None:
+    """Remove ``<span class="mw-editsection">[编辑]</span>`` decorations in-place."""
+    for ed in tag.find_all("span", class_="mw-editsection"):
+        ed.decompose()
+
+
+def _extract_content_root(soup: BeautifulSoup) -> Tag | None:
+    """Locate the article body div, skipping the ``textquality`` placeholder.
+
+    Wikisource pages have TWO ``mw-parser-output`` divs:
+      1. A small placeholder containing only ``<span id="textquality">``.
+      2. The real article body inside ``<div id="mw-content-text">``.
+
+    We always pick the one nested under ``mw-content-text`` to avoid that trap.
+    """
+    container = soup.find("div", id="mw-content-text")
+    if container is None:
+        # Fallback: largest mw-parser-output by text length.
+        candidates = soup.find_all("div", class_="mw-parser-output")
+        if not candidates:
+            return None
+        return max(candidates, key=lambda d: len(d.get_text() or ""))
+    body = container.find("div", class_="mw-parser-output")
+    return body if isinstance(body, Tag) else container
+
+
 def _html_to_markdown(html: str, law_name: str) -> str:
-    """Convert flk.npc.gov.cn HTML body to parser.py-compatible markdown."""
+    """Convert a Wikisource law page into parser.py-compatible markdown.
+
+    Output format::
+
+        # 法律名称
+        ## 第一章 总则
+        ### 第一节 一般规定
+        第一条 ...
+        第二条 ...
+    """
     soup = BeautifulSoup(html, "html.parser")
+    root = _extract_content_root(soup)
+    if root is None:
+        raise FetchError("could not locate article body in Wikisource HTML")
+
+    _strip_edit_markers(root)
 
     lines: list[str] = [f"# {law_name}", ""]
-    current_paragraph: list[str] = []
+    current_article: list[str] = []
+    seen_first_article = False
 
-    def flush_paragraph() -> None:
-        if current_paragraph:
-            lines.append(" ".join(current_paragraph))
+    def flush_article() -> None:
+        if current_article:
+            lines.append(" ".join(current_article))
             lines.append("")
-            current_paragraph.clear()
+            current_article.clear()
 
-    for tag in soup.find_all(["h1", "h2", "h3", "h4", "p", "div"]):
-        # Skip nested tags (only process top-level children)
-        if tag.parent and tag.parent.name in ("p", "li", "span", "td"):
+    for tag in root.find_all(["h1", "h2", "h3", "h4", "h5", "p", "dl", "dd"], recursive=True):
+        # Skip nested headers — we only want top-level structural elements.
+        if tag.parent is not None and tag.parent.name in {"p", "li", "td", "span"}:
             continue
-
         raw = _clean_text(tag.get_text(separator=" "))
-        if not raw:
+        if not raw or raw == _EDIT_TAG:
             continue
+        # The ``[编辑]`` marker can sometimes survive ``_strip_edit_markers``
+        # when it lives outside the ``mw-editsection`` span (rare). Trim it.
+        if raw.endswith(_EDIT_TAG):
+            raw = raw[: -len(_EDIT_TAG)].rstrip()
 
-        tag_name = tag.name
+        name = tag.name
 
-        if tag_name in ("h1", "h2"):
-            flush_paragraph()
-            if _CHAPTER_RE.match(raw) or raw != law_name:
-                lines.append(f"## {raw}")
-                lines.append("")
-
-        elif tag_name == "h3":
-            flush_paragraph()
-            if _SECTION_RE.match(raw):
-                lines.append(f"### {raw}")
-            else:
-                lines.append(f"### {raw}")
-            lines.append("")
-
-        elif tag_name in ("p", "div"):
-            # Detect chapter / section headings hiding inside <p> tags
+        if name in {"h1", "h2", "h3", "h4", "h5"}:
             if _CHAPTER_RE.match(raw):
-                flush_paragraph()
+                flush_article()
                 lines.append(f"## {raw}")
                 lines.append("")
             elif _SECTION_RE.match(raw):
-                flush_paragraph()
+                flush_article()
                 lines.append(f"### {raw}")
                 lines.append("")
-            elif _ARTICLE_RE.match(raw):
-                flush_paragraph()
-                current_paragraph.append(raw)
-            else:
-                # Continuation text (preamble, supplementary clauses, etc.)
-                if current_paragraph:
-                    current_paragraph.append(raw)
-                # else: skip leading preamble text that has no article prefix
+            # Other headings (题注/目录/参见/参考文献/外部链接 etc.) are skipped.
+            continue
 
-    flush_paragraph()
+        # <p>, <dl>, <dd> — article body or chapter heading hiding inside.
+        if _CHAPTER_RE.match(raw):
+            flush_article()
+            lines.append(f"## {raw}")
+            lines.append("")
+            continue
+        if _SECTION_RE.match(raw):
+            flush_article()
+            lines.append(f"### {raw}")
+            lines.append("")
+            continue
+        if _ARTICLE_RE.match(raw):
+            flush_article()
+            # parser.py expects ``第X条`` followed by whitespace + body.
+            current_article.append(raw)
+            seen_first_article = True
+        else:
+            if seen_first_article and current_article:
+                current_article.append(raw)
+            # else: pre-article preamble (题注/施行说明) — skip silently.
 
-    # Collapse excessive blank lines (max 1 blank line between elements)
-    result_lines: list[str] = []
+    flush_article()
+
+    # Collapse runs of blank lines.
+    result: list[str] = []
     prev_blank = False
     for line in lines:
-        is_blank = line.strip() == ""
-        if is_blank and prev_blank:
+        blank = not line.strip()
+        if blank and prev_blank:
             continue
-        result_lines.append(line)
-        prev_blank = is_blank
-
-    return "\n".join(result_lines)
+        result.append(line)
+        prev_blank = blank
+    return "\n".join(result).rstrip() + "\n"
 
 
 def fetch_and_save(
-    target: dict[str, str], output_dir: Path, client: httpx.Client, force: bool = False
+    target: dict[str, str],
+    output_dir: Path,
+    client: httpx.Client,
+    force: bool = False,
 ) -> bool:
-    """Download one law, convert to markdown, save to {law_id}.md. Returns True on success."""
+    """Download one law, convert to markdown, save to ``{law_id}.md``."""
     law_id = target["law_id"]
-    keyword = target["keyword"]
-    law_type = target.get("type", "law")
+    title = target["wikisource_title"]
     out_file = output_dir / f"{law_id}.md"
 
     if out_file.exists() and not force:
         info(f"  {law_id}: already exists, skipping (use --force to overwrite)")
         return True
 
-    info(f"  Searching: {keyword} ...")
-    entry = _search_law(keyword, law_type, client)
-    if not entry:
-        warning(f"  {law_id}: not found on flk.npc.gov.cn — skipping")
+    url = _build_url(title)
+    info(f"  Fetching: {title} ...")
+    html = _request_html(url, client)
+    if html is None:
+        warning(f"  {law_id}: failed to fetch {url}")
         return False
 
-    law_name = _clean_text(entry.get("title", keyword))
-    entry_id = entry.get("id") or entry.get("no")
-    if not entry_id:
-        warning(f"  {law_id}: no ID in search result — skipping")
-        return False
-
-    info(f"  Fetching: {law_name} (id={entry_id}) ...")
-    html = _fetch_detail(str(entry_id), client)
-    if not html:
-        warning(f"  {law_id}: failed to fetch full text — skipping")
-        return False
-
-    markdown = _html_to_markdown(html, law_name)
-
-    # Basic sanity check — should have at least 10 article lines
-    article_lines = [ln for ln in markdown.splitlines() if _ARTICLE_RE.match(ln.strip())]
-    if len(article_lines) < 5:
-        warning(
-            f"  {law_id}: only {len(article_lines)} articles parsed, HTML structure may have changed"
+    try:
+        markdown = _html_to_markdown(
+            html,
+            law_name=f"中华人民共和国{law_id}" if title.startswith("中华人民共和国") else title,
         )
+    except FetchError as exc:
+        warning(f"  {law_id}: parse failure — {exc}")
+        return False
+
+    article_lines = [ln for ln in markdown.splitlines() if _ARTICLE_RE.match(ln.strip())]
+    if len(article_lines) < _MIN_ARTICLES_PER_LAW:
+        warning(
+            f"  {law_id}: only {len(article_lines)} articles parsed — "
+            f"Wikisource HTML structure may have changed."
+        )
+        return False
 
     out_file.write_text(markdown, encoding="utf-8")
     success(f"  {law_id}: saved {len(article_lines)} articles → {out_file}")
@@ -309,7 +324,7 @@ def fetch_and_save(
 
 
 def run_fetch(output: Path, force: bool = False) -> None:
-    """Download all target laws from flk.npc.gov.cn to output directory."""
+    """Download all target laws from Wikisource to ``output`` directory."""
     output.mkdir(parents=True, exist_ok=True)
     info(f"Output directory: {output.resolve()}")
 
@@ -318,13 +333,9 @@ def run_fetch(output: Path, force: bool = False) -> None:
     with httpx.Client(timeout=30, follow_redirects=True) as client:
         try:
             _preflight_check(client)
-        except IPBlockedError as e:
-            error(str(e))
-            error(
-                "Hint: this server's IP cannot reach flk.npc.gov.cn. "
-                "Run from a Chinese mainland network, then SCP the .md files over."
-            )
-            raise SystemExit(2) from e
+        except FetchError as exc:
+            error(str(exc))
+            raise SystemExit(2) from exc
 
         for target in LAW_TARGETS:
             try:
@@ -332,15 +343,11 @@ def run_fetch(output: Path, force: bool = False) -> None:
                     ok += 1
                 else:
                     fail += 1
-            except IPBlockedError as e:
-                error(str(e))
-                error(f"Aborting after {ok} successful downloads.")
-                raise SystemExit(2) from e
             except Exception:
                 logger.exception("Unexpected error fetching %s", target["law_id"])
                 error(f"  {target['law_id']}: unexpected error (see logs)")
                 fail += 1
-            time.sleep(1.5)  # be polite to the government server
+            time.sleep(1.0)  # be polite to Wikimedia
 
     success(f"\nFetch complete: {ok} succeeded, {fail} failed.")
     if ok > 0:
