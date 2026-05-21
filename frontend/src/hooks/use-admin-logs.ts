@@ -54,6 +54,7 @@ export interface RagStatus {
   };
   embedding_model: {
     loaded: boolean;
+    cached: boolean;
     model_name: string;
   };
   redis: {
