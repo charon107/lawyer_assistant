@@ -64,6 +64,53 @@ _CHAPTER_RE = re.compile(r"^第[零一二三四五六七八九十]+(?:编|章)\s
 _SECTION_RE = re.compile(r"^第[零一二三四五六七八九十]+节\s*")
 
 
+class IPBlockedError(RuntimeError):
+    """flk.npc.gov.cn blocked our IP (typically non-China source)."""
+
+
+def _request_json(
+    url: str, params: dict, client: httpx.Client, *, attempts: int = 3
+) -> dict | None:
+    """GET + JSON-decode with retry, surfacing HTTP/body context on failure."""
+    last_err: str | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            resp = client.get(url, params=params, headers=_HEADERS)
+        except (httpx.TimeoutException, httpx.TransportError) as e:
+            last_err = f"network error ({type(e).__name__}): {e}"
+            if attempt < attempts:
+                time.sleep(2 * attempt)
+                continue
+            logger.warning("Request to %s failed: %s", url, last_err)
+            return None
+
+        body_snippet = resp.text[:200].replace("\n", " ")
+        if resp.status_code == 403 and "allowlist" in resp.text.lower():
+            raise IPBlockedError(
+                "flk.npc.gov.cn returned 403 'Host not in allowlist'. "
+                "Your IP is blocked. Run this command from a Chinese mainland IP."
+            )
+        if resp.status_code >= 500 and attempt < attempts:
+            time.sleep(2 * attempt)
+            continue
+        if resp.status_code != 200:
+            logger.warning("%s returned HTTP %s: %s", url, resp.status_code, body_snippet)
+            return None
+
+        try:
+            return resp.json()
+        except ValueError:
+            logger.warning(
+                "%s returned non-JSON (HTTP %s, content-type=%s): %s",
+                url,
+                resp.status_code,
+                resp.headers.get("content-type"),
+                body_snippet,
+            )
+            return None
+    return None
+
+
 def _search_law(keyword: str, law_type: str, client: httpx.Client) -> dict | None:
     """Search flk.npc.gov.cn and return best matching entry."""
     params = {
@@ -74,12 +121,8 @@ def _search_law(keyword: str, law_type: str, client: httpx.Client) -> dict | Non
         "page": "1",
         "pageSize": "10",
     }
-    try:
-        resp = client.get(f"{_BASE_URL}/api/", params=params, headers=_HEADERS)
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as e:
-        logger.warning("Search failed for %r: %s", keyword, e)
+    data = _request_json(f"{_BASE_URL}/api/", params, client)
+    if data is None:
         return None
 
     items: list[dict] = []
@@ -103,22 +146,41 @@ def _search_law(keyword: str, law_type: str, client: httpx.Client) -> dict | Non
 
 def _fetch_detail(entry_id: str, client: httpx.Client) -> str | None:
     """Fetch HTML body from /api/detail?id=..."""
-    try:
-        resp = client.get(
-            f"{_BASE_URL}/api/detail",
-            params={"id": entry_id},
-            headers=_HEADERS,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as e:
-        logger.warning("Detail fetch failed for id=%s: %s", entry_id, e)
+    data = _request_json(f"{_BASE_URL}/api/detail", {"id": entry_id}, client)
+    if data is None:
         return None
 
     result = data.get("result", {})
     if isinstance(result, dict):
         return result.get("body") or result.get("content")
     return None
+
+
+def _preflight_check(client: httpx.Client) -> None:
+    """Verify flk.npc.gov.cn API is reachable before iterating all targets.
+
+    Raises IPBlockedError if our IP is blocked, so user fails fast on first
+    request instead of running through all 17 laws.
+    """
+    info("Preflight: testing flk.npc.gov.cn API reachability...")
+    data = _request_json(
+        f"{_BASE_URL}/api/",
+        {
+            "type": "law",
+            "searchType": "title",
+            "keyword": "宪法",
+            "page": "1",
+            "pageSize": "1",
+        },
+        client,
+        attempts=1,
+    )
+    if data is None:
+        raise RuntimeError(
+            "Preflight failed: flk.npc.gov.cn API returned no usable JSON. "
+            "Check network or API endpoint changes."
+        )
+    success("Preflight OK: API is reachable.")
 
 
 def _clean_text(text: str) -> str:
@@ -254,12 +316,26 @@ def run_fetch(output: Path, force: bool = False) -> None:
     ok = 0
     fail = 0
     with httpx.Client(timeout=30, follow_redirects=True) as client:
+        try:
+            _preflight_check(client)
+        except IPBlockedError as e:
+            error(str(e))
+            error(
+                "Hint: this server's IP cannot reach flk.npc.gov.cn. "
+                "Run from a Chinese mainland network, then SCP the .md files over."
+            )
+            raise SystemExit(2) from e
+
         for target in LAW_TARGETS:
             try:
                 if fetch_and_save(target, output, client, force=force):
                     ok += 1
                 else:
                     fail += 1
+            except IPBlockedError as e:
+                error(str(e))
+                error(f"Aborting after {ok} successful downloads.")
+                raise SystemExit(2) from e
             except Exception:
                 logger.exception("Unexpected error fetching %s", target["law_id"])
                 error(f"  {target['law_id']}: unexpected error (see logs)")
