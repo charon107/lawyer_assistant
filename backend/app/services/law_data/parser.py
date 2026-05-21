@@ -57,7 +57,14 @@ CATEGORY_MAP: dict[str, tuple[str, str | None]] = {
 
 
 def _cn_to_int(s: str) -> int:
-    """Convert Chinese numeral string to integer."""
+    """Convert a Chinese numeral string to an integer.
+
+    Supports the range used in Chinese laws (up to ~9999). Each positional
+    digit's value is *added* to the running total — the previous
+    implementation multiplied the entire accumulator by the unit, which
+    silently corrupted any number above 第一百一十 and crashed downstream
+    rendering for numbers above 9999 (e.g. 民法典 第一千二百六十条).
+    """
     cn_nums = {
         "零": 0,
         "一": 1,
@@ -75,19 +82,20 @@ def _cn_to_int(s: str) -> int:
     wan = 0
     for ch in s:
         if ch == "万":
-            wan = (wan + result + (unit or 0)) * 10000
+            wan = (wan + result + unit) * 10000
             result = 0
             unit = 0
         elif ch == "千":
-            result = (result + unit) * 1000
+            result += unit * 1000
             unit = 0
         elif ch == "百":
-            result = (result + unit) * 100
+            result += unit * 100
             unit = 0
         elif ch == "十":
-            if result == 0 and unit == 0:
+            # Bare leading 十 means 10 (e.g. "十二" = 12), not 0.
+            if unit == 0 and result == 0:
                 unit = 1
-            result = (result + unit) * 10
+            result += unit * 10
             unit = 0
         else:
             unit = cn_nums.get(ch, 0)
@@ -107,23 +115,42 @@ def _extract_article_id(text: str) -> str:
 
 
 def _int_to_cn(n: int) -> str:
-    """Convert integer to Chinese numeral string."""
+    """Convert an integer to its idiomatic Chinese numeral string.
+
+    Handles the conventions Chinese law citations rely on:
+      * 10-19 use bare 十 (``十二`` not ``一十二``).
+      * Internal zeros collapse to a single ``零`` (``一千零四十八``).
+      * Trailing zeros that have no following lower-order digit drop.
+    Range: 0 ≤ n ≤ 9999, which covers all current statutory numbering.
+    """
     if n == 0:
         return "零"
+    if n < 0 or n >= 10000:
+        raise ValueError(f"_int_to_cn only supports 0-9999, got {n}")
+
     units = ["", "十", "百", "千"]
     digits = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"]
-    result = ""
+
     s = str(n)
     length = len(s)
+    out: list[str] = []
     for i, ch in enumerate(s):
         d = int(ch)
-        pos = length - i - 1
+        pos = length - i - 1  # 0=ones, 1=tens, 2=hundreds, 3=thousands
         if d == 0:
-            if result and not result.endswith("零"):
-                result += "零"
+            # Insert at most one 零 to bridge non-zero groups.
+            if out and out[-1] != "零":
+                out.append("零")
         else:
-            result += digits[d] + units[pos]
-    return result.rstrip("零")
+            # Bare 十 for 10-19 (omit the leading 一).
+            if d == 1 and pos == 1 and not out:
+                out.append("十")
+            else:
+                out.append(digits[d] + units[pos])
+    # Strip a dangling trailing 零 (e.g. 1200 → "一千二百", not "一千二百零").
+    while out and out[-1] == "零":
+        out.pop()
+    return "".join(out)
 
 
 def _guess_law_id(text: str) -> str:
