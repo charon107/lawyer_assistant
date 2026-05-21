@@ -34,3 +34,29 @@ export async function GET(request: NextRequest, ctx: Params) {
     return NextResponse.json({ detail: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function POST(request: NextRequest, ctx: Params) {
+  try {
+    const adminCheck = await requireAdmin(request);
+    if ("error" in adminCheck) return adminCheck.error;
+    const { accessToken } = adminCheck;
+
+    const { path } = await ctx.params;
+    const url = buildBackendUrl(path ?? [], new URLSearchParams());
+
+    const data = await backendFetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    return NextResponse.json(data);
+  } catch (error) {
+    if (error instanceof BackendApiError) {
+      return NextResponse.json(
+        { detail: error.message || "Request failed" },
+        { status: error.status }
+      );
+    }
+    return NextResponse.json({ detail: "Internal server error" }, { status: 500 });
+  }
+}

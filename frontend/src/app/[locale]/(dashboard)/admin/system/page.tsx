@@ -28,6 +28,15 @@ function StatusBadge({ ok, label }: { ok: boolean | null; label: string }) {
   );
 }
 
+function WarnBadge({ label }: { label: string }) {
+  return (
+    <span className="flex items-center gap-1.5 text-sm font-medium text-yellow-600">
+      <AlertCircle className="h-4 w-4" />
+      {label}
+    </span>
+  );
+}
+
 function StatCard({
   icon: Icon,
   title,
@@ -54,6 +63,7 @@ export default function AdminSystemPage() {
   const [status, setStatus] = useState<RagStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkedAt, setCheckedAt] = useState<string | null>(null);
+  const [initializing, setInitializing] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -68,6 +78,18 @@ export default function AdminSystemPage() {
     load();
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const handleInit = async () => {
+    setInitializing(true);
+    try {
+      const res = await fetch("/api/admin/system/rag-init", { method: "POST" });
+      if (res.ok) {
+        await load();
+      }
+    } finally {
+      setInitializing(false);
+    }
+  };
+
   if (user?.role !== "admin") {
     return (
       <div className="p-6 max-w-3xl mx-auto">
@@ -75,6 +97,12 @@ export default function AdminSystemPage() {
       </div>
     );
   }
+
+  const embeddingStatus = (s: RagStatus["embedding_model"]) => {
+    if (s.loaded) return <StatusBadge ok={true} label="已加载" />;
+    if (s.cached) return <WarnBadge label="已缓存，待首次搜索时加载" />;
+    return <StatusBadge ok={false} label="模型未缓存" />;
+  };
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
@@ -116,10 +144,22 @@ export default function AdminSystemPage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground text-sm">集合 law_articles</span>
-                <StatusBadge
-                  ok={status.qdrant.collection_exists}
-                  label={status.qdrant.collection_exists ? "已创建" : "不存在"}
-                />
+                {status.qdrant.collection_exists ? (
+                  <StatusBadge ok={true} label="已创建" />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <StatusBadge ok={false} label="不存在" />
+                    {status.qdrant.reachable && (
+                      <button
+                        onClick={handleInit}
+                        disabled={initializing}
+                        className="rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                      >
+                        {initializing ? "初始化中..." : "初始化集合"}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground text-sm">法律条文数量</span>
@@ -135,10 +175,7 @@ export default function AdminSystemPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground text-sm">加载状态</span>
-                <StatusBadge
-                  ok={status.embedding_model.loaded}
-                  label={status.embedding_model.loaded ? "已加载" : "未加载"}
-                />
+                {embeddingStatus(status.embedding_model)}
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground text-sm">模型名称</span>
@@ -178,7 +215,7 @@ export default function AdminSystemPage() {
                   <p className="font-medium">RAG 管道存在问题</p>
                   <p className="text-sm mt-0.5">
                     {!status.qdrant.reachable && "Qdrant 无法连接。"}
-                    {status.qdrant.reachable && !status.qdrant.collection_exists && "集合 law_articles 不存在，需要重新索引。"}
+                    {status.qdrant.reachable && !status.qdrant.collection_exists && "集合 law_articles 不存在，请点击「初始化集合」按钮。"}
                     {status.qdrant.reachable && status.qdrant.collection_exists && status.qdrant.article_count === 0 && "集合为空，请运行索引脚本导入法律条文。"}
                   </p>
                 </>
