@@ -101,10 +101,12 @@ jobs:
             git pull origin main || { echo "ERROR: git pull failed"; exit 1; }
 
             # Free disk space before pulling new images
+            # NOTE: do NOT prune volumes — backend_data holds the embedding
+            # model cache and qdrant_data holds law article vectors; losing
+            # them requires manual re-import on the server.
             echo "=== Freeing disk space ==="
             docker image prune -af --filter "until=24h" || true
             docker container prune -f || true
-            docker volume prune -f || true
             df -h /var/lib/containerd 2>/dev/null || df -h /var/lib/docker || true
 
             # Login to ACR
