@@ -14,14 +14,21 @@ router = APIRouter()
 
 
 def _is_model_cached(model_name: str) -> bool:
-    """Check if SentenceTransformer model files exist on disk without loading."""
-    cache_base = (
-        Path(settings.EMBEDDING_CACHE_DIR)
-        if settings.EMBEDDING_CACHE_DIR
-        else Path.home() / ".cache" / "torch" / "sentence_transformers"
-    )
+    """Check if SentenceTransformer model files exist on disk without loading.
+
+    sentence-transformers v3+ caches to ~/.cache/huggingface/hub/ (HF Hub format).
+    Older versions used ~/.cache/torch/sentence_transformers/.
+    EMBEDDING_CACHE_DIR overrides both when set.
+    """
     folder = "models--" + model_name.replace("/", "--")
-    return (cache_base / folder).exists()
+    if settings.EMBEDDING_CACHE_DIR:
+        return (Path(settings.EMBEDDING_CACHE_DIR) / folder).exists()
+    home = Path.home()
+    candidates = [
+        home / ".cache" / "huggingface" / "hub" / folder,  # st v3+
+        home / ".cache" / "torch" / "sentence_transformers" / folder,  # st v2
+    ]
+    return any(p.exists() for p in candidates)
 
 
 @router.get("/rag-status")
