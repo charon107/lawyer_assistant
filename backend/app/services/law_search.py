@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from qdrant_client import QdrantClient
 from qdrant_client.http.exceptions import UnexpectedResponse
-from qdrant_client.models import FieldCondition, Filter, MatchValue
+from qdrant_client.models import FieldCondition, Filter, MatchValue, SearchParams
 
 from app.core.config import settings
 from app.schemas.law import LawArticle, LawSearchResult
@@ -21,6 +21,10 @@ from app.services.law_data.importer import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+_BGE_QUERY_INSTRUCTION = "为这个句子生成表示以用于检索相关文章："
+_HNSW_EF = 128  # HNSW ef parameter for search (95%+ recall on ~20K vectors)
 
 
 class LawSearchService:
@@ -165,8 +169,12 @@ class LawSearchService:
             return []
 
         try:
-            # Embed query in thread pool (CPU-bound)
-            vector = await loop.run_in_executor(self._executor, self.embedder.encode, query)
+            # BGE instruction prefix improves asymmetric retrieval quality
+            encode_query = _BGE_QUERY_INSTRUCTION + query
+            encode_fn = lambda q=encode_query: self.embedder.encode(  # noqa: E731
+                q, normalize_embeddings=True
+            )
+            vector = await loop.run_in_executor(self._executor, encode_fn)
             vector = vector.tolist()
 
             # Build filter
@@ -190,6 +198,7 @@ class LawSearchService:
                 "collection_name": COLLECTION_NAME,
                 "query": vector,
                 "limit": k,
+                "search_params": SearchParams(hnsw_ef=_HNSW_EF),
             }
             if query_filter:
                 search_kwargs["query_filter"] = query_filter

@@ -12,6 +12,7 @@ from qdrant_client.models import (
     Distance,
     FieldCondition,
     Filter,
+    HnswConfigDiff,
     MatchValue,
     PointStruct,
     VectorParams,
@@ -80,6 +81,7 @@ def ensure_collection(client: QdrantClient, collection_name: str = COLLECTION_NA
     client.create_collection(
         collection_name=collection_name,
         vectors_config=VectorParams(size=VECTOR_DIM, distance=Distance.COSINE),
+        hnsw_config=HnswConfigDiff(m=16, ef_construct=200),
     )
 
     # Create payload indexes for filtering

@@ -2,6 +2,7 @@
 
 Usage:
     uv run law-db init       # Create Qdrant collection + SQLite table
+    uv run law-db fetch      # Download law texts from flk.npc.gov.cn
     uv run law-db import     # Import law data from markdown files
     uv run law-db status     # Show law database status
 """
@@ -16,15 +17,26 @@ from app.commands import command, error, info, success, warning
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Long-article chunking constants
+# ---------------------------------------------------------------------------
+CHUNK_MAX_CHARS = 400
+CHUNK_OVERLAP_CHARS = 100
+
 
 @command("law-db", help="Manage law database (Qdrant + SQLite)")
-@click.argument("action", type=click.Choice(["init", "import", "status"]))
-@click.option("--source", type=click.Path(exists=True), help="Source directory with .md law files")
+@click.argument("action", type=click.Choice(["init", "fetch", "import", "status"]))
+@click.option(
+    "--source", type=click.Path(), help="Source dir for .md files (import) or output dir (fetch)"
+)
 @click.option("--law-id", type=str, help="Specific law ID to import (e.g. 民法典)")
-def law_db(action: str, source: str | None, law_id: str | None) -> None:
+@click.option("--force", is_flag=True, default=False, help="Overwrite existing files (fetch only)")
+def law_db(action: str, source: str | None, law_id: str | None, force: bool) -> None:
     """Law database management CLI."""
     if action == "init":
         _init()
+    elif action == "fetch":
+        _fetch(source, force)
     elif action == "import":
         _import_data(source, law_id)
     elif action == "status":
@@ -60,6 +72,49 @@ def _init() -> None:
         success("SQLite 'law_metadata' table ready.")
 
     success("Law database initialized successfully.")
+
+
+def _fetch(output: str | None, force: bool) -> None:
+    """Download law texts from flk.npc.gov.cn."""
+    from app.commands.law_fetch import run_fetch
+
+    out_path = Path(output) if output else Path("data/laws")
+    run_fetch(output=out_path, force=force)
+
+
+def _chunk_long_articles(articles: list) -> list:
+    """Split articles longer than CHUNK_MAX_CHARS into overlapping sub-chunks."""
+    from app.services.law_data.models import RawArticle
+
+    result: list[RawArticle] = []
+    for art in articles:
+        if len(art.content) <= CHUNK_MAX_CHARS:
+            result.append(art)
+            continue
+        text = art.content
+        start = 0
+        part = 0
+        while start < len(text):
+            end = start + CHUNK_MAX_CHARS
+            chunk = RawArticle(
+                law_id=art.law_id,
+                law_name=art.law_name,
+                category=art.category,
+                sub_category=art.sub_category,
+                article_id=f"{art.article_id}_p{part}",
+                chapter=art.chapter,
+                section=art.section,
+                content=text[start:end],
+                effective_date=art.effective_date,
+                status=art.status,
+                source_type=art.source_type,
+            )
+            result.append(chunk)
+            if end >= len(text):
+                break
+            start += CHUNK_MAX_CHARS - CHUNK_OVERLAP_CHARS
+            part += 1
+    return result
 
 
 def _import_data(source: str | None, law_id: str | None) -> None:
@@ -115,22 +170,30 @@ def _import_data(source: str | None, law_id: str | None) -> None:
                 warning(f"No articles found in {md_file.name}, skipping.")
                 continue
 
-            info(f"Importing {doc.law_id}: {len(doc.articles)} articles...")
+            # Split long articles into overlapping sub-chunks before embedding
+            chunks = _chunk_long_articles(doc.articles)
+            long_count = len(chunks) - len(doc.articles)
+            info(
+                f"Importing {doc.law_id}: {len(doc.articles)} articles → {len(chunks)} chunks"
+                + (f" ({long_count} extra from long-article split)" if long_count else "")
+            )
 
-            # Batch embed
-            contents = [a.content for a in doc.articles]
-            vectors = embedder.encode(contents, batch_size=32, show_progress_bar=True)
+            # Batch embed with normalization (required for BGE COSINE search)
+            contents = [a.content for a in chunks]
+            vectors = embedder.encode(
+                contents, batch_size=32, normalize_embeddings=True, show_progress_bar=True
+            )
             vectors = [v.tolist() for v in vectors]
 
             # Upsert to Qdrant
-            upsert_articles(client, doc.articles, vectors)
+            upsert_articles(client, chunks, vectors)
 
-            # Sync metadata to SQLite
+            # Sync metadata to SQLite (use original article count, not chunk count)
             with SessionLocal() as db:
                 sync_law_metadata(db, doc, len(doc.articles))
                 db.commit()
 
-            success(f"  {doc.law_id}: {len(doc.articles)} articles imported.")
+            success(f"  {doc.law_id}: {len(chunks)} chunks imported.")
             imported_count += 1
 
         except Exception:
