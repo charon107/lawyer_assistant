@@ -48,6 +48,7 @@ dev = [
 
 [project.scripts]
 lexmind = "cli.commands:main"
+law-db = "app.commands.law_db:law_db"
 
 [build-system]
 requires = ["hatchling"]
