@@ -1,10 +1,11 @@
 """CLI commands for law database management.
 
 Usage:
-    uv run law-db init       # Create Qdrant collection + SQLite table
-    uv run law-db fetch      # Download law texts from flk.npc.gov.cn
-    uv run law-db import     # Import law data from markdown files
-    uv run law-db status     # Show law database status
+    uv run law-db init               # Create Qdrant collection + SQLite table
+    uv run law-db fetch              # Download core 17 laws from Wikisource
+    uv run law-db fetch-lawrefbook   # Download ~250 laws from github.com/LawRefBook/Laws
+    uv run law-db import             # Import law data from markdown files
+    uv run law-db status             # Show law database status
 """
 
 import logging
@@ -25,7 +26,10 @@ CHUNK_OVERLAP_CHARS = 100
 
 
 @command("law-db", help="Manage law database (Qdrant + SQLite)")
-@click.argument("action", type=click.Choice(["init", "fetch", "import", "status"]))
+@click.argument(
+    "action",
+    type=click.Choice(["init", "fetch", "fetch-lawrefbook", "import", "status"]),
+)
 @click.option(
     "--source", type=click.Path(), help="Source dir for .md files (import) or output dir (fetch)"
 )
@@ -37,6 +41,8 @@ def law_db(action: str, source: str | None, law_id: str | None, force: bool) -> 
         _init()
     elif action == "fetch":
         _fetch(source, force)
+    elif action == "fetch-lawrefbook":
+        _fetch_lawrefbook(source, force)
     elif action == "import":
         _import_data(source, law_id)
     elif action == "status":
@@ -75,11 +81,22 @@ def _init() -> None:
 
 
 def _fetch(output: str | None, force: bool) -> None:
-    """Download law texts from flk.npc.gov.cn."""
+    """Download core 17 laws from Wikisource."""
     from app.commands.law_fetch import run_fetch
 
     out_path = Path(output) if output else Path("data/laws")
     run_fetch(output=out_path, force=force)
+
+
+def _fetch_lawrefbook(output: str | None, force: bool) -> None:
+    """Download ~250 laws from github.com/LawRefBook/Laws (latest version per law)."""
+    from app.commands.law_fetch_lawrefbook import (
+        DEFAULT_OUTPUT_DIR,
+        run_fetch_lawrefbook,
+    )
+
+    out_path = Path(output) if output else DEFAULT_OUTPUT_DIR
+    run_fetch_lawrefbook(output=out_path, force=force)
 
 
 def _chunk_long_articles(articles: list) -> list:
