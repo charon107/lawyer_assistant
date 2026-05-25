@@ -4,6 +4,7 @@ Usage:
     uv run law-db init               # Create Qdrant collection + SQLite table
     uv run law-db fetch              # Download core 17 laws from Wikisource
     uv run law-db fetch-lawrefbook   # Download ~250 laws from github.com/LawRefBook/Laws
+    uv run law-db merge              # Merge Wikisource + LawRefBook → data/laws_merged/
     uv run law-db import             # Import law data from markdown files
     uv run law-db status             # Show law database status
 """
@@ -28,7 +29,7 @@ CHUNK_OVERLAP_CHARS = 100
 @command("law-db", help="Manage law database (Qdrant + SQLite)")
 @click.argument(
     "action",
-    type=click.Choice(["init", "fetch", "fetch-lawrefbook", "import", "status"]),
+    type=click.Choice(["init", "fetch", "fetch-lawrefbook", "merge", "import", "status"]),
 )
 @click.option(
     "--source", type=click.Path(), help="Source dir for .md files (import) or output dir (fetch)"
@@ -43,6 +44,8 @@ def law_db(action: str, source: str | None, law_id: str | None, force: bool) -> 
         _fetch(source, force)
     elif action == "fetch-lawrefbook":
         _fetch_lawrefbook(source, force)
+    elif action == "merge":
+        _merge(source, force)
     elif action == "import":
         _import_data(source, law_id)
     elif action == "status":
@@ -97,6 +100,14 @@ def _fetch_lawrefbook(output: str | None, force: bool) -> None:
 
     out_path = Path(output) if output else DEFAULT_OUTPUT_DIR
     run_fetch_lawrefbook(output=out_path, force=force)
+
+
+def _merge(output: str | None, force: bool) -> None:
+    """Merge Wikisource + LawRefBook source dirs into an import-ready output."""
+    from app.commands.law_merge import DEFAULT_OUTPUT_DIR, run_merge
+
+    out_path = Path(output) if output else DEFAULT_OUTPUT_DIR
+    run_merge(output_dir=out_path, force=force)
 
 
 def _chunk_long_articles(articles: list) -> list:
