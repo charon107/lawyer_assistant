@@ -45,6 +45,10 @@ NPC_CATEGORIES: tuple[str, ...] = (
     "民法商法",
     "社会法",
     "行政法",
+    # Procedural laws (民事诉讼法, 刑事诉讼法, 仲裁法, 公证法 …).
+    # Originally omitted; users hitting `get_law_article(law_id="民事诉讼法")`
+    # got "未找到" because of this gap.
+    "诉讼与非诉讼程序法",
 )
 
 # Filename pattern: "公司法(2023-12-29).md" or "保险法.md"

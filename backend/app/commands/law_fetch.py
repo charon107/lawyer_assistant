@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 LAW_TARGETS: list[dict[str, str]] = [
     # 民法
     {"law_id": "民法典", "wikisource_title": "中华人民共和国民法典", "type": "law"},
+    {"law_id": "民事诉讼法", "wikisource_title": "中华人民共和国民事诉讼法", "type": "law"},
     # 劳动法
     {"law_id": "劳动合同法", "wikisource_title": "中华人民共和国劳动合同法", "type": "law"},
     {"law_id": "劳动法", "wikisource_title": "中华人民共和国劳动法", "type": "law"},
