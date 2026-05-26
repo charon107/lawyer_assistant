@@ -24,6 +24,11 @@ services:
     volumes:
       - backend_data:/app/data
       - backend_media:/app/media
+      # Sentence-transformer model cache — bind-mounted from the host so the
+      # container survives restarts without re-downloading the ~400MB BGE
+      # weights. Host-side scripts (uv run law-db ...) write here on first
+      # use; the container reads them via this mount.
+      - ./backend/models_cache:/app/models_cache
     networks:
       - lexmind-network
     depends_on:
