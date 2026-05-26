@@ -158,10 +158,18 @@ jobs:
               sleep 5
             done
 
-            # Run database migrations inside the running backend container
+            # Run database migrations inside the running backend container.
+            # IMPORTANT: do NOT swallow the failure with `|| echo WARNING` —
+            # a missed migration leaves tables absent, which then causes the
+            # app to 500 on any endpoint that hits them (e.g. login → system_logs).
+            # Previously this masked the SQLITE_PATH misconfiguration for days.
             echo "=== Running database migrations ==="
-            docker exec lexmind-backend uv run alembic upgrade head \
-              || echo "WARNING: Migration step failed — check container logs"
+            if ! docker exec lexmind-backend uv run alembic upgrade head; then
+              echo "ERROR: Alembic migration failed. Aborting deploy." >&2
+              echo "  Inspect: docker exec lexmind-backend uv run alembic current" >&2
+              echo "  Logs:    docker logs lexmind-backend --tail 200" >&2
+              exit 1
+            fi
 
             # Wait for health checks
             echo "=== Waiting for services to be healthy ==="
