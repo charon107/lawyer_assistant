@@ -36,7 +36,20 @@ CHUNK_OVERLAP_CHARS = 100
 )
 @click.option("--law-id", type=str, help="Specific law ID to import (e.g. 民法典)")
 @click.option("--force", is_flag=True, default=False, help="Overwrite existing files (fetch only)")
-def law_db(action: str, source: str | None, law_id: str | None, force: bool) -> None:
+@click.option(
+    "--source-type",
+    type=click.Choice(["法律", "行政法规", "司法解释"]),
+    default="法律",
+    help="Source type written to Qdrant payload (default: 法律). Use 行政法规 for "
+    "国务院条例 batch, 司法解释 for 最高院解释 batch.",
+)
+def law_db(
+    action: str,
+    source: str | None,
+    law_id: str | None,
+    force: bool,
+    source_type: str,
+) -> None:
     """Law database management CLI."""
     if action == "init":
         _init()
@@ -47,7 +60,7 @@ def law_db(action: str, source: str | None, law_id: str | None, force: bool) -> 
     elif action == "merge":
         _merge(source, force)
     elif action == "import":
-        _import_data(source, law_id)
+        _import_data(source, law_id, source_type)
     elif action == "status":
         _status()
 
@@ -145,7 +158,7 @@ def _chunk_long_articles(articles: list) -> list:
     return result
 
 
-def _import_data(source: str | None, law_id: str | None) -> None:
+def _import_data(source: str | None, law_id: str | None, source_type: str = "法律") -> None:
     """Import law data from markdown files into Qdrant + SQLite."""
     from app.core.config import settings
     from app.db.session import SessionLocal
@@ -189,7 +202,7 @@ def _import_data(source: str | None, law_id: str | None) -> None:
     for md_file in sorted(md_files):
         try:
             text = md_file.read_text(encoding="utf-8")
-            doc = parse_law_text(text)
+            doc = parse_law_text(text, source_type=source_type)
 
             if law_id and doc.law_id != law_id:
                 continue
