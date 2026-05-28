@@ -100,13 +100,24 @@ jobs:
             echo "=== Pulling latest code ==="
             git pull origin main || { echo "ERROR: git pull failed"; exit 1; }
 
-            # Free disk space before pulling new images
-            # NOTE: do NOT prune volumes — backend_data holds the embedding
-            # model cache and qdrant_data holds law article vectors; losing
-            # them requires manual re-import on the server.
+            # Free disk space before pulling new images.
+            # The server is on a 40G disk and the backend image is ~5-7GB,
+            # so we cannot afford to keep retired image layers around. The
+            # `until=24h` filter previously used here was reclaiming 0B
+            # because every layer is touched on every deploy.
+            #
+            # IMPORTANT: do NOT prune volumes — backend_data holds the
+            # embedding model cache and qdrant_data holds law article
+            # vectors; losing them requires a manual re-import.
             echo "=== Freeing disk space ==="
-            docker image prune -af --filter "until=24h" || true
             docker container prune -f || true
+            # Drop ALL unused images (including dangling AND retired
+            # tagged images that nothing references). The currently
+            # running lexmind-* containers protect their own images.
+            docker image prune -af || true
+            # Build cache can grow to multiple GBs unattended.
+            docker builder prune -af || true
+            df -h / || true
             df -h /var/lib/containerd 2>/dev/null || df -h /var/lib/docker || true
 
             # Login to ACR
