@@ -92,14 +92,15 @@ export interface ToolCallEvent {
   data: {
     tool_name: string;
     args: Record<string, unknown>;
+    tool_call_id: string;
   };
 }
 
 export interface ToolResultEvent {
   type: "tool_result";
   data: {
-    tool_name: string;
-    result: unknown;
+    tool_call_id: string;
+    content: string;
   };
 }
 

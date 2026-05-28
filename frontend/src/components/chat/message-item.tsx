@@ -129,16 +129,16 @@ export function MessageItem({ message, groupPosition }: MessageItemProps) {
           </div>
         )}
 
-        {/* Tool status indicator during streaming */}
-        {message.isStreaming && activeToolStatus && (
+        {/* Pre-tool spinner: only when streaming and we don't yet have any tool_call events */}
+        {message.isStreaming && activeToolStatus && !hasToolCalls && (
           <ToolStatusIndicator
             label={activeToolStatus.label}
             toolName={activeToolStatus.toolName}
           />
         )}
 
-        {/* Collapsible tool call details after completion */}
-        {!message.isStreaming && hasToolCalls && (
+        {/* Collapsible tool call details (works both during streaming and after completion) */}
+        {hasToolCalls && (
           <div className="w-full">
             <button
               type="button"
