@@ -169,7 +169,23 @@ export function useConversations() {
     async (id: string) => {
       try {
         await apiClient.delete(`/conversations/${id}`);
+        const wasCurrent =
+          useConversationStore.getState().currentConversationId === id;
         removeConversation(id);
+        // If we just deleted the conversation currently being displayed,
+        // also wipe the chat store and strip ?id= from the URL so neither
+        // a stale message bubble nor a stale URL param can resurrect it
+        // when the user navigates away and back.
+        if (wasCurrent) {
+          clearMessages();
+          if (typeof window !== "undefined") {
+            const url = new URL(window.location.href);
+            if (url.searchParams.has("id")) {
+              url.searchParams.delete("id");
+              window.history.replaceState({}, "", url.toString());
+            }
+          }
+        }
         toast.success("Conversation deleted");
       } catch (err) {
         const message =
@@ -178,7 +194,7 @@ export function useConversations() {
         toast.error(message);
       }
     },
-    [removeConversation, setError]
+    [removeConversation, clearMessages, setError]
   );
 
   const renameConversation = useCallback(

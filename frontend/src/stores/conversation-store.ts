@@ -50,11 +50,18 @@ export const useConversationStore = create<ConversationState>((set) => ({
     })),
 
   removeConversation: (id) =>
-    set((state) => ({
-      conversations: (state.conversations || []).filter((conv) => conv.id !== id),
-      currentConversationId:
-        state.currentConversationId === id ? null : state.currentConversationId,
-    })),
+    set((state) => {
+      const isCurrent = state.currentConversationId === id;
+      return {
+        conversations: (state.conversations || []).filter((conv) => conv.id !== id),
+        currentConversationId: isCurrent ? null : state.currentConversationId,
+        // When deleting the currently-displayed conversation, also drop the
+        // cached message list. Otherwise ChatContainer remount (e.g. user
+        // navigates to another page and back) re-loads the stale messages
+        // and re-displays the deleted conversation.
+        currentMessages: isCurrent ? [] : state.currentMessages,
+      };
+    }),
 
   setCurrentConversationId: (id) => set({ currentConversationId: id }),
 
