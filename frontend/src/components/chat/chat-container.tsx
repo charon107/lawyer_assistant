@@ -81,8 +81,17 @@ function AuthenticatedChatContainer({ caseId }: { caseId?: string }) {
   // Load messages from conversation store when switching to a saved conversation
   useEffect(() => {
     if (currentMessages.length > 0) {
+      // Defensive sort by created_at ascending. The backend already returns
+      // messages in ascending order, but Zustand store can retain stale state
+      // across page navigations, and we want oldest → newest top-to-bottom
+      // regardless of the source order.
+      const sorted = [...currentMessages].sort((a, b) => {
+        const aTs = new Date(a.created_at).getTime();
+        const bTs = new Date(b.created_at).getTime();
+        return aTs - bTs;
+      });
       clearMessages();
-      currentMessages.forEach((msg) => {
+      sorted.forEach((msg) => {
         addChatMessage({
           id: msg.id,
           role: msg.role,
@@ -158,6 +167,13 @@ function ModelSelector({ onChange }: { onChange: (model: string | null) => void 
   const [configured, setConfigured] = useState(true);
   const [open, setOpen] = useState(false);
 
+  // Pin onChange in a ref so the model-fetching effect only runs once at mount,
+  // even though useChat returns a new setModel reference on every render.
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
   useEffect(() => {
     fetch("/api/v1/agent/models", { credentials: "include" })
       .then(r => r.ok ? r.json() : null)
@@ -183,6 +199,17 @@ function ModelSelector({ onChange }: { onChange: (model: string | null) => void 
               });
             }
             setProviders(grouped);
+
+            // Pre-select the user's default model so it's used out of the box
+            // without forcing them to re-pick on every new conversation.
+            const defaultModel: string | undefined = data.default;
+            if (defaultModel) {
+              const exists = grouped.some((p) => p.models.includes(defaultModel));
+              if (exists) {
+                setSelected({ value: defaultModel, label: defaultModel });
+                onChangeRef.current(defaultModel);
+              }
+            }
           }
         }
       })
