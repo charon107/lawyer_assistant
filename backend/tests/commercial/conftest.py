@@ -13,6 +13,7 @@ from collections.abc import Generator
 import pytest
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 # Importing the models package ensures all tables get registered onto
 # Base.metadata before create_all runs.
@@ -22,8 +23,22 @@ from app.db.base import Base
 
 @pytest.fixture
 def engine():
-    """Fresh in-memory SQLite engine per test."""
-    eng = create_engine("sqlite:///:memory:", future=True)
+    """Fresh in-memory SQLite engine per test.
+
+    `check_same_thread=False` is required because FastAPI's threadpool
+    runs sync routes off the main thread, but the fixture creates the
+    connection on the main thread.
+    """
+    # StaticPool keeps a single shared connection — required because
+    # in-memory SQLite is per-connection (each new connection sees an
+    # empty database). FastAPI's thread pool would otherwise grab a
+    # different connection per request and miss our tables.
+    eng = create_engine(
+        "sqlite:///:memory:",
+        future=True,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
 
     # Foreign keys are off by default on SQLite. Turn them on so the
     # ON DELETE CASCADE relationships actually fire in tests.
