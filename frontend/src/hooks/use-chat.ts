@@ -17,7 +17,15 @@ export function useChat(options: UseChatOptions = {}) {
   const { conversationId, caseId, onConversationCreated } = options;
   const { setCurrentConversationId, currentConversationId: currentConversationIdFromStore } =
     useConversationStore();
-  const { messages, addMessage, updateMessage, setToolStatus, clearMessages } = useChatStore();
+  const {
+    messages,
+    addMessage,
+    updateMessage,
+    addToolCall,
+    updateToolCall,
+    setToolStatus,
+    clearMessages,
+  } = useChatStore();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
@@ -222,13 +230,37 @@ export function useChat(options: UseChatOptions = {}) {
         }
 
         case "tool_call": {
-          // Intentionally no-op during streaming — tool_status handles display.
-          // Tool calls are persisted by the backend and loaded from DB on history reload.
+          // Accumulate tool calls into the current message so the UI can render
+          // the collapsible ToolCallCard list during streaming, not just after DB reload.
+          if (currentMessageId) {
+            const { tool_name, args, tool_call_id } = wsEvent.data as {
+              tool_name: string;
+              args: Record<string, unknown>;
+              tool_call_id: string;
+            };
+            addToolCall(currentMessageId, {
+              id: tool_call_id,
+              name: tool_name,
+              args,
+              status: "running",
+            });
+            // Tool card now owns the display; clear the spinner-only indicator.
+            setToolStatus(null);
+          }
           break;
         }
 
         case "tool_result": {
-          // Intentionally no-op during streaming — tool_status handles display.
+          if (currentMessageId) {
+            const { tool_call_id, content } = wsEvent.data as {
+              tool_call_id: string;
+              content: string;
+            };
+            updateToolCall(currentMessageId, tool_call_id, {
+              result: content,
+              status: "completed",
+            });
+          }
           break;
         }
 
@@ -312,6 +344,8 @@ export function useChat(options: UseChatOptions = {}) {
       currentMessageId,
       addMessage,
       updateMessage,
+      addToolCall,
+      updateToolCall,
       setToolStatus,
       setCurrentConversationId,
       onConversationCreated,
