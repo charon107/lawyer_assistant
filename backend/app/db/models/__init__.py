@@ -14,6 +14,10 @@ from app.db.models.system_log import SystemLog
 from app.db.models.commercial_profile import CommercialProfile
 from app.db.models.contract_review import ContractReview
 from app.db.models.module_config import ModuleConfig
+from app.db.models.commercial_matter import CommercialMatter
+from app.db.models.renewal_registration import RenewalRegistration
+from app.db.models.contract_deviation import ContractDeviation
+from app.db.models.playbook_proposal import PlaybookProposal
 
 __all__ = [
     "User",
@@ -31,4 +35,8 @@ __all__ = [
     "CommercialProfile",
     "ContractReview",
     "ModuleConfig",
+    "CommercialMatter",
+    "RenewalRegistration",
+    "ContractDeviation",
+    "PlaybookProposal",
 ]

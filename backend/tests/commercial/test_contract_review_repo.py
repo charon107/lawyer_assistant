@@ -29,12 +29,14 @@ class TestCreate:
         assert review.counterparty == "供应商 A"
         assert review.annual_value == 120000.50
 
-    def test_create_with_matter_id_string(self, db, user_id):
-        # Phase A: matter_id is a plain nullable string, no FK validation.
-        review = repo.create(
-            db, user_id=user_id, review_type="vendor", matter_id="some-matter-uuid"
-        )
-        assert review.matter_id == "some-matter-uuid"
+    def test_create_with_matter_id_fk(self, db, user_id):
+        # Phase B: matter_id is now a real FK to commercial_matters.id, so it
+        # must reference a row that exists.
+        from app.repositories import commercial_matter_repo as matter_repo
+
+        matter = matter_repo.create(db, user_id=user_id)
+        review = repo.create(db, user_id=user_id, review_type="vendor", matter_id=matter.id)
+        assert review.matter_id == matter.id
 
 
 class TestGetAndList:

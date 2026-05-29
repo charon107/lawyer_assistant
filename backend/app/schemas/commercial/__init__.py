@@ -6,6 +6,19 @@ from app.schemas.commercial.cold_start import (
     ColdStartResponse,
     ColdStartStep,
 )
+from app.schemas.commercial.deviation import (
+    ClauseDeviationCount,
+    ClauseDeviationCountList,
+    ContractDeviationCreate,
+    ContractDeviationList,
+    ContractDeviationRead,
+)
+from app.schemas.commercial.matter import (
+    CommercialMatterCreate,
+    CommercialMatterList,
+    CommercialMatterRead,
+    CommercialMatterUpdate,
+)
 from app.schemas.commercial.playbook import (
     ClausePosition,
     EscalationRule,
@@ -17,6 +30,18 @@ from app.schemas.commercial.profile import (
     CommercialProfileRead,
     CommercialProfileUpdate,
     ModuleStatus,
+)
+from app.schemas.commercial.proposal import (
+    PlaybookProposalCreate,
+    PlaybookProposalList,
+    PlaybookProposalRead,
+    PlaybookProposalUpdate,
+)
+from app.schemas.commercial.renewal import (
+    RenewalRegistrationCreate,
+    RenewalRegistrationList,
+    RenewalRegistrationRead,
+    RenewalRegistrationUpdate,
 )
 from app.schemas.commercial.review import (
     ContractReviewCreate,
@@ -34,11 +59,32 @@ __all__ = [  # noqa: RUF022 — intentionally grouped by source file, not alphab
     "ColdStartRequest",
     "ColdStartResponse",
     "ColdStartStep",
+    # deviation
+    "ClauseDeviationCount",
+    "ClauseDeviationCountList",
+    "ContractDeviationCreate",
+    "ContractDeviationList",
+    "ContractDeviationRead",
+    # matter
+    "CommercialMatterCreate",
+    "CommercialMatterList",
+    "CommercialMatterRead",
+    "CommercialMatterUpdate",
     # playbook
     "ClausePosition",
     "EscalationRule",
     "Playbook",
     "PlaybookEntry",
+    # proposal
+    "PlaybookProposalCreate",
+    "PlaybookProposalList",
+    "PlaybookProposalRead",
+    "PlaybookProposalUpdate",
+    # renewal
+    "RenewalRegistrationCreate",
+    "RenewalRegistrationList",
+    "RenewalRegistrationRead",
+    "RenewalRegistrationUpdate",
     # profile
     "CommercialProfileCreate",
     "CommercialProfileRead",

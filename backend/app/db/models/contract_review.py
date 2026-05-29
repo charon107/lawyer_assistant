@@ -4,9 +4,9 @@ Stores the metadata and final output of a vendor-agreement-review (Phase A)
 run. Phase B will add `nda` and `saas` review types via the `review_type`
 column.
 
-`matter_id` is intentionally left as a plain nullable string column rather
-than a ForeignKey, because the `commercial_matters` table arrives in
-Phase B. Adding the FK later is a non-destructive Alembic migration.
+`matter_id` is a ForeignKey to `commercial_matters.id` (added in Phase B via
+a non-destructive batch migration). It stays nullable: a review can exist
+before it is filed under a matter.
 """
 
 import uuid
@@ -29,8 +29,14 @@ class ContractReview(Base, TimestampMixin):
         nullable=False,
         index=True,
     )
-    # Phase B will turn this into a ForeignKey to commercial_matters.id.
-    matter_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
+    # FK to commercial_matters.id (added in Phase B). SET NULL on delete so
+    # removing a matter never cascades into deleting its review history.
+    matter_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("commercial_matters.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
 
     # What was reviewed.
     review_type: Mapped[str] = mapped_column(String(20), nullable=False)  # vendor / nda / saas
