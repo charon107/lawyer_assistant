@@ -218,3 +218,45 @@ class TestWriteContractReview:
         stored = json.loads(fresh.result_json)
         assert stored["deviations"][0]["clause_key"] == "liability_cap"
         assert stored["favorable_terms"] == ["争议解决在我方所在地"]
+
+    def test_coerces_json_string_array_args(self, db, user_id):
+        """Some OpenAI-compatible models (Xiaomi MiMo) send array args as
+        JSON-encoded strings. The tool must coerce them, not reject them."""
+        review = contract_review_repo.create(db, user_id=user_id, review_type="vendor")
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=review.id)
+        _run(
+            write_contract_review(
+                _FakeRunContext(deps),
+                result_status="red",
+                result_summary="责任上限远低于底线。",
+                result_memo="# 备忘录",
+                deviations=(
+                    '[{"clause_key": "liability_cap", "clause_label": "责任上限", '
+                    '"playbook_position": "100%", "contract_quote": "20%", '
+                    '"why_it_matters": "远低于底线"}]'
+                ),
+                favorable_terms="[]",
+                missing_terms='["数据保护条款"]',
+            )
+        )
+        fresh = contract_review_repo.get_by_id(db, review.id)
+        stored = json.loads(fresh.result_json)
+        assert stored["deviations"][0]["clause_key"] == "liability_cap"
+        assert stored["favorable_terms"] == []
+        assert stored["missing_terms"] == ["数据保护条款"]
+
+    def test_raises_model_retry_on_non_array_string(self, db, user_id):
+        from pydantic_ai import ModelRetry
+
+        review = contract_review_repo.create(db, user_id=user_id, review_type="vendor")
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=review.id)
+        with pytest.raises(ModelRetry):
+            _run(
+                write_contract_review(
+                    _FakeRunContext(deps),
+                    result_status="green",
+                    result_summary="x",
+                    result_memo="x",
+                    missing_terms='{"not": "an array"}',
+                )
+            )

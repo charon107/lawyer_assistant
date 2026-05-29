@@ -142,7 +142,10 @@ export default function CommercialPage() {
               <ul className="flex flex-col gap-2">
                 {reviews.map((r) => (
                   <li key={r.id}>
-                    <div className="hover:border-brand/40 flex items-center gap-3 rounded-xl border p-4 transition-colors">
+                    <Link
+                      href={`${ROUTES.COMMERCIAL_REVIEW}/${r.id}`}
+                      className="hover:border-brand/40 flex items-center gap-3 rounded-xl border p-4 transition-colors"
+                    >
                       <span
                         className={`h-2.5 w-2.5 shrink-0 rounded-full ${
                           RESULT_DOT[r.result_status ?? "in_progress"]
@@ -159,7 +162,7 @@ export default function CommercialPage() {
                       <time className="text-muted-foreground shrink-0 text-xs">
                         {new Date(r.created_at).toLocaleDateString("zh-CN")}
                       </time>
-                    </div>
+                    </Link>
                   </li>
                 ))}
               </ul>

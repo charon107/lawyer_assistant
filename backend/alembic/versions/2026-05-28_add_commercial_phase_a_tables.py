@@ -58,15 +58,14 @@ def upgrade() -> None:
         sa.Column("output_destination", sa.String(50), nullable=True),
         sa.Column(
             "created_at",
-            sa.DateTime(),
+            sa.DateTime(timezone=True),
             nullable=False,
             server_default=sa.text("CURRENT_TIMESTAMP"),
         ),
         sa.Column(
             "updated_at",
-            sa.DateTime(),
-            nullable=False,
-            server_default=sa.text("CURRENT_TIMESTAMP"),
+            sa.DateTime(timezone=True),
+            nullable=True,
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],
@@ -111,15 +110,14 @@ def upgrade() -> None:
         ),
         sa.Column(
             "created_at",
-            sa.DateTime(),
+            sa.DateTime(timezone=True),
             nullable=False,
             server_default=sa.text("CURRENT_TIMESTAMP"),
         ),
         sa.Column(
             "updated_at",
-            sa.DateTime(),
-            nullable=False,
-            server_default=sa.text("CURRENT_TIMESTAMP"),
+            sa.DateTime(timezone=True),
+            nullable=True,
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],
@@ -147,15 +145,14 @@ def upgrade() -> None:
         sa.Column("config_content", sa.Text(), nullable=True),
         sa.Column(
             "created_at",
-            sa.DateTime(),
+            sa.DateTime(timezone=True),
             nullable=False,
             server_default=sa.text("CURRENT_TIMESTAMP"),
         ),
         sa.Column(
             "updated_at",
-            sa.DateTime(),
-            nullable=False,
-            server_default=sa.text("CURRENT_TIMESTAMP"),
+            sa.DateTime(timezone=True),
+            nullable=True,
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],

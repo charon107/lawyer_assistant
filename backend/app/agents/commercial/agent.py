@@ -83,6 +83,10 @@ def create_commercial_agent(
             temperature=temperature if temperature is not None else settings.AI_TEMPERATURE,
         ),
         system_prompt=system_prompt,
+        # Give the model room to self-correct malformed tool calls
+        # (e.g. wrong arg shapes) instead of failing the whole run on
+        # the first validation error.
+        tool_retries=3,
     )
 
     # Module-local tools.

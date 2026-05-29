@@ -100,6 +100,23 @@ async def _run_one_review(
         )
         return
 
+    # Require the user to have configured their own LLM provider. We do
+    # NOT silently fall back to a shared/default key — the user must
+    # bring their own model so they control cost, provider and data.
+    if not user.llm_configs:
+        await manager.send_event(
+            websocket,
+            "error",
+            {
+                "message": (
+                    "尚未配置 AI 模型。请先到「个人中心 → 模型配置」"
+                    "添加你的模型提供方和 API Key，再开始合同审查。"
+                ),
+                "code": "llm_not_configured",
+            },
+        )
+        return
+
     with contextmanager(get_db_session)() as db:
         # 1. Pre-create the review row. This gives the agent a stable
         #    row id to write back to via `write_contract_review`.

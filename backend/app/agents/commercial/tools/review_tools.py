@@ -9,7 +9,7 @@ returned review_id and broadcasts the final state to the frontend.
 import json
 from typing import Any, Literal
 
-from pydantic_ai import RunContext
+from pydantic_ai import ModelRetry, RunContext
 
 from app.agents.commercial.deps import CommercialDeps
 from app.repositories import contract_review_repo
@@ -18,14 +18,49 @@ from app.schemas.commercial.review import ContractReviewResult
 ResultStatus = Literal["green", "yellow", "red"]
 
 
+def _coerce_list(value: Any, field_name: str) -> list[Any]:
+    """Coerce an array-shaped tool argument into a real list.
+
+    Some OpenAI-compatible models (e.g. Xiaomi MiMo) serialize array
+    arguments as JSON-encoded *strings* (``'[]'`` / ``'[{...}]'``)
+    instead of native arrays. Model output is untrusted, so we coerce
+    at the tool boundary rather than letting pydantic reject the call.
+
+    - ``None`` → ``[]``
+    - ``list`` → unchanged
+    - ``str`` → ``json.loads``; must decode to a list
+    - anything else → ``ModelRetry`` so the model can fix its call.
+    """
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return []
+        try:
+            decoded = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise ModelRetry(
+                f"参数 {field_name} 必须是数组。收到的是无法解析为 JSON 的字符串。"
+            ) from exc
+        if not isinstance(decoded, list):
+            raise ModelRetry(
+                f"参数 {field_name} 必须是数组（JSON array），收到的是 {type(decoded).__name__}。"
+            )
+        return decoded
+    raise ModelRetry(f"参数 {field_name} 必须是数组，收到的是 {type(value).__name__}。")
+
+
 async def write_contract_review(
     ctx: RunContext[CommercialDeps],
     result_status: ResultStatus,
     result_summary: str,
     result_memo: str,
-    deviations: list[dict[str, Any]] | None = None,
-    favorable_terms: list[str] | None = None,
-    missing_terms: list[str] | None = None,
+    deviations: list[dict[str, Any]] | str | None = None,
+    favorable_terms: list[str] | str | None = None,
+    missing_terms: list[str] | str | None = None,
     required_approver: str | None = None,
 ) -> str:
     """把审查结论写回数据库。
@@ -60,13 +95,14 @@ async def write_contract_review(
             f"Cannot write to review {deps.review_id} (not found, or wrong user)."
         )
 
-    # Build the structured result via Pydantic for shape validation, then
+    # Coerce array args (some models pass them as JSON strings), then
+    # build the structured result via Pydantic for shape validation and
     # hand it to the repo (which JSON-encodes it).
     payload = ContractReviewResult(
         summary=result_summary,
-        deviations=deviations or [],  # type: ignore[arg-type]
-        favorable_terms=favorable_terms or [],
-        missing_terms=missing_terms or [],
+        deviations=_coerce_list(deviations, "deviations"),
+        favorable_terms=_coerce_list(favorable_terms, "favorable_terms"),
+        missing_terms=_coerce_list(missing_terms, "missing_terms"),
         required_approver=required_approver,
     )
 
