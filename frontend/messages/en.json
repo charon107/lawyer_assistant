@@ -30,6 +30,7 @@
     "admin": "Admin",
     "user": "User",
     "review": "Review",
+    "commercial": "Commercial",
     "adminRatings": "Ratings",
     "adminUsers": "User Management",
     "adminConversations": "All Conversations",

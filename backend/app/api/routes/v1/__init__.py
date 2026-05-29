@@ -13,6 +13,8 @@ from app.api.routes.v1 import files
 from app.api.routes.v1 import lpa
 from app.api.routes.v1 import lpa_cases
 from app.api.routes.v1 import lpa_ws
+from app.api.routes.v1 import commercial
+from app.api.routes.v1 import commercial_ws
 
 v1_router = APIRouter()
 
@@ -49,6 +51,10 @@ v1_router.include_router(lpa_ws.router, tags=["lpa-ws"])
 
 # LPA Cases routes
 v1_router.include_router(lpa_cases.router, prefix="/lpa-cases", tags=["lpa-cases"])
+
+# Commercial-legal module (Phase A)
+v1_router.include_router(commercial.router, prefix="/commercial", tags=["commercial"])
+v1_router.include_router(commercial_ws.router, tags=["commercial-ws"])
 
 # Admin: system status (RAG health) and logs
 v1_router.include_router(admin_system.router, prefix="/admin/system", tags=["admin:system"])

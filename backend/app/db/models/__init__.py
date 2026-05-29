@@ -11,6 +11,9 @@ from app.db.models.law_metadata import LawMetadata
 from app.db.models.document_analysis import DocumentAnalysis
 from app.db.models.lpa_case import Case
 from app.db.models.system_log import SystemLog
+from app.db.models.commercial_profile import CommercialProfile
+from app.db.models.contract_review import ContractReview
+from app.db.models.module_config import ModuleConfig
 
 __all__ = [
     "User",
@@ -25,4 +28,7 @@ __all__ = [
     "DocumentAnalysis",
     "Case",
     "SystemLog",
+    "CommercialProfile",
+    "ContractReview",
+    "ModuleConfig",
 ]

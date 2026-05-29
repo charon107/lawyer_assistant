@@ -93,6 +93,34 @@ def get_system_log_service(db: DBSession) -> SystemLogService:
 SystemLogSvc = Annotated[SystemLogService, Depends(get_system_log_service)]
 
 
+# === Commercial-legal Services ===
+
+from app.services.cold_start_service import ColdStartService
+from app.services.commercial_profile_service import CommercialProfileService
+from app.services.contract_review_service import ContractReviewService
+
+
+def get_commercial_profile_service(db: DBSession) -> CommercialProfileService:
+    return CommercialProfileService(db)
+
+
+CommercialProfileSvc = Annotated[CommercialProfileService, Depends(get_commercial_profile_service)]
+
+
+def get_contract_review_service(db: DBSession) -> ContractReviewService:
+    return ContractReviewService(db)
+
+
+ContractReviewSvc = Annotated[ContractReviewService, Depends(get_contract_review_service)]
+
+
+def get_cold_start_service(db: DBSession) -> ColdStartService:
+    return ColdStartService(db)
+
+
+ColdStartSvc = Annotated[ColdStartService, Depends(get_cold_start_service)]
+
+
 # === Authentication Dependencies ===
 
 from app.core.exceptions import AuthenticationError, AuthorizationError
