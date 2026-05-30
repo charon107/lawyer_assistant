@@ -117,3 +117,107 @@ async def write_contract_review(
     )
 
     return json.dumps({"review_id": review.id, "result_status": result_status})
+
+
+def _load_owned_review(deps: CommercialDeps):  # type: ignore[no-untyped-def]
+    """Fetch the run's review row, enforcing presence + ownership.
+
+    Shared by the stakeholder-summary / escalation skills, which operate on
+    an already-completed review rather than creating a new one.
+    """
+    if deps.review_id is None:
+        raise RuntimeError(
+            "CommercialDeps.review_id is None — the WS handler must pass the "
+            "target ContractReview id before running this skill."
+        )
+    review = contract_review_repo.get_by_id(deps.db, deps.review_id)
+    if review is None or review.user_id != deps.user_id:
+        raise PermissionError(f"Cannot access review {deps.review_id} (not found, or wrong user).")
+    return review
+
+
+async def read_contract_review(ctx: RunContext[CommercialDeps]) -> str:
+    """读取当前审查记录的已有结论，作为后续技能的输入。
+
+    stakeholder-summary（业务摘要）和 escalation-flagger（定审批人）都建立
+    在一份**已完成的法律审查**之上。先调用本工具拿到法律审查的结论、备忘录
+    和结构化偏差，再据此撰写业务摘要 / 推断审批人。
+
+    Returns:
+        JSON 字符串，含 review_type / result_status / result_summary /
+        result_memo / result_json / required_approver 等字段。
+    """
+    review = _load_owned_review(ctx.deps)
+    return json.dumps(
+        {
+            "review_id": review.id,
+            "review_type": review.review_type,
+            "counterparty": review.counterparty,
+            "agreement_name": review.agreement_name,
+            "result_status": review.result_status,
+            "result_summary": review.result_summary,
+            "result_memo": review.result_memo,
+            "result_json": review.result_json,
+            "required_approver": review.required_approver,
+        },
+        ensure_ascii=False,
+    )
+
+
+async def write_stakeholder_summary(
+    ctx: RunContext[CommercialDeps],
+    summary: str,
+) -> str:
+    """把面向业务方的摘要写回数据库（contract_reviews.stakeholder_summary）。
+
+    这是 stakeholder-summary 技能的最后一步。摘要应当用**业务语言**（不是
+    法言法语）讲清楚：这份合同能不能签、最关键的两三个商业影响、需要业务
+    方做什么决定。
+
+    Args:
+        summary: 业务语言摘要（Markdown）。
+
+    Returns:
+        JSON 字符串，含 review_id。
+    """
+    deps = ctx.deps
+    review = _load_owned_review(deps)
+    contract_review_repo.update_result(
+        deps.db,
+        review=review,
+        stakeholder_summary=summary,
+    )
+    return json.dumps({"review_id": review.id}, ensure_ascii=False)
+
+
+async def write_escalation_decision(
+    ctx: RunContext[CommercialDeps],
+    required_approver: str,
+    escalation_sent: bool = False,
+) -> str:
+    """把上报路由决定写回数据库（required_approver + escalation_sent）。
+
+    这是 escalation-flagger 技能的最后一步。先用 `read_escalation_matrix`
+    读上报矩阵、用 `read_contract_review` 读审查结论，据此确定**谁来批**，
+    再调用本工具写回。
+
+    Args:
+        required_approver: 确定的审批人（如 "GC" / "CFO" / "采购负责人"）。
+        escalation_sent: 是否已实际发出上报通知。默认 False（仅记录决定，
+            不代表已通知）。
+
+    Returns:
+        JSON 字符串，含 review_id 和 required_approver。
+    """
+    deps = ctx.deps
+    review = _load_owned_review(deps)
+    contract_review_repo.update_result(
+        deps.db,
+        review=review,
+        required_approver=required_approver,
+        escalation_sent=escalation_sent,
+    )
+    return json.dumps(
+        {"review_id": review.id, "required_approver": required_approver},
+        ensure_ascii=False,
+    )

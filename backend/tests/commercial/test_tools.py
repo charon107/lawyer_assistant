@@ -13,14 +13,26 @@ from typing import Any
 import pytest
 
 from app.agents.commercial.agent import CommercialDeps
+from app.agents.commercial.tools.escalation_tools import (
+    read_escalation_matrix,
+    write_contract_deviation,
+)
+from app.agents.commercial.tools.matter_tools import read_matter_context
 from app.agents.commercial.tools.playbook_tools import get_playbook
 from app.agents.commercial.tools.profile_tools import (
     read_practice_profile,
     write_practice_profile,
 )
-from app.agents.commercial.tools.review_tools import write_contract_review
+from app.agents.commercial.tools.review_tools import (
+    read_contract_review,
+    write_contract_review,
+    write_escalation_decision,
+    write_stakeholder_summary,
+)
 from app.repositories import (
+    commercial_matter_repo,
     commercial_profile_repo,
+    contract_deviation_repo,
     contract_review_repo,
 )
 
@@ -260,3 +272,260 @@ class TestWriteContractReview:
                     missing_terms='{"not": "an array"}',
                 )
             )
+
+
+# ---------------------------------------------------------------------------
+# read_matter_context
+# ---------------------------------------------------------------------------
+
+
+class TestReadMatterContext:
+    def test_returns_card_for_own_matter(self, db, user_id):
+        matter = commercial_matter_repo.create(
+            db,
+            user_id=user_id,
+            matter_name="Acme 采购框架",
+            counterparty="Acme Inc.",
+            agreement_type="vendor",
+            owner="张三",
+            notes="对方付款一向拖延。",
+        )
+        deps = CommercialDeps(user_id=user_id, db=db)
+        result = _run(read_matter_context(_FakeRunContext(deps), matter.id))
+        assert "关联事项背景" in result
+        assert "Acme 采购框架" in result
+        assert "Acme Inc." in result
+        assert "张三" in result
+        assert "对方付款一向拖延" in result
+
+    def test_returns_prompt_when_matter_missing(self, db, user_id):
+        deps = CommercialDeps(user_id=user_id, db=db)
+        result = _run(read_matter_context(_FakeRunContext(deps), "no-such-id"))
+        assert "未找到事项" in result
+
+    def test_does_not_leak_other_users_matter(self, db, user_id):
+        from app.db.models.user import User
+
+        other = "00000000-0000-4000-8000-000000000020"
+        db.add(User(id=other, email="o2@test.local", hashed_password="x" * 60))
+        db.flush()
+        matter = commercial_matter_repo.create(
+            db, user_id=other, matter_name="机密事项", counterparty="Secret Co."
+        )
+        deps = CommercialDeps(user_id=user_id, db=db)
+        result = _run(read_matter_context(_FakeRunContext(deps), matter.id))
+        assert "未找到事项" in result
+        assert "Secret Co." not in result
+
+
+# ---------------------------------------------------------------------------
+# read_escalation_matrix
+# ---------------------------------------------------------------------------
+
+
+class TestReadEscalationMatrix:
+    def test_warns_when_no_profile(self, db, user_id):
+        deps = CommercialDeps(user_id=user_id, db=db)
+        result = _run(read_escalation_matrix(_FakeRunContext(deps)))
+        assert "尚未完成实践画像配置" in result
+
+    def test_warns_when_matrix_not_configured(self, db, user_id):
+        commercial_profile_repo.create(db, user_id=user_id)
+        deps = CommercialDeps(user_id=user_id, db=db)
+        result = _run(read_escalation_matrix(_FakeRunContext(deps)))
+        assert "尚未配置上报矩阵" in result
+
+    def test_returns_matrix_verbatim_when_configured(self, db, user_id):
+        matrix = json.dumps(
+            [{"severity": "red", "approver": "CFO", "channel": "飞书"}],
+            ensure_ascii=False,
+        )
+        profile = commercial_profile_repo.create(db, user_id=user_id)
+        profile.escalation_matrix = matrix
+        db.flush()
+        deps = CommercialDeps(user_id=user_id, db=db)
+        result = _run(read_escalation_matrix(_FakeRunContext(deps)))
+        assert result == matrix
+        assert "CFO" in result
+
+
+# ---------------------------------------------------------------------------
+# write_contract_deviation
+# ---------------------------------------------------------------------------
+
+
+class TestWriteContractDeviation:
+    def test_raises_when_review_id_is_none(self, db, user_id):
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=None)
+        with pytest.raises(RuntimeError, match="review_id is None"):
+            _run(
+                write_contract_deviation(
+                    _FakeRunContext(deps),
+                    clause_key="liability_cap",
+                )
+            )
+
+    def test_raises_when_review_belongs_to_other_user(self, db, user_id):
+        from app.db.models.user import User
+
+        other = "00000000-0000-4000-8000-000000000030"
+        db.add(User(id=other, email="o3@test.local", hashed_password="x" * 60))
+        db.flush()
+        review = contract_review_repo.create(db, user_id=other, review_type="vendor")
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=review.id)
+        with pytest.raises(PermissionError):
+            _run(
+                write_contract_deviation(
+                    _FakeRunContext(deps),
+                    clause_key="liability_cap",
+                )
+            )
+
+    def test_persists_deviation(self, db, user_id):
+        review = contract_review_repo.create(db, user_id=user_id, review_type="vendor")
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=review.id)
+        out = _run(
+            write_contract_deviation(
+                _FakeRunContext(deps),
+                clause_key="liability_cap",
+                clause_label="责任上限",
+                playbook_position="100%",
+                signed_position="50%",
+                severity_legal="orange",
+                severity_commercial="yellow",
+                category="liability",
+            )
+        )
+        deviation_id = json.loads(out)["deviation_id"]
+        stored = contract_deviation_repo.get_by_id(db, deviation_id)
+        assert stored is not None
+        assert stored.review_id == review.id
+        assert stored.user_id == user_id
+        assert stored.clause_key == "liability_cap"
+        assert stored.severity_legal == "orange"
+        assert stored.severity_commercial == "yellow"
+
+
+# ---------------------------------------------------------------------------
+# read_contract_review
+# ---------------------------------------------------------------------------
+
+
+class TestReadContractReview:
+    def test_raises_when_review_id_is_none(self, db, user_id):
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=None)
+        with pytest.raises(RuntimeError, match="review_id is None"):
+            _run(read_contract_review(_FakeRunContext(deps)))
+
+    def test_raises_when_review_belongs_to_other_user(self, db, user_id):
+        from app.db.models.user import User
+
+        other = "00000000-0000-4000-8000-000000000040"
+        db.add(User(id=other, email="o4@test.local", hashed_password="x" * 60))
+        db.flush()
+        review = contract_review_repo.create(db, user_id=other, review_type="vendor")
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=review.id)
+        with pytest.raises(PermissionError):
+            _run(read_contract_review(_FakeRunContext(deps)))
+
+    def test_returns_review_fields(self, db, user_id):
+        review = contract_review_repo.create(
+            db,
+            user_id=user_id,
+            review_type="saas",
+            counterparty="Cloud Co.",
+            agreement_name="主服务协议",
+        )
+        contract_review_repo.update_result(
+            db,
+            review=review,
+            result_status="yellow",
+            result_summary="两处弱于底线。",
+            result_memo="# 备忘录",
+        )
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=review.id)
+        decoded = json.loads(_run(read_contract_review(_FakeRunContext(deps))))
+        assert decoded["review_id"] == review.id
+        assert decoded["review_type"] == "saas"
+        assert decoded["counterparty"] == "Cloud Co."
+        assert decoded["agreement_name"] == "主服务协议"
+        assert decoded["result_status"] == "yellow"
+        assert decoded["result_summary"] == "两处弱于底线。"
+
+
+# ---------------------------------------------------------------------------
+# write_stakeholder_summary
+# ---------------------------------------------------------------------------
+
+
+class TestWriteStakeholderSummary:
+    def test_persists_summary(self, db, user_id):
+        review = contract_review_repo.create(db, user_id=user_id, review_type="vendor")
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=review.id)
+        out = _run(
+            write_stakeholder_summary(
+                _FakeRunContext(deps),
+                "🟡 可以签，但责任上限只覆盖合同额一半。",
+            )
+        )
+        assert json.loads(out)["review_id"] == review.id
+        fresh = contract_review_repo.get_by_id(db, review.id)
+        assert "可以签" in fresh.stakeholder_summary
+
+    def test_raises_when_review_belongs_to_other_user(self, db, user_id):
+        from app.db.models.user import User
+
+        other = "00000000-0000-4000-8000-000000000050"
+        db.add(User(id=other, email="o5@test.local", hashed_password="x" * 60))
+        db.flush()
+        review = contract_review_repo.create(db, user_id=other, review_type="vendor")
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=review.id)
+        with pytest.raises(PermissionError):
+            _run(write_stakeholder_summary(_FakeRunContext(deps), "x"))
+
+
+# ---------------------------------------------------------------------------
+# write_escalation_decision
+# ---------------------------------------------------------------------------
+
+
+class TestWriteEscalationDecision:
+    def test_persists_decision_defaults_not_sent(self, db, user_id):
+        review = contract_review_repo.create(db, user_id=user_id, review_type="vendor")
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=review.id)
+        out = _run(
+            write_escalation_decision(
+                _FakeRunContext(deps),
+                required_approver="CFO",
+            )
+        )
+        decoded = json.loads(out)
+        assert decoded["review_id"] == review.id
+        assert decoded["required_approver"] == "CFO"
+        fresh = contract_review_repo.get_by_id(db, review.id)
+        assert fresh.required_approver == "CFO"
+        assert fresh.escalation_sent is False
+
+    def test_records_sent_flag_when_true(self, db, user_id):
+        review = contract_review_repo.create(db, user_id=user_id, review_type="vendor")
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=review.id)
+        _run(
+            write_escalation_decision(
+                _FakeRunContext(deps),
+                required_approver="GC",
+                escalation_sent=True,
+            )
+        )
+        fresh = contract_review_repo.get_by_id(db, review.id)
+        assert fresh.escalation_sent is True
+
+    def test_raises_when_review_belongs_to_other_user(self, db, user_id):
+        from app.db.models.user import User
+
+        other = "00000000-0000-4000-8000-000000000060"
+        db.add(User(id=other, email="o6@test.local", hashed_password="x" * 60))
+        db.flush()
+        review = contract_review_repo.create(db, user_id=other, review_type="vendor")
+        deps = CommercialDeps(user_id=user_id, db=db, review_id=review.id)
+        with pytest.raises(PermissionError):
+            _run(write_escalation_decision(_FakeRunContext(deps), required_approver="GC"))
