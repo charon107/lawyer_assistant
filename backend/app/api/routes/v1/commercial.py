@@ -21,6 +21,7 @@ from fastapi import APIRouter, Query, status
 from app.api.deps import (
     ColdStartSvc,
     CommercialMatterSvc,
+    CommercialNotificationSvc,
     CommercialProfileSvc,
     ContractDeviationSvc,
     ContractReviewSvc,
@@ -38,6 +39,10 @@ from app.schemas.commercial.matter import (
     CommercialMatterList,
     CommercialMatterRead,
     CommercialMatterUpdate,
+)
+from app.schemas.commercial.notification import (
+    CommercialNotificationList,
+    CommercialNotificationRead,
 )
 from app.schemas.commercial.profile import (
     CommercialProfileRead,
@@ -324,3 +329,46 @@ def update_my_proposal(
 ) -> Any:
     """Accept / dismiss / edit an owned proposal."""
     return proposal_svc.update_my_proposal(str(user.id), proposal_id, data)
+
+
+# ---------------------------------------------------------------------------
+# Notifications (Phase C)
+# ---------------------------------------------------------------------------
+
+
+@router.get("/notifications", response_model=CommercialNotificationList)
+def list_my_notifications(
+    user: CurrentUser,
+    notification_svc: CommercialNotificationSvc,
+    unread_only: bool = Query(False, description="Return only unread notifications"),
+    skip: int = Query(0, ge=0, description="Items to skip"),
+    limit: int = Query(50, ge=1, le=100, description="Max items to return"),
+) -> Any:
+    """The current user's notification inbox, newest first, plus the unread count."""
+    items, total, unread = notification_svc.list_my_notifications(
+        str(user.id),
+        unread_only=unread_only,
+        skip=skip,
+        limit=limit,
+    )
+    return CommercialNotificationList(items=items, total=total, unread=unread)  # type: ignore[arg-type]
+
+
+@router.post("/notifications/read-all", status_code=status.HTTP_200_OK)
+def mark_all_notifications_read(
+    user: CurrentUser,
+    notification_svc: CommercialNotificationSvc,
+) -> dict[str, int]:
+    """Mark every unread notification for the current user as read."""
+    updated = notification_svc.mark_all_read(str(user.id))
+    return {"updated": updated}
+
+
+@router.post("/notifications/{notification_id}/read", response_model=CommercialNotificationRead)
+def mark_notification_read(
+    notification_id: str,
+    user: CurrentUser,
+    notification_svc: CommercialNotificationSvc,
+) -> Any:
+    """Mark one owned notification as read. 404 if missing, 403 if another user's."""
+    return notification_svc.mark_read(str(user.id), notification_id)

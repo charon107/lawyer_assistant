@@ -129,6 +129,58 @@ class TestUpdateResult:
         assert review.escalation_sent is True
 
 
+class TestListCompletedBetween:
+    """`list_completed_between` feeds the weekly deal-debrief task."""
+
+    def _make(self, db, user_id, *, status, created_at, name):
+        from datetime import datetime
+
+        review = repo.create(db, user_id=user_id, review_type="vendor", agreement_name=name)
+        review.result_status = status
+        assert isinstance(created_at, datetime)
+        review.created_at = created_at
+        db.flush()
+        return review
+
+    def test_returns_only_completed_in_window(self, db, user_id):
+        from datetime import datetime
+
+        since = datetime(2026, 5, 25, 0, 0, 0)
+        until = datetime(2026, 6, 1, 0, 0, 0)
+        # in window, completed -> included
+        keep = self._make(
+            db, user_id, status="yellow", created_at=datetime(2026, 5, 27, 9, 0), name="keep"
+        )
+        # in window but still running -> excluded
+        self._make(
+            db, user_id, status="in_progress", created_at=datetime(2026, 5, 27, 9, 0), name="wip"
+        )
+        # completed but before window -> excluded
+        self._make(db, user_id, status="green", created_at=datetime(2026, 5, 20, 9, 0), name="old")
+        # completed but at/after window end (exclusive) -> excluded
+        self._make(db, user_id, status="red", created_at=datetime(2026, 6, 1, 0, 0), name="future")
+
+        results = repo.list_completed_between(db, user_id=user_id, since=since, until=until)
+        assert [r.id for r in results] == [keep.id]
+
+    def test_isolates_users(self, db, user_id):
+        from datetime import datetime
+
+        from app.db.models.user import User
+
+        other_id = "00000000-0000-4000-8000-000000000099"
+        db.add(User(id=other_id, email="o@test.local", hashed_password="x" * 60))
+        db.flush()
+        since = datetime(2026, 5, 25)
+        until = datetime(2026, 6, 1)
+        mine = self._make(
+            db, user_id, status="green", created_at=datetime(2026, 5, 27), name="mine"
+        )
+        self._make(db, other_id, status="green", created_at=datetime(2026, 5, 27), name="theirs")
+        results = repo.list_completed_between(db, user_id=user_id, since=since, until=until)
+        assert [r.id for r in results] == [mine.id]
+
+
 class TestDelete:
     def test_delete(self, db, user_id):
         review = repo.create(db, user_id=user_id, review_type="vendor")

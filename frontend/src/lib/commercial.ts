@@ -16,6 +16,8 @@ import type {
   CommercialMatterCreate,
   CommercialMatterList,
   CommercialMatterUpdate,
+  CommercialNotification,
+  CommercialNotificationList,
   CommercialProfile,
   CommercialProfileUpdate,
   ContractReview,
@@ -97,4 +99,19 @@ export const commercialApi = {
 
   updateProposal: (id: string, data: PlaybookProposalUpdate) =>
     apiClient.patch<PlaybookProposal>(`/commercial/proposals/${id}`, data),
+
+  // ----- Notifications (Phase C) -------------------------------------------
+
+  listNotifications: (unreadOnly = false, skip = 0, limit = 50) =>
+    apiClient.get<CommercialNotificationList>(
+      `/commercial/notifications?unread_only=${unreadOnly}&skip=${skip}&limit=${limit}`,
+    ),
+
+  markNotificationRead: (id: string) =>
+    apiClient.post<CommercialNotification>(
+      `/commercial/notifications/${id}/read`,
+    ),
+
+  markAllNotificationsRead: () =>
+    apiClient.post<{ updated: number }>("/commercial/notifications/read-all"),
 };

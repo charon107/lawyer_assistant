@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, CardContent, Spinner } from "@/components/ui";
+import { NotificationArea } from "@/components/commercial";
 import { ROUTES } from "@/lib/constants";
 import { commercialApi } from "@/lib/commercial";
 import type { ContractReview, ModuleStatusResponse } from "@/types/commercial";
@@ -106,6 +107,8 @@ export default function CommercialPage() {
         </Card>
       ) : (
         <>
+          <NotificationArea />
+
           {/* Quick actions */}
           <div className="mb-8 grid gap-4 sm:grid-cols-2">
             <Link href={ROUTES.COMMERCIAL_REVIEW}>

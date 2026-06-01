@@ -296,6 +296,31 @@ export interface PlaybookProposalList {
   total: number;
 }
 
+// ----- Notifications (Phase C) ---------------------------------------------
+
+/** Produced by the three scheduled tasks; drives icon + accent rendering. */
+export type NotificationType =
+  | "renewal_due"
+  | "deal_debrief"
+  | "playbook_proposal";
+
+export interface CommercialNotification {
+  id: string;
+  user_id: string;
+  type: NotificationType | string;
+  title?: string | null;
+  payload?: Record<string, unknown> | null;
+  read: boolean;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface CommercialNotificationList {
+  items: CommercialNotification[];
+  total: number;
+  unread: number;
+}
+
 // ----- WebSocket protocol --------------------------------------------------
 
 export interface CommercialWsStartMessage {

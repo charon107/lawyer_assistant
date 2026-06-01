@@ -97,6 +97,7 @@ SystemLogSvc = Annotated[SystemLogService, Depends(get_system_log_service)]
 
 from app.services.cold_start_service import ColdStartService
 from app.services.commercial_matter_service import CommercialMatterService
+from app.services.commercial_notification_service import CommercialNotificationService
 from app.services.commercial_profile_service import CommercialProfileService
 from app.services.contract_deviation_service import ContractDeviationService
 from app.services.contract_review_service import ContractReviewService
@@ -151,6 +152,15 @@ def get_playbook_proposal_service(db: DBSession) -> PlaybookProposalService:
 
 
 PlaybookProposalSvc = Annotated[PlaybookProposalService, Depends(get_playbook_proposal_service)]
+
+
+def get_commercial_notification_service(db: DBSession) -> CommercialNotificationService:
+    return CommercialNotificationService(db)
+
+
+CommercialNotificationSvc = Annotated[
+    CommercialNotificationService, Depends(get_commercial_notification_service)
+]
 
 
 # === Authentication Dependencies ===
