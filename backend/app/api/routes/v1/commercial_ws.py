@@ -50,15 +50,6 @@ from contextlib import contextmanager
 from typing import Any
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
-from pydantic_ai import (
-    FinalResultEvent,
-    FunctionToolCallEvent,
-    FunctionToolResultEvent,
-    PartDeltaEvent,
-    PartStartEvent,
-    TextPartDelta,
-)
-from pydantic_ai.messages import ModelRequest, UserPromptPart
 
 from app.agents.commercial import (
     CommercialDeps,
@@ -71,6 +62,7 @@ from app.db.session import get_db_session
 from app.repositories import commercial_profile_repo, contract_review_repo
 from app.schemas.commercial.review import ContractReviewCreate
 from app.services.agent import AgentConnectionManager
+from app.services.agent_stream import stream_agent_run
 from app.services.contract_review_service import ContractReviewService
 
 logger = logging.getLogger(__name__)
@@ -132,44 +124,6 @@ async def _require_llm_configured(websocket: WebSocket, user: User) -> bool:
         },
     )
     return False
-
-
-async def _stream_agent_run(
-    *,
-    websocket: WebSocket,
-    agent: Any,
-    prompt: str,
-    deps: CommercialDeps,
-    review_id: str,
-) -> bool:
-    """Drive one agent run, forwarding streamed events. Returns success.
-
-    On failure, sends an `error` event and returns False. The caller owns
-    the DB session and is responsible for committing tool-side writes.
-    """
-    try:
-        async with agent.iter(
-            prompt,
-            deps=deps,
-            message_history=[ModelRequest(parts=[UserPromptPart(content=prompt)])],
-        ) as run:
-            async for node in run:
-                if hasattr(node, "request") and hasattr(node, "response"):
-                    async with node.stream(run.ctx) as event_stream:
-                        async for ev in event_stream:
-                            await _forward_event(websocket, ev)
-
-        final = run.result.output if run.result else ""
-        await manager.send_event(
-            websocket,
-            "final_result",
-            {"output": final, "review_id": review_id},
-        )
-        return True
-    except Exception as exc:
-        logger.exception("commercial agent run failed for review_id=%s", review_id)
-        await manager.send_event(websocket, "error", {"message": str(exc) or "unexpected error"})
-        return False
 
 
 async def _run_one_review(
@@ -253,7 +207,8 @@ async def _run_one_review(
 
         # 3. Stream the agent.
         try:
-            ok = await _stream_agent_run(
+            ok = await stream_agent_run(
+                manager=manager,
                 websocket=websocket,
                 agent=agent,
                 prompt=contract_text,
@@ -328,7 +283,8 @@ async def _run_downstream_skill(
         prompt = "请基于已完成的合同审查结论执行本技能，读取该审查并写回结果。"
 
         try:
-            ok = await _stream_agent_run(
+            ok = await stream_agent_run(
+                manager=manager,
                 websocket=websocket,
                 agent=agent,
                 prompt=prompt,
@@ -341,46 +297,6 @@ async def _run_downstream_skill(
             db.commit()
 
     await manager.send_event(websocket, "complete", {})
-
-
-async def _forward_event(websocket: WebSocket, ev: Any) -> None:
-    """Map a PydanticAI streaming event to a WS event for the frontend."""
-    if isinstance(ev, (PartStartEvent, PartDeltaEvent)):
-        delta = getattr(ev, "delta", None) or getattr(ev, "part", None)
-        if isinstance(delta, TextPartDelta):
-            await manager.send_event(websocket, "text_delta", {"content": delta.content_delta})
-        return
-
-    if isinstance(ev, FunctionToolCallEvent):
-        part = ev.part
-        await manager.send_event(
-            websocket,
-            "tool_call",
-            {
-                "tool_call_id": part.tool_call_id,
-                "tool_name": part.tool_name,
-                "args": part.args,
-            },
-        )
-        return
-
-    if isinstance(ev, FunctionToolResultEvent):
-        await manager.send_event(
-            websocket,
-            "tool_result",
-            {
-                "tool_call_id": ev.tool_call_id,
-                "content": str(ev.result.content),
-            },
-        )
-        return
-
-    if isinstance(ev, FinalResultEvent):
-        # FinalResultEvent fires before the actual run.result is set on
-        # PydanticAI; we surface it as a marker so the frontend can
-        # close out the streaming card.
-        await manager.send_event(websocket, "model_request_end", {})
-        return
 
 
 @router.websocket("/ws/commercial")
