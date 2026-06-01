@@ -53,8 +53,6 @@ export function AppSidebar() {
 
   const navigation = [
     { name: t("dashboard"), href: ROUTES.DASHBOARD, icon: LayoutDashboard },
-    // LPA (cases / review) entries hidden pending deprecation — routes & pages
-    // intentionally kept so the change is reversible while we observe.
     { name: t("commercial"), href: ROUTES.COMMERCIAL, icon: Handshake },
     { name: t("conversations"), href: ROUTES.CHAT, icon: MessageSquare },
     { name: t("profile"), href: ROUTES.PROFILE, icon: UserCircle },

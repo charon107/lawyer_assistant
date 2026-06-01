@@ -4,7 +4,7 @@ import json
 import logging
 from contextlib import contextmanager
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import httpx
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
@@ -28,7 +28,6 @@ from pydantic_ai.messages import (
 )
 
 from app.agents.assistant import Deps, get_agent
-from app.agents.prompts import DEFAULT_SYSTEM_PROMPT
 from app.api.deps import CurrentUser, get_conversation_service, get_current_user_ws
 from app.core.config import settings
 from app.db.models.user import User
@@ -42,9 +41,6 @@ from app.schemas.conversation import (
 )
 from app.services.agent import AgentConnectionManager
 from app.services.file_storage import get_file_storage
-
-if TYPE_CHECKING:
-    from app.schemas.document_analysis import DocumentAnalysisResult
 
 logger = logging.getLogger(__name__)
 
@@ -139,95 +135,6 @@ TOOL_STATUS_LABELS: dict[str, str] = {
 }
 
 
-def _build_case_system_prompt(case_id: str, user_id: str) -> str | None:
-    """Build a system prompt that includes case context.
-
-    Returns the augmented system prompt, or None if case loading fails
-    (silent degradation — chat works without case context).
-    """
-    try:
-        from contextlib import contextmanager
-
-        from app.services.lpa_case_service import LPACaseService
-
-        with contextmanager(get_db_session)() as db:
-            service = LPACaseService(db)
-            try:
-                case = service.get_without_docs(case_id, user_id=user_id)
-            except Exception:
-                return None
-
-            documents = service.get_documents(case_id, user_id=user_id)
-            analyses = service.get_analyses_by_case(case_id, user_id=user_id)
-
-            doc_sections = []
-            for doc in documents:
-                section = f"- {doc.filename}"
-                if doc.summary:
-                    section += f"\n  摘要：{doc.summary}"
-                if doc.parsed_content:
-                    truncated = doc.parsed_content[:8000]
-                    section += f"\n  内容：\n{truncated}"
-                # Inject analysis if available
-                if doc.id in analyses:
-                    analysis_record = analyses[doc.id]
-                    if analysis_record.status == "completed" and analysis_record.analysis_json:
-                        try:
-                            from app.schemas.document_analysis import DocumentAnalysisResult
-
-                            analysis = DocumentAnalysisResult.model_validate_json(
-                                analysis_record.analysis_json
-                            )
-                            section += (
-                                f"\n  法律关系分析：\n{_format_analysis_for_prompt(analysis)}"
-                            )
-                        except Exception:
-                            pass  # Graceful degradation
-                doc_sections.append(section)
-
-            docs_text = "\n".join(doc_sections) if doc_sections else "暂无材料"
-
-            return f"""{DEFAULT_SYSTEM_PROMPT}
-
-当前案件：{case.name}
-案件描述：{case.description or "无"}
-
-相关材料：
-{docs_text}
-
-请基于以上案件材料回答用户的问题。引用具体条款时请标明出处。"""
-    except Exception as e:
-        logger.warning(f"Failed to build case context for case {case_id}: {e}")
-        return None
-
-
-def _format_analysis_for_prompt(analysis: "DocumentAnalysisResult") -> str:
-    """Format structured analysis as a readable text block for the system prompt."""
-    parts = []
-    if analysis.parties:
-        parties_str = "、".join(f"{p.name}({p.role})" for p in analysis.parties)
-        parts.append(f"  当事方：{parties_str}")
-    parts.append(f"  文件类型：{analysis.contract_type}")
-    if analysis.legal_relationships:
-        rels = "; ".join(
-            f"{r.relationship_type}（{'、'.join(r.parties)}）" for r in analysis.legal_relationships
-        )
-        parts.append(f"  法律关系：{rels}")
-    if analysis.key_terms:
-        terms = "; ".join(f"{t.term}: {t.content[:50]}" for t in analysis.key_terms[:5])
-        parts.append(f"  关键条款：{terms}")
-    if analysis.applicable_laws:
-        parts.append(f"  适用法律：{'、'.join(analysis.applicable_laws)}")
-    if analysis.risk_points:
-        risks = "; ".join(f"[{r.level}] {r.description[:50]}" for r in analysis.risk_points[:3])
-        parts.append(f"  风险点：{risks}")
-    if analysis.dispute_focal_points:
-        parts.append(f"  争议焦点：{'、'.join(analysis.dispute_focal_points[:3])}")
-    if analysis.summary:
-        parts.append(f"  分析摘要：{analysis.summary[:200]}")
-    return "\n".join(parts)
-
-
 def build_message_history(history: list[dict[str, str]]) -> list[ModelRequest | ModelResponse]:
     """Convert conversation history to PydanticAI message format."""
     model_history: list[ModelRequest | ModelResponse] = []
@@ -285,7 +192,6 @@ async def agent_websocket(
     conversation_history: list[dict[str, str]] = []
     deps = Deps()
     current_conversation_id: str | None = None
-    current_case_id: str | None = None
 
     try:
         while True:
@@ -293,9 +199,6 @@ async def agent_websocket(
             data = await websocket.receive_json()
             user_message = data.get("message", "")
             file_ids = data.get("file_ids", [])
-            case_id = data.get("case_id")
-            if case_id:
-                current_case_id = case_id
 
             if not user_message and not file_ids:
                 await manager.send_event(websocket, "error", {"message": "Empty message"})
@@ -325,7 +228,6 @@ async def agent_websocket(
                         conv_data = ConversationCreate(
                             user_id=str(user.id),
                             title=user_message[:50] if len(user_message) > 50 else user_message,
-                            case_id=current_case_id,
                         )
                         conversation = conv_service.create_conversation(conv_data)
                         current_conversation_id = str(conversation.id)
@@ -372,17 +274,11 @@ async def agent_websocket(
                     if not selected_model:
                         selected_model = cfg.model
 
-                # Build system prompt with case context if applicable
-                system_prompt = None
-                if current_case_id:
-                    system_prompt = _build_case_system_prompt(current_case_id, str(user.id))
-
                 assistant = get_agent(
                     model_name=selected_model,
                     provider=user_provider,
                     api_key=user_api_key,
                     base_url=user_base_url,
-                    system_prompt=system_prompt,
                 )
                 model_history = build_message_history(conversation_history)
 

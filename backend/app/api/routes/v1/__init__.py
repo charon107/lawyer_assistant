@@ -10,9 +10,6 @@ from app.api.routes.v1 import admin_conversations
 from app.api.routes.v1 import admin_logs, admin_system
 from app.api.routes.v1 import agent
 from app.api.routes.v1 import files
-from app.api.routes.v1 import lpa
-from app.api.routes.v1 import lpa_cases
-from app.api.routes.v1 import lpa_ws
 from app.api.routes.v1 import commercial
 from app.api.routes.v1 import commercial_ws
 
@@ -44,13 +41,6 @@ v1_router.include_router(files.router, tags=["files"])
 v1_router.include_router(
     admin_conversations.router, prefix="/admin/conversations", tags=["admin-conversations"]
 )
-
-# LPA Contract Review routes
-v1_router.include_router(lpa.router, tags=["lpa"])
-v1_router.include_router(lpa_ws.router, tags=["lpa-ws"])
-
-# LPA Cases routes
-v1_router.include_router(lpa_cases.router, prefix="/lpa-cases", tags=["lpa-cases"])
 
 # Commercial-legal module (Phase A)
 v1_router.include_router(commercial.router, prefix="/commercial", tags=["commercial"])

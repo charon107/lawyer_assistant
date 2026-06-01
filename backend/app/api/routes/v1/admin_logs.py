@@ -7,9 +7,7 @@ from fastapi import APIRouter, Query
 from sqlalchemy import func, select
 
 from app.api.deps import CurrentAdmin, DBSession, SystemLogSvc
-from app.db.models.chat_file import ChatFile
 from app.db.models.conversation import Message, ToolCall
-from app.db.models.document_analysis import DocumentAnalysis
 from app.schemas.system_log import SystemLogList, SystemLogSummary
 
 router = APIRouter()
@@ -91,53 +89,4 @@ def get_conversation_stats(
         "rag_calls": rag_calls,
         "rag_avg_duration_ms": round(avg_duration, 1) if avg_duration else None,
         "tool_call_breakdown": {row.tool_name: row.cnt for row in tool_call_counts},
-    }
-
-
-@router.get("/stats/file-reviews")
-def get_file_review_stats(
-    db: DBSession,
-    _: CurrentAdmin,
-    days: int = Query(30, ge=1, le=365),
-) -> Any:
-    """Aggregated file review stats from DocumentAnalysis and ChatFile tables."""
-    since = datetime.now(UTC) - timedelta(days=days)
-
-    by_status = db.execute(
-        select(DocumentAnalysis.status, func.count(DocumentAnalysis.id).label("cnt"))
-        .where(DocumentAnalysis.created_at >= since)
-        .group_by(DocumentAnalysis.status)
-    ).all()
-
-    by_doc_type = db.execute(
-        select(ChatFile.file_type, func.count(ChatFile.id).label("cnt"))
-        .where(ChatFile.created_at >= since)
-        .group_by(ChatFile.file_type)
-    ).all()
-
-    # Average duration for completed analyses (seconds)
-    completed_rows = db.execute(
-        select(DocumentAnalysis.created_at, DocumentAnalysis.completed_at)
-        .where(DocumentAnalysis.status == "completed")
-        .where(DocumentAnalysis.completed_at.isnot(None))
-        .where(DocumentAnalysis.created_at >= since)
-    ).all()
-
-    durations = [
-        (row.completed_at - row.created_at).total_seconds()
-        for row in completed_rows
-        if row.completed_at and row.created_at
-    ]
-    avg_duration_s = round(sum(durations) / len(durations), 1) if durations else None
-
-    total = db.execute(
-        select(func.count(DocumentAnalysis.id)).where(DocumentAnalysis.created_at >= since)
-    ).scalar_one()
-
-    return {
-        "days": days,
-        "total": total,
-        "by_status": {row.status: row.cnt for row in by_status},
-        "by_file_type": {row.file_type: row.cnt for row in by_doc_type},
-        "avg_duration_seconds": avg_duration_s,
     }

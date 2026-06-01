@@ -9,12 +9,11 @@ import { getWsUrl } from "@/lib/constants";
 import { useConversationStore } from "@/stores";
 interface UseChatOptions {
   conversationId?: string | null;
-  caseId?: string | null;
   onConversationCreated?: (conversationId: string) => void;
 }
 
 export function useChat(options: UseChatOptions = {}) {
-  const { conversationId, caseId, onConversationCreated } = options;
+  const { conversationId, onConversationCreated } = options;
   const { setCurrentConversationId, currentConversationId: currentConversationIdFromStore } =
     useConversationStore();
   const {
@@ -388,12 +387,11 @@ export function useChat(options: UseChatOptions = {}) {
         message: content,
         conversation_id: conversationId || null,
       };
-      if (caseId) payload.case_id = caseId;
       if (fileIds?.length) payload.file_ids = fileIds;
       if (modelRef.current) payload.model = modelRef.current;
       sendMessage(payload);
     },
-    [addMessage, sendMessage, conversationId, caseId],
+    [addMessage, sendMessage, conversationId],
   );
 
   const sendChatMessage = useCallback(

@@ -21,7 +21,6 @@
   "navigation": {
     "home": "Home",
     "dashboard": "Dashboard",
-    "cases": "Cases",
     "conversations": "Conversations",
     "profile": "Profile",
     "settings": "Settings",
@@ -29,14 +28,12 @@
     "work": "Work",
     "admin": "Admin",
     "user": "User",
-    "review": "Review",
     "commercial": "Commercial",
     "adminRatings": "Ratings",
     "adminUsers": "User Management",
     "adminConversations": "All Conversations",
     "adminLogs": "System Logs",
-    "adminSystem": "System Status",
-    "cases": "Cases"
+    "adminSystem": "System Status"
   },
   "auth": {
     "login": "Login",

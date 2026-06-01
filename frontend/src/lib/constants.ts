@@ -32,8 +32,6 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   CHAT: "/chat",
   PROFILE: "/profile",
-  CASES: "/cases",
-  REVIEW: "/review",
   COMMERCIAL: "/commercial",
   COMMERCIAL_SETUP: "/commercial/setup",
   COMMERCIAL_REVIEW: "/commercial/review",
