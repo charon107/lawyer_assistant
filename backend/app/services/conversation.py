@@ -14,7 +14,6 @@ from app.repositories import conversation_repo, conversation_share_repo
 from app.schemas.conversation import (
     ConversationCreate,
     ConversationUpdate,
-    ConversationWithLatestMessage,
     MessageCreate,
     MessageRead,
     ToolCallComplete,
@@ -202,38 +201,6 @@ class ConversationService:
             user_id=user_id,
             include_archived=include_archived,
         )
-        return items, total
-
-    def list_conversations_admin(
-        self,
-        *,
-        skip: int = 0,
-        limit: int = 50,
-        include_archived: bool = False,
-        search: str | None = None,
-    ) -> tuple[list[ConversationWithLatestMessage], int]:
-        """List all conversations for admin with message counts.
-
-        Returns conversations with message_count but no message content.
-        """
-        from app.schemas.conversation import ConversationRead
-
-        rows, total = conversation_repo.get_all_conversations_with_count(
-            self.db,
-            skip=skip,
-            limit=limit,
-            include_archived=include_archived,
-            search=search,
-        )
-
-        items = []
-        for conv, msg_count in rows:
-            conv_dict = {
-                **ConversationRead.model_validate(conv).model_dump(),
-                "message_count": msg_count,
-            }
-            items.append(ConversationWithLatestMessage.model_validate(conv_dict))
-
         return items, total
 
     def admin_list_with_users(
