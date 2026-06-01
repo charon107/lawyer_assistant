@@ -9,13 +9,25 @@
 
 import { apiClient } from "@/lib/api-client";
 import type {
+  ClauseDeviationCountList,
   ColdStartRequest,
   ColdStartResponse,
+  CommercialMatter,
+  CommercialMatterCreate,
+  CommercialMatterList,
+  CommercialMatterUpdate,
   CommercialProfile,
   CommercialProfileUpdate,
   ContractReview,
   ContractReviewList,
   ModuleStatusResponse,
+  PlaybookProposal,
+  PlaybookProposalList,
+  PlaybookProposalUpdate,
+  RenewalRegistration,
+  RenewalRegistrationCreate,
+  RenewalRegistrationList,
+  RenewalRegistrationUpdate,
 } from "@/types/commercial";
 
 export const commercialApi = {
@@ -41,4 +53,48 @@ export const commercialApi = {
 
   getReview: (id: string) =>
     apiClient.get<ContractReview>(`/commercial/reviews/${id}`),
+
+  // ----- Matters -----------------------------------------------------------
+
+  listMatters: (skip = 0, limit = 50) =>
+    apiClient.get<CommercialMatterList>(
+      `/commercial/matters?skip=${skip}&limit=${limit}`,
+    ),
+
+  createMatter: (data: CommercialMatterCreate) =>
+    apiClient.post<CommercialMatter>("/commercial/matters", data),
+
+  getMatter: (id: string) =>
+    apiClient.get<CommercialMatter>(`/commercial/matters/${id}`),
+
+  updateMatter: (id: string, data: CommercialMatterUpdate) =>
+    apiClient.patch<CommercialMatter>(`/commercial/matters/${id}`, data),
+
+  // ----- Renewals ----------------------------------------------------------
+
+  listRenewals: (skip = 0, limit = 50) =>
+    apiClient.get<RenewalRegistrationList>(
+      `/commercial/renewals?skip=${skip}&limit=${limit}`,
+    ),
+
+  registerRenewal: (data: RenewalRegistrationCreate) =>
+    apiClient.post<RenewalRegistration>("/commercial/renewals", data),
+
+  updateRenewal: (id: string, data: RenewalRegistrationUpdate) =>
+    apiClient.patch<RenewalRegistration>(`/commercial/renewals/${id}`, data),
+
+  // ----- Deviations (aggregated) -------------------------------------------
+
+  listClauseDeviationCounts: () =>
+    apiClient.get<ClauseDeviationCountList>("/commercial/deviations"),
+
+  // ----- Playbook proposals ------------------------------------------------
+
+  listProposals: (skip = 0, limit = 50) =>
+    apiClient.get<PlaybookProposalList>(
+      `/commercial/proposals?skip=${skip}&limit=${limit}`,
+    ),
+
+  updateProposal: (id: string, data: PlaybookProposalUpdate) =>
+    apiClient.patch<PlaybookProposal>(`/commercial/proposals/${id}`, data),
 };

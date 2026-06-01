@@ -7,7 +7,15 @@ import { Button, Card, CardContent, Spinner } from "@/components/ui";
 import { ROUTES } from "@/lib/constants";
 import { commercialApi } from "@/lib/commercial";
 import type { ContractReview, ModuleStatusResponse } from "@/types/commercial";
-import { ScrollText, FileSearch, Settings2, ArrowRight, Sparkles } from "lucide-react";
+import {
+  ScrollText,
+  FileSearch,
+  Settings2,
+  ArrowRight,
+  Sparkles,
+  CalendarClock,
+  Building2,
+} from "lucide-react";
 
 const SIDE_LABEL: Record<string, string> = {
   purchasing: "采购方",
@@ -107,6 +115,28 @@ export default function CommercialPage() {
                   <h3 className="font-medium">审查新合同</h3>
                   <p className="text-muted-foreground text-sm">
                     上传或粘贴合同，AI 逐条对照手册产出偏差报告。
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link href={ROUTES.COMMERCIAL_RENEWALS}>
+              <Card className="hover:border-brand/40 h-full transition-colors">
+                <CardContent className="flex flex-col gap-2 p-5">
+                  <CalendarClock className="text-brand h-5 w-5" />
+                  <h3 className="font-medium">续约看板</h3>
+                  <p className="text-muted-foreground text-sm">
+                    登记续约期限，按紧急度提醒哪些要尽快决定续 / 退。
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link href={ROUTES.COMMERCIAL_MATTERS}>
+              <Card className="hover:border-brand/40 h-full transition-colors">
+                <CardContent className="flex flex-col gap-2 p-5">
+                  <Building2 className="text-brand h-5 w-5" />
+                  <h3 className="font-medium">事项管理</h3>
+                  <p className="text-muted-foreground text-sm">
+                    按对方主体归集审查与续约，集中跟踪每个合作事项。
                   </p>
                 </CardContent>
               </Card>

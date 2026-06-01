@@ -1,12 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, FileText, AlertCircle } from "lucide-react";
-import { Card, CardContent, Spinner } from "@/components/ui";
-import { MarkdownContent } from "@/components/chat";
+import {
+  ArrowLeft,
+  FileText,
+  AlertCircle,
+  Sparkles,
+  UserCheck,
+  Loader2,
+} from "lucide-react";
+import { Button, Card, CardContent, Spinner } from "@/components/ui";
+import { MarkdownContent, ToolCallCard } from "@/components/chat";
 import { DeviationCard, ReviewBadges } from "@/components/commercial";
+import { useCommercialChat } from "@/hooks/use-commercial-chat";
 import { commercialApi } from "@/lib/commercial";
 import { ROUTES } from "@/lib/constants";
 import type { ContractReview, ResultStatus } from "@/types/commercial";
@@ -39,6 +47,9 @@ const STATUS_PILL: Record<ResultStatus, { label: string; cls: string }> = {
   },
 };
 
+/** Which downstream action (if any) the user has launched on this review. */
+type DownstreamAction = "summarize" | "escalate";
+
 export default function CommercialReviewDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
@@ -47,7 +58,22 @@ export default function CommercialReviewDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Downstream actions (summarize / escalate) stream over the same WS the
+  // live review uses. We track which one is in flight so we can re-fetch
+  // the persisted row once the agent writes its result back.
+  const {
+    streamingText,
+    finalOutput,
+    toolCalls,
+    status: wsStatus,
+    error: wsError,
+    summarizeReview,
+    escalateReview,
+  } = useCommercialChat();
+  const [activeAction, setActiveAction] = useState<DownstreamAction | null>(null);
+  const refetchedForRef = useRef<DownstreamAction | null>(null);
+
+  const fetchReview = useCallback(() => {
     if (!id) return;
     let cancelled = false;
     setLoading(true);
@@ -67,8 +93,40 @@ export default function CommercialReviewDetailPage() {
     };
   }, [id]);
 
+  useEffect(() => {
+    const cleanup = fetchReview();
+    return cleanup;
+  }, [fetchReview]);
+
+  // When a downstream action finishes, pull the persisted row so the new
+  // stakeholder_summary / required_approver render. Guard with a ref so we
+  // only re-fetch once per completed action.
+  useEffect(() => {
+    if (wsStatus !== "done" || !activeAction) return;
+    if (refetchedForRef.current === activeAction) return;
+    refetchedForRef.current = activeAction;
+    fetchReview();
+  }, [wsStatus, activeAction, fetchReview]);
+
+  const handleSummarize = () => {
+    if (!id) return;
+    refetchedForRef.current = null;
+    setActiveAction("summarize");
+    summarizeReview(id);
+  };
+
+  const handleEscalate = () => {
+    if (!id) return;
+    refetchedForRef.current = null;
+    setActiveAction("escalate");
+    escalateReview(id);
+  };
+
   const structured = review?.result_json ?? null;
   const pill = STATUS_PILL[review?.result_status ?? "in_progress"];
+  const wsBusy = wsStatus === "connecting" || wsStatus === "running";
+  // Downstream actions only make sense once the original review has finished.
+  const reviewDone = !!review && review.result_status !== "in_progress";
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
@@ -111,6 +169,98 @@ export default function CommercialReviewDetailPage() {
 
       {!loading && !error && review && (
         <div className="flex flex-col gap-6">
+          {/* Downstream actions — only after the original review finished. */}
+          {reviewDone && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSummarize}
+                disabled={wsBusy}
+              >
+                {wsBusy && activeAction === "summarize" ? (
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-1.5 h-4 w-4" />
+                )}
+                生成业务摘要
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleEscalate}
+                disabled={wsBusy}
+              >
+                {wsBusy && activeAction === "escalate" ? (
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                ) : (
+                  <UserCheck className="mr-1.5 h-4 w-4" />
+                )}
+                确定审批人
+              </Button>
+              {wsBusy && (
+                <span className="text-muted-foreground text-sm">
+                  {activeAction === "summarize"
+                    ? "正在生成业务摘要……"
+                    : "正在判定审批人……"}
+                </span>
+              )}
+            </div>
+          )}
+
+          {wsError && (
+            <p className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border px-4 py-2.5 text-sm">
+              {wsError}
+            </p>
+          )}
+
+          {/* Live tool calls during a downstream action */}
+          {activeAction && toolCalls.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {toolCalls.map((tc) => (
+                <ToolCallCard key={tc.id} toolCall={tc} defaultCollapsed />
+              ))}
+            </div>
+          )}
+
+          {/* Live streamed narrative during a downstream action */}
+          {activeAction && (finalOutput || streamingText) && (
+            <Card>
+              <CardContent className="prose-sm max-w-none p-6 text-sm leading-relaxed">
+                <MarkdownContent content={finalOutput || streamingText} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Persisted stakeholder summary */}
+          {review.stakeholder_summary && (
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold tracking-wide uppercase">
+                  <Sparkles className="text-brand h-4 w-4" />
+                  业务摘要
+                </h2>
+                <div className="prose-sm max-w-none text-sm leading-relaxed">
+                  <MarkdownContent content={review.stakeholder_summary} />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Persisted required approver */}
+          {review.required_approver && (
+            <div className="border-brand/30 bg-brand/5 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm">
+              <UserCheck className="text-brand h-4 w-4 shrink-0" />
+              <span>
+                建议审批人：
+                <span className="font-medium">{review.required_approver}</span>
+                {review.escalation_sent && (
+                  <span className="text-muted-foreground ml-2">· 已上报</span>
+                )}
+              </span>
+            </div>
+          )}
+
           {/* Memo narrative */}
           {review.result_memo && (
             <Card>
@@ -138,14 +288,6 @@ export default function CommercialReviewDetailPage() {
                     ))}
                   </div>
                 </div>
-              )}
-              {structured.required_approver && (
-                <p className="text-muted-foreground text-sm">
-                  建议上报：
-                  <span className="text-foreground font-medium">
-                    {structured.required_approver}
-                  </span>
-                </p>
               )}
             </div>
           )}

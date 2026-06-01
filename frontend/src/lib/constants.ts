@@ -37,6 +37,8 @@ export const ROUTES = {
   COMMERCIAL: "/commercial",
   COMMERCIAL_SETUP: "/commercial/setup",
   COMMERCIAL_REVIEW: "/commercial/review",
+  COMMERCIAL_RENEWALS: "/commercial/renewals",
+  COMMERCIAL_MATTERS: "/commercial/matters",
   SETTINGS: "/settings",
   ADMIN_RATINGS: "/admin/ratings",
   ADMIN_USERS: "/admin/users",

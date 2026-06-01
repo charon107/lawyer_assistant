@@ -4,7 +4,11 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useWebSocket } from "./use-websocket";
 import { useAuthStore } from "@/stores";
 import { getWsUrl } from "@/lib/constants";
-import type { CommercialWsEvent, CommercialWsStartMessage } from "@/types/commercial";
+import type {
+  CommercialWsEvent,
+  CommercialWsMessage,
+  CommercialWsStartMessage,
+} from "@/types/commercial";
 
 /** A tool call surfaced during the review stream. */
 export interface CommercialToolCall {
@@ -53,9 +57,9 @@ const INITIAL: CommercialChatState = {
  */
 export function useCommercialChat() {
   const [state, setState] = useState<CommercialChatState>(INITIAL);
-  // Holds the start payload until the socket reports OPEN, so we never
-  // send before the connection is ready.
-  const pendingStartRef = useRef<StartPayload | null>(null);
+  // Holds the queued WS message until the socket reports OPEN, so we never
+  // send before the connection is ready. Covers start / summarize / escalate.
+  const pendingMessageRef = useRef<CommercialWsMessage | null>(null);
 
   const accessToken = useAuthStore((s) => s.accessToken);
 
@@ -140,11 +144,11 @@ export function useCommercialChat() {
   }, []);
 
   const handleOpen = useCallback(() => {
-    const pending = pendingStartRef.current;
+    const pending = pendingMessageRef.current;
     if (!pending) return;
-    pendingStartRef.current = null;
+    pendingMessageRef.current = null;
     setState((prev) => ({ ...prev, status: "running" }));
-    sendMessageRef.current?.({ action: "start", ...pending });
+    sendMessageRef.current?.(pending);
   }, []);
 
   const { isConnected, connect, disconnect, sendMessage } = useWebSocket({
@@ -160,16 +164,18 @@ export function useCommercialChat() {
   const sendMessageRef = useRef(sendMessage);
   sendMessageRef.current = sendMessage;
 
-  const startReview = useCallback(
-    (payload: StartPayload) => {
-      pendingStartRef.current = payload;
+  // Queue a message, resetting stream state, then connect-or-send. Shared by
+  // start (new review) and the downstream summarize / escalate actions.
+  const runMessage = useCallback(
+    (message: CommercialWsMessage) => {
+      pendingMessageRef.current = message;
       setState({ ...INITIAL, status: "connecting" });
-      // If the socket is already open (sequential review on same page),
+      // If the socket is already open (sequential action on same page),
       // fire immediately; otherwise connect and let onOpen flush it.
       if (isConnected) {
-        pendingStartRef.current = null;
+        pendingMessageRef.current = null;
         setState((prev) => ({ ...prev, status: "running" }));
-        sendMessage({ action: "start", ...payload });
+        sendMessage(message);
       } else {
         connect();
       }
@@ -177,8 +183,25 @@ export function useCommercialChat() {
     [isConnected, connect, sendMessage],
   );
 
+  const startReview = useCallback(
+    (payload: StartPayload) => runMessage({ action: "start", ...payload }),
+    [runMessage],
+  );
+
+  /** Run stakeholder-summary over an existing finished review. */
+  const summarizeReview = useCallback(
+    (reviewId: string) => runMessage({ action: "summarize", review_id: reviewId }),
+    [runMessage],
+  );
+
+  /** Run escalation-flagger over an existing finished review. */
+  const escalateReview = useCallback(
+    (reviewId: string) => runMessage({ action: "escalate", review_id: reviewId }),
+    [runMessage],
+  );
+
   const reset = useCallback(() => {
-    pendingStartRef.current = null;
+    pendingMessageRef.current = null;
     setState(INITIAL);
   }, []);
 
@@ -186,6 +209,8 @@ export function useCommercialChat() {
     ...state,
     isConnected,
     startReview,
+    summarizeReview,
+    escalateReview,
     reset,
     disconnect,
   };
