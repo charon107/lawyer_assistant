@@ -18,6 +18,7 @@ from app.db.models.commercial_matter import CommercialMatter
 from app.db.models.renewal_registration import RenewalRegistration
 from app.db.models.contract_deviation import ContractDeviation
 from app.db.models.playbook_proposal import PlaybookProposal
+from app.db.models.commercial_notification import CommercialNotification
 
 __all__ = [
     "User",
@@ -39,4 +40,5 @@ __all__ = [
     "RenewalRegistration",
     "ContractDeviation",
     "PlaybookProposal",
+    "CommercialNotification",
 ]

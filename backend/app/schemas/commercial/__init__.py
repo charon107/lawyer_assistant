@@ -19,6 +19,10 @@ from app.schemas.commercial.matter import (
     CommercialMatterRead,
     CommercialMatterUpdate,
 )
+from app.schemas.commercial.notification import (
+    CommercialNotificationList,
+    CommercialNotificationRead,
+)
 from app.schemas.commercial.playbook import (
     ClausePosition,
     EscalationRule,
@@ -70,6 +74,9 @@ __all__ = [  # noqa: RUF022 — intentionally grouped by source file, not alphab
     "CommercialMatterList",
     "CommercialMatterRead",
     "CommercialMatterUpdate",
+    # notification
+    "CommercialNotificationList",
+    "CommercialNotificationRead",
     # playbook
     "ClausePosition",
     "EscalationRule",
