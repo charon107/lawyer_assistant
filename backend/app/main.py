@@ -23,7 +23,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     See: https://asgi.readthedocs.io/en/latest/specs/lifespan.html#lifespan-state
     """
     # === Startup ===
-    import app.db.models
+    # NB: use `from app.db import models` (binds `models`), NOT
+    # `import app.db.models` — the latter binds the name `app` as a
+    # function-local for this whole scope, shadowing the `app: FastAPI`
+    # parameter and making `app.state.scheduler = ...` below raise
+    # `AttributeError: module 'app' has no attribute 'state'`.
+    from app.db import models  # noqa: F401  (imported for model registration side effects)
     from app.db.base import Base
     from app.db.session import engine
 
