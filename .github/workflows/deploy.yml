@@ -165,7 +165,14 @@ jobs:
 
             # Restart services
             echo "=== Starting services ==="
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans || { echo "ERROR: deploy failed"; exit 1; }
+            if ! docker compose -f docker-compose.prod.yml up -d --remove-orphans; then
+              echo "ERROR: deploy failed (compose up). Dumping backend logs for diagnosis:" >&2
+              echo "----- docker logs lexmind-backend (tail 120) -----" >&2
+              docker logs lexmind-backend --tail 120 2>&1 || echo "(no backend container logs available)" >&2
+              echo "----- docker ps -a -----" >&2
+              docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}' >&2 || true
+              exit 1
+            fi
 
             # Wait for backend container to be running before running migrations
             echo "=== Waiting for backend container ==="
