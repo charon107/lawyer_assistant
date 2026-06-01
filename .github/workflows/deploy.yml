@@ -96,9 +96,17 @@ jobs:
 
             cd /opt/lexmind
 
-            # Pull latest code
-            echo "=== Pulling latest code ==="
-            git pull origin main || { echo "ERROR: git pull failed"; exit 1; }
+            # Sync to latest code.
+            # Use fetch + hard reset rather than `git pull`: the server can
+            # accumulate drift in tracked files (e.g. backend/uv.lock gets
+            # rewritten by tooling), which makes a merge-based pull abort with
+            # "Your local changes would be overwritten by merge". A hard reset
+            # to origin/main is the correct semantics for a deploy target that
+            # must mirror main exactly. It only touches TRACKED files, so the
+            # untracked backend/.env (holding secrets) is preserved.
+            echo "=== Syncing to origin/main ==="
+            git fetch origin main || { echo "ERROR: git fetch failed"; exit 1; }
+            git reset --hard origin/main || { echo "ERROR: git reset failed"; exit 1; }
 
             # Free disk space before pulling new images.
             # The server is on a 40G disk and the backend image is ~5-7GB,
