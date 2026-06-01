@@ -106,15 +106,6 @@ class MessageRead(MessageBase, TimestampSchema):
     )
 
 
-class MessageReadSimple(MessageBase, TimestampSchema):
-    """Simplified message schema without tool calls."""
-
-    id: str
-    conversation_id: str
-    model_name: str | None = None
-    tokens_used: int | None = None
-
-
 # Conversation Schemas
 
 
@@ -165,18 +156,4 @@ class MessageList(BaseSchema):
     """Schema for listing messages."""
 
     items: list[MessageRead]
-    total: int
-
-
-class ConversationWithLatestMessage(ConversationRead):
-    """Conversation with its latest message for list views."""
-
-    latest_message: MessageReadSimple | None = None
-    message_count: int = 0
-
-
-class ConversationAdminList(BaseSchema):
-    """Schema for admin conversation list with message counts."""
-
-    items: list[ConversationWithLatestMessage]
     total: int

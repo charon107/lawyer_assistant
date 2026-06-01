@@ -25,7 +25,6 @@ from app.api.deps import (
     MessageRatingSvc,
 )
 from app.schemas.conversation import (
-    ConversationAdminList,
     ConversationCreate,
     ConversationList,
     ConversationRead,
@@ -59,28 +58,6 @@ def export_conversations(
         content={"conversations": export_data, "total": len(export_data)},
         headers={"Content-Disposition": 'attachment; filename="conversations_export.json"'},
     )
-
-
-@router.get("/admin-list", response_model=ConversationAdminList)
-def list_conversations_admin(
-    conversation_service: ConversationSvc,
-    _: CurrentAdmin,
-    skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=100),
-    include_archived: bool = Query(True, description="Include archived conversations"),
-    search: str | None = Query(None, max_length=100, description="Search by title or ID prefix"),
-) -> Any:
-    """List all conversations with message counts (admin only).
-
-    Returns paginated conversations without message content.
-    """
-    items, total = conversation_service.list_conversations_admin(
-        skip=skip,
-        limit=limit,
-        include_archived=include_archived,
-        search=search,
-    )
-    return ConversationAdminList(items=items, total=total)
 
 
 @router.get("", response_model=ConversationList)

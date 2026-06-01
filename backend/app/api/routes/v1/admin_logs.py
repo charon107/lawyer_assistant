@@ -67,26 +67,26 @@ def get_conversation_stats(
     rag_calls = db.execute(
         select(func.count(ToolCall.id))
         .where(ToolCall.tool_name == "search_law")
-        .where(ToolCall.created_at >= since)
+        .where(ToolCall.started_at >= since)
     ).scalar_one()
 
     avg_duration = db.execute(
         select(func.avg(ToolCall.duration_ms))
         .where(ToolCall.tool_name == "search_law")
-        .where(ToolCall.created_at >= since)
+        .where(ToolCall.started_at >= since)
     ).scalar_one()
 
     tool_call_counts = db.execute(
         select(ToolCall.tool_name, func.count(ToolCall.id).label("cnt"))
-        .where(ToolCall.created_at >= since)
+        .where(ToolCall.started_at >= since)
         .group_by(ToolCall.tool_name)
     ).all()
 
     return {
-        "days": days,
+        "period_days": days,
         "total_messages": total_messages,
         "user_messages": user_messages,
         "rag_calls": rag_calls,
-        "rag_avg_duration_ms": round(avg_duration, 1) if avg_duration else None,
-        "tool_call_breakdown": {row.tool_name: row.cnt for row in tool_call_counts},
+        "avg_rag_duration_ms": round(avg_duration, 1) if avg_duration else None,
+        "tool_breakdown": {row.tool_name: row.cnt for row in tool_call_counts},
     }
