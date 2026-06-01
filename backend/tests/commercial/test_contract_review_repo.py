@@ -29,12 +29,14 @@ class TestCreate:
         assert review.counterparty == "供应商 A"
         assert review.annual_value == 120000.50
 
-    def test_create_with_matter_id_string(self, db, user_id):
-        # Phase A: matter_id is a plain nullable string, no FK validation.
-        review = repo.create(
-            db, user_id=user_id, review_type="vendor", matter_id="some-matter-uuid"
-        )
-        assert review.matter_id == "some-matter-uuid"
+    def test_create_with_matter_id_fk(self, db, user_id):
+        # Phase B: matter_id is now a real FK to commercial_matters.id, so it
+        # must reference a row that exists.
+        from app.repositories import commercial_matter_repo as matter_repo
+
+        matter = matter_repo.create(db, user_id=user_id)
+        review = repo.create(db, user_id=user_id, review_type="vendor", matter_id=matter.id)
+        assert review.matter_id == matter.id
 
 
 class TestGetAndList:
@@ -125,6 +127,58 @@ class TestUpdateResult:
         assert review.result_status == "green"  # untouched
         assert review.result_summary == "OK"
         assert review.escalation_sent is True
+
+
+class TestListCompletedBetween:
+    """`list_completed_between` feeds the weekly deal-debrief task."""
+
+    def _make(self, db, user_id, *, status, created_at, name):
+        from datetime import datetime
+
+        review = repo.create(db, user_id=user_id, review_type="vendor", agreement_name=name)
+        review.result_status = status
+        assert isinstance(created_at, datetime)
+        review.created_at = created_at
+        db.flush()
+        return review
+
+    def test_returns_only_completed_in_window(self, db, user_id):
+        from datetime import datetime
+
+        since = datetime(2026, 5, 25, 0, 0, 0)
+        until = datetime(2026, 6, 1, 0, 0, 0)
+        # in window, completed -> included
+        keep = self._make(
+            db, user_id, status="yellow", created_at=datetime(2026, 5, 27, 9, 0), name="keep"
+        )
+        # in window but still running -> excluded
+        self._make(
+            db, user_id, status="in_progress", created_at=datetime(2026, 5, 27, 9, 0), name="wip"
+        )
+        # completed but before window -> excluded
+        self._make(db, user_id, status="green", created_at=datetime(2026, 5, 20, 9, 0), name="old")
+        # completed but at/after window end (exclusive) -> excluded
+        self._make(db, user_id, status="red", created_at=datetime(2026, 6, 1, 0, 0), name="future")
+
+        results = repo.list_completed_between(db, user_id=user_id, since=since, until=until)
+        assert [r.id for r in results] == [keep.id]
+
+    def test_isolates_users(self, db, user_id):
+        from datetime import datetime
+
+        from app.db.models.user import User
+
+        other_id = "00000000-0000-4000-8000-000000000099"
+        db.add(User(id=other_id, email="o@test.local", hashed_password="x" * 60))
+        db.flush()
+        since = datetime(2026, 5, 25)
+        until = datetime(2026, 6, 1)
+        mine = self._make(
+            db, user_id, status="green", created_at=datetime(2026, 5, 27), name="mine"
+        )
+        self._make(db, other_id, status="green", created_at=datetime(2026, 5, 27), name="theirs")
+        results = repo.list_completed_between(db, user_id=user_id, since=since, until=until)
+        assert [r.id for r in results] == [mine.id]
 
 
 class TestDelete:

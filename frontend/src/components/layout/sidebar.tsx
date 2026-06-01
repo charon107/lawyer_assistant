@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { APP_NAME, ROUTES } from "@/lib/constants";
-import { LayoutDashboard, MessageSquare, UserCircle, FileSearch, Briefcase, Star, List, ScrollText, Activity, UserCog } from "lucide-react";
+import { LayoutDashboard, MessageSquare, UserCircle, Handshake, Star, List, ScrollText, Activity, UserCog } from "lucide-react";
 import { useSidebarStore } from "@/stores";
 import { useAuth } from "@/hooks";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui";
@@ -17,8 +17,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
   const navigation = [
     { name: t("dashboard"), href: ROUTES.DASHBOARD, icon: LayoutDashboard },
-    { name: t("cases"), href: ROUTES.CASES, icon: Briefcase },
-    { name: t("review"), href: ROUTES.REVIEW, icon: FileSearch },
+    { name: t("commercial"), href: ROUTES.COMMERCIAL, icon: Handshake },
     { name: t("conversations"), href: ROUTES.CHAT, icon: MessageSquare },
     { name: t("profile"), href: ROUTES.PROFILE, icon: UserCircle },
   ];

@@ -6,8 +6,7 @@ import { useAuth } from "@/hooks";
 import { ROUTES } from "@/lib/constants";
 import {
   MessageSquare,
-  FileSearch,
-  Briefcase,
+  Handshake,
   Download,
   Star,
   List,
@@ -74,26 +73,14 @@ export default function DashboardPage() {
             </Card>
           </Link>
 
-          <Link href={ROUTES.REVIEW}>
+          <Link href={ROUTES.COMMERCIAL}>
             <Card className="cursor-pointer transition-colors hover:border-brand/40">
               <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/8">
-                  <FileSearch className="h-5 w-5 text-brand" />
+                  <Handshake className="h-5 w-5 text-brand" />
                 </div>
-                <p className="text-[13px] font-semibold">文件审查</p>
-                <p className="text-xs text-muted-foreground">合同与协议审查</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href={ROUTES.CASES}>
-            <Card className="cursor-pointer transition-colors hover:border-brand/40">
-              <CardContent className="flex flex-col items-center gap-2 p-4 text-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand/8">
-                  <Briefcase className="h-5 w-5 text-brand" />
-                </div>
-                <p className="text-[13px] font-semibold">案件管理</p>
-                <p className="text-xs text-muted-foreground">查看与管理案件</p>
+                <p className="text-[13px] font-semibold">商务法务</p>
+                <p className="text-xs text-muted-foreground">合同审查与续约</p>
               </CardContent>
             </Card>
           </Link>

@@ -7,4 +7,3 @@ export * from "./auth";
 export * from "./chat";
 export * from "./commercial";
 export * from "./conversation";
-export * from "./lpa-case";

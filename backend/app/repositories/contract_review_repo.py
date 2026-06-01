@@ -7,12 +7,16 @@ schema layer handles decoding.
 """
 
 import json
+from datetime import datetime
 from typing import Any
 
-from sqlalchemy import desc, func, select
+from sqlalchemy import asc, desc, func, select
 from sqlalchemy.orm import Session
 
 from app.db.models.contract_review import ContractReview
+
+# Statuses that mean a review run has finished (anything but in_progress/None).
+_COMPLETED_STATUSES = ("green", "yellow", "red")
 
 
 def _to_json(value: Any) -> str | None:
@@ -95,6 +99,36 @@ def list_by_user(
         .all()
     )
     return list(items), total
+
+
+def list_completed_between(
+    db: Session,
+    *,
+    user_id: str,
+    since: datetime,
+    until: datetime,
+) -> list[ContractReview]:
+    """Return completed reviews created in the half-open window `[since, until)`.
+
+    The weekly deal-debrief reads each review's stored `result_json` to build a
+    recap, so only finished runs (`result_status` in green/yellow/red) are
+    returned. Ordered oldest-first so the recap reads chronologically.
+    """
+    items = (
+        db.execute(
+            select(ContractReview)
+            .where(
+                ContractReview.user_id == user_id,
+                ContractReview.result_status.in_(_COMPLETED_STATUSES),
+                ContractReview.created_at >= since,
+                ContractReview.created_at < until,
+            )
+            .order_by(asc(ContractReview.created_at), asc(ContractReview.id))
+        )
+        .scalars()
+        .all()
+    )
+    return list(items)
 
 
 def update_result(

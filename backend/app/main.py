@@ -23,15 +23,24 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     See: https://asgi.readthedocs.io/en/latest/specs/lifespan.html#lifespan-state
     """
     # === Startup ===
-    import app.db.models  # noqa: F401 — register models with Base.metadata
+    import app.db.models
     from app.db.base import Base
     from app.db.session import engine
 
     if settings.ENVIRONMENT in ("development", "local"):
         Base.metadata.create_all(bind=engine)
+
+    from app.scheduler import create_scheduler
+
+    scheduler = create_scheduler()
+    scheduler.start()
+    app.state.scheduler = scheduler
+
     yield
 
     # === Shutdown ===
+    scheduler.shutdown(wait=False)
+
     from app.db.session import close_db
 
     close_db()

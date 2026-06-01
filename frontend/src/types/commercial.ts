@@ -160,6 +160,167 @@ export interface ContractReviewList {
   total: number;
 }
 
+// ----- Matters -------------------------------------------------------------
+
+export type MatterStatus = "active" | "closed" | "archived";
+
+export interface CommercialMatter {
+  id: string;
+  user_id: string;
+  counterparty?: string | null;
+  matter_name?: string | null;
+  agreement_type?: string | null;
+  status: MatterStatus;
+  owner?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface CommercialMatterCreate {
+  counterparty?: string | null;
+  matter_name?: string | null;
+  agreement_type?: string | null;
+  status?: MatterStatus;
+  owner?: string | null;
+  notes?: string | null;
+}
+
+export interface CommercialMatterUpdate {
+  counterparty?: string | null;
+  matter_name?: string | null;
+  agreement_type?: string | null;
+  status?: MatterStatus | null;
+  owner?: string | null;
+  notes?: string | null;
+}
+
+export interface CommercialMatterList {
+  items: CommercialMatter[];
+  total: number;
+}
+
+// ----- Renewals ------------------------------------------------------------
+
+export type RenewalDecision = "pending" | "renew" | "terminate" | "renegotiate";
+
+/** Client-side urgency bucket derived from days-left until the cancel deadline. */
+export type UrgencyBucket = "red" | "orange" | "yellow" | "green";
+
+export interface RenewalRegistration {
+  id: string;
+  user_id: string;
+  matter_id?: string | null;
+  counterparty?: string | null;
+  agreement_name?: string | null;
+  effective_date: string;
+  term_months: number;
+  auto_renew: boolean;
+  notice_days: number;
+  cancel_by_calendar?: string | null;
+  cancel_by_effective?: string | null;
+  send_by_effective?: string | null;
+  decision: RenewalDecision;
+  notes?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface RenewalRegistrationCreate {
+  matter_id?: string | null;
+  counterparty?: string | null;
+  agreement_name?: string | null;
+  effective_date: string;
+  term_months?: number;
+  auto_renew?: boolean;
+  notice_days?: number;
+  decision?: RenewalDecision;
+  notes?: string | null;
+}
+
+export interface RenewalRegistrationUpdate {
+  counterparty?: string | null;
+  agreement_name?: string | null;
+  effective_date?: string | null;
+  term_months?: number | null;
+  auto_renew?: boolean | null;
+  notice_days?: number | null;
+  decision?: RenewalDecision | null;
+  notes?: string | null;
+}
+
+export interface RenewalRegistrationList {
+  items: RenewalRegistration[];
+  total: number;
+}
+
+// ----- Deviations (aggregated) ---------------------------------------------
+
+export interface ClauseDeviationCount {
+  clause_key: string;
+  clause_label?: string | null;
+  count: number;
+}
+
+export interface ClauseDeviationCountList {
+  items: ClauseDeviationCount[];
+  total: number;
+}
+
+// ----- Playbook proposals --------------------------------------------------
+
+export type ProposalStatus = "pending" | "accepted" | "dismissed";
+
+export interface PlaybookProposal {
+  id: string;
+  user_id: string;
+  clause_key: string;
+  clause_label?: string | null;
+  current_position?: string | null;
+  proposed_position?: string | null;
+  deviation_count: number;
+  status: ProposalStatus;
+  rationale?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface PlaybookProposalUpdate {
+  status?: ProposalStatus | null;
+  proposed_position?: string | null;
+  rationale?: string | null;
+}
+
+export interface PlaybookProposalList {
+  items: PlaybookProposal[];
+  total: number;
+}
+
+// ----- Notifications (Phase C) ---------------------------------------------
+
+/** Produced by the three scheduled tasks; drives icon + accent rendering. */
+export type NotificationType =
+  | "renewal_due"
+  | "deal_debrief"
+  | "playbook_proposal";
+
+export interface CommercialNotification {
+  id: string;
+  user_id: string;
+  type: NotificationType | string;
+  title?: string | null;
+  payload?: Record<string, unknown> | null;
+  read: boolean;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface CommercialNotificationList {
+  items: CommercialNotification[];
+  total: number;
+  unread: number;
+}
+
 // ----- WebSocket protocol --------------------------------------------------
 
 export interface CommercialWsStartMessage {
@@ -173,6 +334,16 @@ export interface CommercialWsStartMessage {
   contract_text: string;
 }
 
+/** summarize / escalate operate on an EXISTING finished review. */
+export interface CommercialWsDownstreamMessage {
+  action: "summarize" | "escalate";
+  review_id: string;
+}
+
+export type CommercialWsMessage =
+  | CommercialWsStartMessage
+  | CommercialWsDownstreamMessage;
+
 export type CommercialWsEvent =
   | { type: "review_started"; data: { review_id: string } }
   | { type: "text_delta"; data: { content: string } }
@@ -184,4 +355,4 @@ export type CommercialWsEvent =
   | { type: "final_result"; data: { output: string; review_id: string } }
   | { type: "model_request_end"; data: Record<string, never> }
   | { type: "complete"; data: Record<string, never> }
-  | { type: "error"; data: { message: string } };
+  | { type: "error"; data: { message: string; code?: string } };

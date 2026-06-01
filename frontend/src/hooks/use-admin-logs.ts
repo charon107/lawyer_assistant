@@ -37,14 +37,6 @@ export interface ConversationStats {
   tool_breakdown: Record<string, number>;
 }
 
-export interface FileReviewStats {
-  period_days: number;
-  by_status: Record<string, number>;
-  by_file_type: Record<string, number>;
-  avg_duration_seconds: number | null;
-  total: number;
-}
-
 export interface RagStatus {
   checked_at: string;
   qdrant: {
@@ -67,7 +59,6 @@ export function useAdminLogs() {
   const [logsTotal, setLogsTotal] = useState(0);
   const [summary, setSummary] = useState<SystemLogSummary | null>(null);
   const [convStats, setConvStats] = useState<ConversationStats | null>(null);
-  const [fileStats, setFileStats] = useState<FileReviewStats | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -137,23 +128,6 @@ export function useAdminLogs() {
     }
   }, []);
 
-  const fetchFileStats = useCallback(async (days = 30) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/admin/logs/stats/file-reviews?days=${days}`, {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error(`Failed to fetch file review stats: ${res.status}`);
-      const data: FileReviewStats = await res.json();
-      setFileStats(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load file review stats");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   const fetchRagStatus = useCallback(async (): Promise<RagStatus | null> => {
     try {
       const res = await fetch("/api/admin/system/rag-status", {
@@ -171,13 +145,11 @@ export function useAdminLogs() {
     logsTotal,
     summary,
     convStats,
-    fileStats,
     isLoading,
     error,
     fetchLogs,
     fetchSummary,
     fetchConvStats,
-    fetchFileStats,
     fetchRagStatus,
   };
 }

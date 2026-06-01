@@ -1,6 +1,5 @@
 """Tests for user routes."""
 
-
 from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
@@ -156,9 +155,7 @@ async def test_read_users_superuser(superuser_client: AsyncClient, mock_user_ser
 
 
 @pytest.mark.anyio
-async def test_read_users_with_search(
-    superuser_client: AsyncClient, mock_user_service: MagicMock
-):
+async def test_read_users_with_search(superuser_client: AsyncClient, mock_user_service: MagicMock):
     """Search param is forwarded to the service."""
     response = await superuser_client.get(f"{settings.API_V1_STR}/users?search=foo")
     assert response.status_code == 200
@@ -275,9 +272,7 @@ async def test_admin_cannot_delete_self(
     mock_user_service: MagicMock,
 ):
     """Admin deleting their own account is rejected."""
-    response = await superuser_client.delete(
-        f"{settings.API_V1_STR}/users/{mock_superuser.id}"
-    )
+    response = await superuser_client.delete(f"{settings.API_V1_STR}/users/{mock_superuser.id}")
     assert response.status_code == 403
     mock_user_service.delete.assert_not_called()
 

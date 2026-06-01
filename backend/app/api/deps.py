@@ -96,8 +96,13 @@ SystemLogSvc = Annotated[SystemLogService, Depends(get_system_log_service)]
 # === Commercial-legal Services ===
 
 from app.services.cold_start_service import ColdStartService
+from app.services.commercial_matter_service import CommercialMatterService
+from app.services.commercial_notification_service import CommercialNotificationService
 from app.services.commercial_profile_service import CommercialProfileService
+from app.services.contract_deviation_service import ContractDeviationService
 from app.services.contract_review_service import ContractReviewService
+from app.services.playbook_proposal_service import PlaybookProposalService
+from app.services.renewal_service import RenewalService
 
 
 def get_commercial_profile_service(db: DBSession) -> CommercialProfileService:
@@ -119,6 +124,43 @@ def get_cold_start_service(db: DBSession) -> ColdStartService:
 
 
 ColdStartSvc = Annotated[ColdStartService, Depends(get_cold_start_service)]
+
+
+def get_commercial_matter_service(db: DBSession) -> CommercialMatterService:
+    return CommercialMatterService(db)
+
+
+CommercialMatterSvc = Annotated[CommercialMatterService, Depends(get_commercial_matter_service)]
+
+
+def get_renewal_service(db: DBSession) -> RenewalService:
+    return RenewalService(db)
+
+
+RenewalSvc = Annotated[RenewalService, Depends(get_renewal_service)]
+
+
+def get_contract_deviation_service(db: DBSession) -> ContractDeviationService:
+    return ContractDeviationService(db)
+
+
+ContractDeviationSvc = Annotated[ContractDeviationService, Depends(get_contract_deviation_service)]
+
+
+def get_playbook_proposal_service(db: DBSession) -> PlaybookProposalService:
+    return PlaybookProposalService(db)
+
+
+PlaybookProposalSvc = Annotated[PlaybookProposalService, Depends(get_playbook_proposal_service)]
+
+
+def get_commercial_notification_service(db: DBSession) -> CommercialNotificationService:
+    return CommercialNotificationService(db)
+
+
+CommercialNotificationSvc = Annotated[
+    CommercialNotificationService, Depends(get_commercial_notification_service)
+]
 
 
 # === Authentication Dependencies ===

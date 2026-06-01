@@ -15,12 +15,25 @@ import { ToolCallCard, MarkdownContent } from "@/components/chat";
 import {
   ContractUploader,
   DeviationCard,
+  NdaTriageResult,
   ReviewBadges,
 } from "@/components/commercial";
 import { useCommercialChat } from "@/hooks/use-commercial-chat";
 import { commercialApi } from "@/lib/commercial";
 import { ROUTES } from "@/lib/constants";
-import type { ContractReviewResult, Side } from "@/types/commercial";
+import type {
+  ContractReviewResult,
+  ResultStatus,
+  ReviewType,
+  Side,
+} from "@/types/commercial";
+
+/** Contract-type selector options — the frontend choice is the source of truth. */
+const REVIEW_TYPE_OPTIONS: { value: ReviewType; label: string; hint: string }[] = [
+  { value: "vendor", label: "采购协议", hint: "供应商 / 采购框架" },
+  { value: "nda", label: "保密协议", hint: "NDA 三色分流" },
+  { value: "saas", label: "SaaS / MSA", hint: "主服务协议" },
+];
 
 /**
  * Vendor-agreement review page.
@@ -42,11 +55,13 @@ export default function CommercialReviewPage() {
     reset,
   } = useCommercialChat();
 
+  const [reviewType, setReviewType] = useState<ReviewType>("vendor");
   const [counterparty, setCounterparty] = useState("");
   const [agreementName, setAgreementName] = useState("");
   const [contractText, setContractText] = useState("");
   const [side, setSide] = useState<Side>("purchasing");
   const [structured, setStructured] = useState<ContractReviewResult | null>(null);
+  const [resultStatus, setResultStatus] = useState<ResultStatus | null>(null);
   const [loadingStructured, setLoadingStructured] = useState(false);
 
   // Default the side from the user's saved profile.
@@ -73,7 +88,10 @@ export default function CommercialReviewPage() {
     commercialApi
       .getReview(reviewId)
       .then((r) => {
-        if (!cancelled) setStructured(r.result_json ?? null);
+        if (!cancelled) {
+          setStructured(r.result_json ?? null);
+          setResultStatus(r.result_status ?? null);
+        }
       })
       .catch(() => {
         /* the markdown narrative is still shown regardless */
@@ -91,8 +109,9 @@ export default function CommercialReviewPage() {
   const handleStart = () => {
     if (!contractText.trim()) return;
     setStructured(null);
+    setResultStatus(null);
     startReview({
-      review_type: "vendor",
+      review_type: reviewType,
       side,
       counterparty: counterparty.trim() || undefined,
       agreement_name: agreementName.trim() || undefined,
@@ -106,6 +125,7 @@ export default function CommercialReviewPage() {
     setContractText("");
     setCounterparty("");
     setAgreementName("");
+    setReviewType("vendor");
   };
 
   return (
@@ -130,6 +150,32 @@ export default function CommercialReviewPage() {
       {/* Input form — hidden once a review is in flight or finished. */}
       {status === "idle" ? (
         <div className="flex flex-col gap-5">
+          {/* Contract-type selector — explicit choice, not LLM-inferred. */}
+          <div className="flex flex-col gap-1.5">
+            <Label>合同类型</Label>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {REVIEW_TYPE_OPTIONS.map((opt) => {
+                const active = reviewType === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setReviewType(opt.value)}
+                    aria-pressed={active}
+                    className={`flex flex-col items-start gap-0.5 rounded-lg border px-3.5 py-2.5 text-left transition-colors ${
+                      active
+                        ? "border-brand bg-brand/5 ring-brand/20 ring-1"
+                        : "border-border hover:border-brand/40"
+                    }`}
+                  >
+                    <span className="text-sm font-medium">{opt.label}</span>
+                    <span className="text-muted-foreground text-xs">{opt.hint}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="counterparty">对方主体（可选）</Label>
@@ -215,6 +261,9 @@ export default function CommercialReviewPage() {
           )}
           {structured && (
             <div className="flex flex-col gap-4">
+              {reviewType === "nda" && resultStatus && (
+                <NdaTriageResult status={resultStatus} summary={structured.summary} />
+              )}
               <ReviewBadges
                 favorable={structured.favorable_terms}
                 missing={structured.missing_terms}

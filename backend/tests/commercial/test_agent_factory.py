@@ -72,6 +72,87 @@ class TestRegisteredTools:
         )
 
 
+def _tool_names(agent) -> set[str]:
+    """Read the registered tool names off a PydanticAI Agent.
+
+    Registered tools live in the agent's function toolset, keyed by name.
+    """
+    return set(agent._function_toolset.tools.keys())
+
+
+class TestSkillWiring:
+    """Each skill materializes as an Agent with exactly its allowed tools.
+
+    Narrowing the tool set per skill is a safety boundary: the downstream
+    summary / escalation skills must NOT be able to overwrite the review's
+    legal conclusion or run fresh statute lookups.
+    """
+
+    def test_all_five_skills_build(self):
+        for skill in (
+            "vendor-agreement-review",
+            "nda-review",
+            "saas-msa-review",
+            "stakeholder-summary",
+            "escalation-flagger",
+        ):
+            assert create_commercial_agent(skill) is not None  # type: ignore[arg-type]
+
+    def test_vendor_tool_set(self):
+        names = _tool_names(create_commercial_agent("vendor-agreement-review"))
+        assert names == {
+            "read_practice_profile",
+            "write_practice_profile",
+            "get_playbook",
+            "read_matter_context",
+            "write_contract_review",
+            "write_contract_deviation",
+            "write_renewal_registration",
+            "search_law",
+            "get_law_article",
+        }
+
+    def test_nda_tool_set_has_no_renewal(self):
+        names = _tool_names(create_commercial_agent("nda-review"))
+        assert names == {
+            "read_practice_profile",
+            "write_practice_profile",
+            "get_playbook",
+            "read_matter_context",
+            "write_contract_review",
+            "write_contract_deviation",
+            "search_law",
+            "get_law_article",
+        }
+        assert "write_renewal_registration" not in names
+
+    def test_saas_tool_set_has_renewal(self):
+        names = _tool_names(create_commercial_agent("saas-msa-review"))
+        assert "write_renewal_registration" in names
+        assert "search_law" in names
+
+    def test_stakeholder_summary_is_read_mostly(self):
+        names = _tool_names(create_commercial_agent("stakeholder-summary"))
+        assert names == {
+            "read_matter_context",
+            "read_contract_review",
+            "write_stakeholder_summary",
+        }
+        # Must NOT be able to re-review or look up statutes.
+        assert "write_contract_review" not in names
+        assert "search_law" not in names
+
+    def test_escalation_flagger_tool_set(self):
+        names = _tool_names(create_commercial_agent("escalation-flagger"))
+        assert names == {
+            "read_escalation_matrix",
+            "read_contract_review",
+            "write_escalation_decision",
+        }
+        assert "write_contract_review" not in names
+        assert "search_law" not in names
+
+
 class TestCommercialDepsShape:
     def test_deps_default_review_id_is_none(self, db, user_id):
         deps = CommercialDeps(user_id=user_id, db=db)
