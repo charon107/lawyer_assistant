@@ -37,7 +37,7 @@ export default function CommercialRenewalsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const list = await commercialApi.listRenewals(0, 200);
+        const list = await commercialApi.listRenewals(0, 100);
         if (!cancelled) setRenewals(list.items);
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : "加载失败");

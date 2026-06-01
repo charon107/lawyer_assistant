@@ -44,7 +44,7 @@ export default function CommercialMattersPage() {
     let cancelled = false;
     (async () => {
       try {
-        const list = await commercialApi.listMatters(0, 200);
+        const list = await commercialApi.listMatters(0, 100);
         if (!cancelled) setMatters(list.items);
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : "加载失败");
