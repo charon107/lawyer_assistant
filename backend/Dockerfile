@@ -25,9 +25,6 @@ RUN uv run python -c "from sentence_transformers import SentenceTransformer; Sen
 # Copy application code
 COPY backend/ .
 
-# Copy prompts into the LPA package for reliable path resolution in Docker
-COPY prompts/ /app/app/agents/lpa/prompts/
-
 # Ensure data and media directories exist
 RUN mkdir -p /app/data /app/media
 
