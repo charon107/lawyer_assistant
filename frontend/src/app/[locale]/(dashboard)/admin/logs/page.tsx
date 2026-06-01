@@ -5,9 +5,9 @@ import { useAuthStore } from "@/stores";
 import { useAdminLogs, type SystemLog } from "@/hooks/use-admin-logs";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/utils";
-import { Shield, Users, MessageSquare, FileSearch, ChevronLeft, ChevronRight } from "lucide-react";
+import { Shield, Users, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
 
-type Tab = "auth" | "audit" | "conversations" | "files";
+type Tab = "auth" | "audit" | "conversations";
 
 const PAGE_SIZE = 50;
 
@@ -182,85 +182,6 @@ function ConversationStatsTab() {
   );
 }
 
-function FileStatsTab() {
-  const { fileStats, isLoading, error, fetchFileStats } = useAdminLogs();
-  const [days, setDays] = useState(30);
-
-  useEffect(() => {
-    fetchFileStats(days);
-  }, [days, fetchFileStats]);
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <label className="text-sm text-muted-foreground">时间范围</label>
-        <select
-          value={days}
-          onChange={(e) => setDays(Number(e.target.value))}
-          className="rounded border bg-background px-2 py-1 text-sm"
-        >
-          <option value={7}>最近 7 天</option>
-          <option value={30}>最近 30 天</option>
-          <option value={90}>最近 90 天</option>
-        </select>
-      </div>
-
-      {isLoading && <div className="text-muted-foreground text-sm">加载中...</div>}
-      {error && <div className="text-red-600 text-sm">{error}</div>}
-
-      {fileStats && !isLoading && (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <StatCard label="总审查数" value={fileStats.total.toLocaleString()} />
-            <StatCard
-              label="平均处理耗时"
-              value={fileStats.avg_duration_seconds ? `${Math.round(fileStats.avg_duration_seconds)} 秒` : "—"}
-            />
-            <StatCard
-              label="完成率"
-              value={
-                fileStats.total > 0
-                  ? `${Math.round(((fileStats.by_status["completed"] ?? 0) / fileStats.total) * 100)}%`
-                  : "—"
-              }
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Object.keys(fileStats.by_status).length > 0 && (
-              <div className="rounded-lg border bg-card p-4">
-                <p className="text-sm font-medium mb-3">按状态分布</p>
-                <div className="space-y-2">
-                  {Object.entries(fileStats.by_status).map(([status, count]) => (
-                    <div key={status} className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground capitalize">{status}</span>
-                      <span className="font-semibold">{(count as number).toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {Object.keys(fileStats.by_file_type).length > 0 && (
-              <div className="rounded-lg border bg-card p-4">
-                <p className="text-sm font-medium mb-3">按文件类型分布</p>
-                <div className="space-y-2">
-                  {Object.entries(fileStats.by_file_type).map(([type, count]) => (
-                    <div key={type} className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground font-mono">{type}</span>
-                      <span className="font-semibold">{(count as number).toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
 function AuthLogsTab() {
   const { logs, logsTotal, isLoading, error, fetchLogs } = useAdminLogs();
   const [page, setPage] = useState(0);
@@ -335,7 +256,6 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "auth", label: "认证日志", icon: Shield },
   { id: "audit", label: "管理审计", icon: Users },
   { id: "conversations", label: "对话统计", icon: MessageSquare },
-  { id: "files", label: "文件审查", icon: FileSearch },
 ];
 
 export default function AdminLogsPage() {
@@ -383,7 +303,6 @@ export default function AdminLogsPage() {
         {activeTab === "auth" && <AuthLogsTab />}
         {activeTab === "audit" && <AuditLogsTab />}
         {activeTab === "conversations" && <ConversationStatsTab />}
-        {activeTab === "files" && <FileStatsTab />}
       </div>
     </div>
   );
