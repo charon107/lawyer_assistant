@@ -39,6 +39,7 @@ TITLE_RE = re.compile(r"^#\s+(.+)$", re.MULTILINE)
 # Category mapping for well-known laws
 CATEGORY_MAP: dict[str, tuple[str, str | None]] = {
     "民法典": ("民法", None),
+    "民事诉讼法": ("民法", None),
     "劳动法": ("劳动法", None),
     "劳动合同法": ("劳动法", None),
     "公司法": ("商法", "公司"),
