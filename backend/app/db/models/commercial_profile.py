@@ -48,6 +48,25 @@ class CommercialProfile(Base, TimestampMixin):
         default="purchasing",
     )  # sales / purchasing / both
 
+    # Setup depth chosen in the cold-start wizard. "quick" produces a
+    # defaults-only profile (no per-clause playbook); downstream review
+    # skills must NOT issue a "green / safe to sign" conclusion on it.
+    # "full" is the authoritative, lawyer-reviewed depth.
+    setup_depth: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="full",
+    )  # quick / full
+
+    # Who uses the module. Drives the work-product header and the
+    # unauthorized-practice-of-law guardrail (non-lawyers get a research
+    # framing + a hard stop before legally-consequential actions).
+    used_by: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="lawyer",
+    )  # lawyer / non_lawyer
+
     # Setup state (kept here in addition to module_configs because the cold-start
     # wizard needs to be able to mark this profile "completed" even after the
     # user has wiped/restarted the module_configs row).

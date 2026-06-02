@@ -11,7 +11,13 @@ from typing import Literal
 from pydantic import Field, field_validator
 
 from app.schemas.base import BaseSchema, TimestampSchema
-from app.schemas.commercial.playbook import EscalationRule, Playbook, Side
+from app.schemas.commercial.playbook import (
+    EscalationRule,
+    Playbook,
+    SetupDepth,
+    Side,
+    UsedBy,
+)
 
 ModuleStatus = Literal["not_started", "in_progress", "completed"]
 
@@ -45,6 +51,8 @@ class CommercialProfileCreate(BaseSchema):
     gc_name: str | None = Field(default=None, max_length=255)
     monthly_volume: str | None = Field(default=None, max_length=50)
     side: Side = "purchasing"
+    setup_depth: SetupDepth = "full"
+    used_by: UsedBy = "lawyer"
 
     profile_content: str | None = Field(
         default=None,
@@ -70,6 +78,8 @@ class CommercialProfileUpdate(BaseSchema):
     gc_name: str | None = Field(default=None, max_length=255)
     monthly_volume: str | None = Field(default=None, max_length=50)
     side: Side | None = None
+    setup_depth: SetupDepth | None = None
+    used_by: UsedBy | None = None
     setup_status: ModuleStatus | None = None
     profile_content: str | None = None
     playbook_sales: Playbook | None = None
@@ -93,6 +103,8 @@ class CommercialProfileRead(BaseSchema, TimestampSchema):
     gc_name: str | None = None
     monthly_volume: str | None = None
     side: Side = "purchasing"
+    setup_depth: SetupDepth = "full"
+    used_by: UsedBy = "lawyer"
     setup_status: ModuleStatus = "not_started"
     profile_content: str | None = None
     playbook_sales: Playbook | None = None

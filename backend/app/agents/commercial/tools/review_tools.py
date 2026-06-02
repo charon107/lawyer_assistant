@@ -12,10 +12,38 @@ from typing import Any, Literal
 from pydantic_ai import ModelRetry, RunContext
 
 from app.agents.commercial.deps import CommercialDeps
-from app.repositories import contract_review_repo
+from app.repositories import commercial_profile_repo, contract_review_repo
 from app.schemas.commercial.review import ContractReviewResult
 
 ResultStatus = Literal["green", "yellow", "red"]
+
+# Deterministic backstop note prepended when a green result is downgraded.
+_DOWNGRADE_NOTE = (
+    "⚠️ 系统提示：因当前配置为【快速/默认值】或缺少该方向的合同手册，"
+    "已将结论从「绿」降级为「黄」。请运行完整配置（--full / --side）或转律师确认后再放行。"
+)
+
+
+def _matching_playbook_missing(profile: Any, side: str) -> bool:
+    """True when the playbook for the deal's side isn't configured.
+
+    For a concrete side we check that one column; for "both" (or any
+    unexpected value) we require BOTH sides to be present.
+    """
+    if side == "sales":
+        return not profile.playbook_sales
+    if side == "purchasing":
+        return not profile.playbook_purchasing
+    return not (profile.playbook_sales and profile.playbook_purchasing)
+
+
+def _should_block_green(profile: Any, side: str) -> bool:
+    """Defaults-only config must not auto-greenlight (mirrors prompt §5/§6)."""
+    if profile is None:
+        return True
+    if profile.setup_depth == "quick":
+        return True
+    return _matching_playbook_missing(profile, side)
 
 
 def _coerce_list(value: Any, field_name: str) -> list[Any]:
@@ -94,6 +122,16 @@ async def write_contract_review(
         raise PermissionError(
             f"Cannot write to review {deps.review_id} (not found, or wrong user)."
         )
+
+    # Deterministic depth/side guard (non-LLM backstop for prompt §5/§6):
+    # never let a "green" land on a defaults-only config or a missing
+    # matching-side playbook. Downgrade to "yellow" and explain why.
+    if result_status == "green":
+        profile = commercial_profile_repo.get_by_user_id(deps.db, deps.user_id)
+        if _should_block_green(profile, review.side):
+            result_status = "yellow"
+            result_summary = f"{_DOWNGRADE_NOTE}\n\n{result_summary}"
+            result_memo = f"{_DOWNGRADE_NOTE}\n\n{result_memo}"
 
     # Coerce array args (some models pass them as JSON strings), then
     # build the structured result via Pydantic for shape validation and

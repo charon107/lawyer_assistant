@@ -61,6 +61,7 @@ NDA_REVIEW_GUIDANCE = """\
 ### Step 4 — 组装
 调用 `write_contract_review(...)`：
 - `result_status`: 任一红 → red；任一黄 → yellow；全绿 → green。
+  **放绿前先过共享规范 §5/§6/§7**：快速/默认值或缺匹配方手册时不得放绿（至多黄）。
 - `result_summary`: 2 句话（能不能签 + 最关键的一处风险）。
 - `result_memo`: Markdown，按三色分组列条款。
 - `deviations`: 结构化偏差列表（与 write_contract_deviation 落库的对应）。

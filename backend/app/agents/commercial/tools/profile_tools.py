@@ -34,9 +34,26 @@ async def read_practice_profile(ctx: RunContext[CommercialDeps]) -> str:
             "⚠️ 当前用户尚未完成商事合同模块的冷启动配置。\n"
             "请告知用户前往「商事合同 → 设置」页面完成配置，否则无法进行有意义的审查。"
         )
+
+    # Authorization banner — the three differentiation axes condition all
+    # downstream behaviour (see SECURITY_MECHANISMS §5/§6/§7).
+    role_label = "业务团队（非法务）" if profile.used_by == "non_lawyer" else "律师/法律专业人士"
+    matching_playbook = (
+        profile.playbook_sales if profile.side == "sales" else profile.playbook_purchasing
+    )
+    defaults_only = profile.setup_depth == "quick" or not matching_playbook
+
     parts: list[str] = []
+    if defaults_only:
+        parts.append(
+            "⚠️ 本画像为【快速/默认值】，未经律师逐条确认；下游不得据此发出"
+            "“绿色/可直接签署”结论，需要时引导用户运行完整配置（--full）。"
+        )
+        parts.append("")
+    parts.append(f"**使用者角色**: {role_label}")
+    parts.append(f"**当前方向**: {profile.side}")
+    parts.append(f"**配置深度**: {profile.setup_depth}")
     parts.append(f"**公司**: {profile.company_name or '(未填写)'}")
-    parts.append(f"**侧**: {profile.side}")
     if profile.gc_name:
         parts.append(f"**法务负责人**: {profile.gc_name}")
     if profile.monthly_volume:
