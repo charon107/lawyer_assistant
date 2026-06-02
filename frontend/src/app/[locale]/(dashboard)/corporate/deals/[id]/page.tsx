@@ -159,35 +159,37 @@ export default function CorporateDealDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
+    <div className="mx-auto max-w-5xl px-6 py-10">
       <Link
         href={ROUTES.CORPORATE_DEALS}
-        className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1 text-sm"
+        className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1.5 text-sm"
       >
         <ArrowLeft className="h-4 w-4" />
         交易工作区
       </Link>
 
       {error && (
-        <p className="border-destructive/30 bg-destructive/5 text-destructive mb-6 rounded-lg border px-4 py-2.5 text-sm">
+        <p className="border-destructive/30 bg-destructive/5 text-destructive mb-8 rounded-lg border px-4 py-3 text-sm">
           {error}
         </p>
       )}
 
+      {/* Deal header */}
       {deal && (
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">{deal.code}</h1>
-          <p className="text-muted-foreground text-sm">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold tracking-tight">{deal.code}</h1>
+          <p className="text-muted-foreground mt-1.5 text-sm">
             {deal.counterparty || "—"} · {deal.deal_type || "并购交易"} · {deal.status}
           </p>
         </div>
       )}
 
-      <Card className="border-brand/20 bg-brand/5 mb-6">
-        <CardContent className="flex flex-col gap-3 p-5">
+      {/* AI panel */}
+      <Card className="border-brand/20 bg-brand/5 mb-8">
+        <CardContent className="flex flex-col gap-4 p-6">
           <div>
             <h2 className="text-sm font-semibold">AI 运行（公司并购技能）</h2>
-            <p className="text-muted-foreground text-xs">
+            <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
               粘贴数据室文本 / 指令，让 AI 跑尽调提取、表格化审查、重大合同清单或交易团队简报。
               结果会写入对应标签页。需先在「个人中心」配置模型。
             </p>
@@ -198,7 +200,7 @@ export default function CorporateDealDetailPage() {
             placeholder="例如：审查数据室「重大合同」类别，提取控制权变更、转让限制与解除权问题。"
             rows={3}
           />
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             <Button
               size="sm"
               disabled={chat.status === "running" || chat.status === "connecting"}
@@ -240,23 +242,24 @@ export default function CorporateDealDetailPage() {
           {promptError && <p className="text-destructive text-xs">{promptError}</p>}
           {chat.error && <p className="text-destructive text-xs">{chat.error}</p>}
           {(chat.streamingText || chat.finalOutput) && (
-            <pre className="bg-background max-h-72 overflow-auto rounded-lg border p-3 text-xs whitespace-pre-wrap">
+            <pre className="bg-background max-h-72 overflow-auto rounded-lg border p-4 text-xs leading-relaxed whitespace-pre-wrap">
               {chat.finalOutput || chat.streamingText}
             </pre>
           )}
         </CardContent>
       </Card>
 
-      <div className="mb-4 flex items-center justify-between border-b">
-        <div className="flex gap-2">
+      {/* Tabs */}
+      <div className="mb-6 flex items-center justify-between border-b">
+        <div className="flex gap-1">
           {TABS.map((t) => (
             <button
               key={t.key}
               onClick={() => switchTab(t.key)}
-              className={`-mb-px border-b-2 px-3 py-2 text-sm ${
+              className={`-mb-px border-b-2 px-4 py-3 text-sm ${
                 tab === t.key
                   ? "border-brand text-brand font-medium"
-                  : "text-muted-foreground border-transparent"
+                  : "text-muted-foreground border-transparent hover:text-foreground"
               }`}
             >
               {t.label}
@@ -264,15 +267,16 @@ export default function CorporateDealDetailPage() {
           ))}
         </div>
         <Button size="sm" variant="ghost" onClick={() => setShowForm((v) => !v)}>
-          <Plus className="mr-1 h-4 w-4" />
+          <Plus className="mr-1.5 h-4 w-4" />
           新增
         </Button>
       </div>
 
+      {/* Inline form */}
       {showForm && (
-        <Card className="mb-4">
-          <CardContent className="p-5">
-            <form onSubmit={submitForm} className="flex flex-col gap-3">
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <form onSubmit={submitForm} className="flex flex-col gap-5">
               {tab === "diligence" && (
                 <>
                   <Field label="问题标题 *">
@@ -363,7 +367,7 @@ export default function CorporateDealDetailPage() {
                   </Field>
                 </>
               )}
-              <div className="flex gap-2">
+              <div className="flex gap-3 pt-1">
                 <Button type="submit" disabled={saving}>
                   {saving ? "保存中…" : "保存"}
                 </Button>
@@ -376,23 +380,26 @@ export default function CorporateDealDetailPage() {
         </Card>
       )}
 
+      {/* Tab content */}
       {tab === "diligence" && (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {diligence.length === 0 && (
             <Empty text="还没有尽调发现。点「新增」手动添加，或用 AI 跑尽调。" />
           )}
           {diligence.map((i) => (
             <li key={i.id}>
               <Card>
-                <CardContent className="flex items-start gap-3 p-4">
-                  <Badge variant={SEVERITY_VARIANT[i.severity] ?? "default"}>{i.severity}</Badge>
+                <CardContent className="flex items-start gap-4 p-5">
+                  <Badge variant={SEVERITY_VARIANT[i.severity] ?? "default"} className="mt-0.5 shrink-0">
+                    {i.severity}
+                  </Badge>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">{i.title}</p>
                     {i.finding && (
-                      <p className="text-muted-foreground mt-1 text-xs">{i.finding}</p>
+                      <p className="text-muted-foreground mt-1.5 text-xs leading-relaxed">{i.finding}</p>
                     )}
                     {i.source_doc && (
-                      <p className="text-muted-foreground mt-1 text-xs">来源：{i.source_doc}</p>
+                      <p className="text-muted-foreground mt-1.5 text-xs">来源：{i.source_doc}</p>
                     )}
                   </div>
                 </CardContent>
@@ -403,16 +410,16 @@ export default function CorporateDealDetailPage() {
       )}
 
       {tab === "checklist" && (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {checklist.length === 0 && <Empty text="还没有交割检查表事项。" />}
           {checklist.map((c) => (
-            <li key={c.id} className="flex items-center gap-3 rounded-xl border p-4">
-              <Badge variant={c.blocking ? "destructive" : "secondary"}>
+            <li key={c.id} className="flex items-center gap-4 rounded-xl border px-5 py-4">
+              <Badge variant={c.blocking ? "destructive" : "secondary"} className="shrink-0">
                 {c.blocking ? "阻断" : "一般"}
               </Badge>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">{c.item}</p>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-sm font-medium">{c.item}</p>
+                <p className="text-muted-foreground mt-0.5 text-xs">
                   {c.item_type} · {c.status}
                   {c.approval_threshold ? ` · ${c.approval_threshold}` : ""}
                 </p>
@@ -423,16 +430,16 @@ export default function CorporateDealDetailPage() {
       )}
 
       {tab === "material" && (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {material.length === 0 && <Empty text="还没有重大合同清单条目。" />}
           {material.map((m) => (
-            <li key={m.id} className="flex items-center gap-3 rounded-xl border p-4">
-              <Badge variant={m.disclosed ? "default" : "secondary"}>
+            <li key={m.id} className="flex items-center gap-4 rounded-xl border px-5 py-4">
+              <Badge variant={m.disclosed ? "default" : "secondary"} className="shrink-0">
                 {m.disclosed ? "已披露" : "待披露"}
               </Badge>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">{m.contract}</p>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-sm font-medium">{m.contract}</p>
+                <p className="text-muted-foreground mt-0.5 text-xs">
                   {m.counterparty || "—"}
                   {m.threshold_basis ? ` · ${m.threshold_basis}` : ""}
                 </p>
@@ -443,16 +450,16 @@ export default function CorporateDealDetailPage() {
       )}
 
       {tab === "vdr" && (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {vdr.length === 0 && <Empty text="还没有数据室文档。" />}
           {vdr.map((d) => (
-            <li key={d.id} className="flex items-center gap-3 rounded-xl border p-4">
-              <Badge variant={d.priority === "high" ? "destructive" : "secondary"}>
+            <li key={d.id} className="flex items-center gap-4 rounded-xl border px-5 py-4">
+              <Badge variant={d.priority === "high" ? "destructive" : "secondary"} className="shrink-0">
                 {d.priority === "high" ? "高优" : "普通"}
               </Badge>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">{d.filename}</p>
-                <p className="text-muted-foreground text-xs">
+                <p className="text-sm font-medium">{d.filename}</p>
+                <p className="text-muted-foreground mt-0.5 text-xs">
                   {d.category || "未分类"} · {d.status}
                 </p>
               </div>
@@ -468,15 +475,15 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return (
     <div>
       <Label>{label}</Label>
-      {children}
+      <div className="mt-1.5">{children}</div>
     </div>
   );
 }
 
 function Empty({ text }: { text: string }) {
   return (
-    <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-8 text-center text-sm">
-      {text}
-    </p>
+    <div className="rounded-xl border border-dashed px-6 py-12 text-center">
+      <p className="text-muted-foreground text-sm">{text}</p>
+    </div>
   );
 }
