@@ -93,24 +93,28 @@ export default function CorporatePage() {
             </CardContent>
           </Card>
         </Link>
-        <Card className="h-full">
-          <CardContent className="flex flex-col gap-2 p-5">
-            <FileSearch className="text-brand h-5 w-5" />
-            <h3 className="font-medium">尽调问题提取</h3>
-            <p className="text-muted-foreground text-sm">
-              在交易工作区内对数据室文件按类别与重要性阈值提取问题。
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="h-full">
-          <CardContent className="flex flex-col gap-2 p-5">
-            <Table2 className="text-brand h-5 w-5" />
-            <h3 className="font-medium">表格化审查</h3>
-            <p className="text-muted-foreground text-sm">
-              一行一文件、一列一数据点，每格附逐字来源，导出 Excel。
-            </p>
-          </CardContent>
-        </Card>
+        <Link href={ROUTES.CORPORATE_DEALS}>
+          <Card className="hover:border-brand/40 h-full transition-colors">
+            <CardContent className="flex flex-col gap-2 p-5">
+              <FileSearch className="text-brand h-5 w-5" />
+              <h3 className="font-medium">尽调问题提取</h3>
+              <p className="text-muted-foreground text-sm">
+                进入交易，用 AI 对数据室文件按类别与重要性阈值提取问题。
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href={ROUTES.CORPORATE_DEALS}>
+          <Card className="hover:border-brand/40 h-full transition-colors">
+            <CardContent className="flex flex-col gap-2 p-5">
+              <Table2 className="text-brand h-5 w-5" />
+              <h3 className="font-medium">表格化审查</h3>
+              <p className="text-muted-foreground text-sm">
+                进入交易，一行一文件、一列一数据点，每格附逐字来源，导出 Excel。
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Recent deals */}

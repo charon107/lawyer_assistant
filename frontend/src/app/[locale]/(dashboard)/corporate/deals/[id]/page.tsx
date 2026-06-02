@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Badge, Button, Card, CardContent, Input, Label, Spinner } from "@/components/ui";
+import { Badge, Button, Card, CardContent, Input, Label, Spinner, Textarea } from "@/components/ui";
 import { ROUTES } from "@/lib/constants";
 import { corporateApi } from "@/lib/corporate";
+import { useCorporateChat } from "@/hooks/use-corporate-chat";
+import type { CorporateWsAction } from "@/types/corporate";
 import type {
   ClosingChecklistItem,
   CorporateDeal,
@@ -48,6 +50,7 @@ export default function CorporateDealDetailPage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
+  const [aiPrompt, setAiPrompt] = useState("");
 
   const reload = useCallback(async () => {
     try {
@@ -73,6 +76,18 @@ export default function CorporateDealDetailPage() {
   useEffect(() => {
     reload();
   }, [reload]);
+
+  const chat = useCorporateChat(reload);
+
+  function runAi(action: CorporateWsAction) {
+    if (!aiPrompt.trim()) return;
+    chat.runSkill({
+      action,
+      deal_id: dealId,
+      prompt: aiPrompt.trim(),
+      title: action === "tabular" ? "表格审查" : undefined,
+    });
+  }
 
   function switchTab(next: Tab) {
     setTab(next);
@@ -162,6 +177,69 @@ export default function CorporateDealDetailPage() {
           </p>
         </div>
       )}
+
+      <Card className="border-brand/20 bg-brand/5 mb-6">
+        <CardContent className="flex flex-col gap-3 p-5">
+          <div>
+            <h2 className="text-sm font-semibold">AI 运行（公司并购技能）</h2>
+            <p className="text-muted-foreground text-xs">
+              粘贴数据室文本 / 指令，让 AI 跑尽调提取、表格化审查、重大合同清单或交易团队简报。
+              结果会写入对应标签页。需先在「个人中心」配置模型。
+            </p>
+          </div>
+          <Textarea
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            placeholder="例如：审查数据室「重大合同」类别，提取控制权变更、转让限制与解除权问题。"
+            rows={3}
+          />
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              disabled={chat.status === "running" || chat.status === "connecting" || !aiPrompt.trim()}
+              onClick={() => runAi("diligence")}
+            >
+              跑尽调提取
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={chat.status === "running" || chat.status === "connecting" || !aiPrompt.trim()}
+              onClick={() => runAi("tabular")}
+            >
+              表格化审查
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={chat.status === "running" || chat.status === "connecting" || !aiPrompt.trim()}
+              onClick={() => runAi("material")}
+            >
+              生成重大合同清单
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={chat.status === "running" || chat.status === "connecting" || !aiPrompt.trim()}
+              onClick={() => runAi("summary")}
+            >
+              交易团队简报
+            </Button>
+          </div>
+          {(chat.status === "connecting" || chat.status === "running") && (
+            <div className="text-muted-foreground flex items-center gap-2 text-xs">
+              <Spinner className="h-3.5 w-3.5" />
+              {chat.status === "connecting" ? "连接中…" : "AI 运行中…"}
+            </div>
+          )}
+          {chat.error && <p className="text-destructive text-xs">{chat.error}</p>}
+          {(chat.streamingText || chat.finalOutput) && (
+            <pre className="bg-background max-h-72 overflow-auto rounded-lg border p-3 text-xs whitespace-pre-wrap">
+              {chat.finalOutput || chat.streamingText}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="mb-4 flex items-center justify-between border-b">
         <div className="flex gap-2">

@@ -157,3 +157,35 @@ export interface VdrDocumentList {
   items: VdrDocument[];
   total: number;
 }
+
+// ----- WebSocket (/api/v1/ws/corporate) -------------------------------------
+
+export type CorporateWsAction =
+  | "diligence"
+  | "tabular"
+  | "material"
+  | "summary"
+  | "board"
+  | "consent"
+  | "integration";
+
+export interface CorporateWsMessage {
+  action: CorporateWsAction;
+  deal_id?: string;
+  prompt: string;
+  title?: string;
+}
+
+export type CorporateWsEvent =
+  | { type: "deal_resolved"; data: { deal_id: string } }
+  | { type: "tabular_started"; data: { tabular_review_id: string } }
+  | { type: "text_delta"; data: { content: string } }
+  | {
+      type: "tool_call";
+      data: { tool_call_id: string; tool_name: string; args: Record<string, unknown> };
+    }
+  | { type: "tool_result"; data: { tool_call_id: string; content: string } }
+  | { type: "final_result"; data: { output: string } }
+  | { type: "model_request_end"; data: Record<string, unknown> }
+  | { type: "complete"; data: Record<string, unknown> }
+  | { type: "error"; data: { message: string; code?: string } };
