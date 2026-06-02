@@ -17,6 +17,13 @@ from app.db.models.renewal_registration import RenewalRegistration
 from app.db.models.contract_deviation import ContractDeviation
 from app.db.models.playbook_proposal import PlaybookProposal
 from app.db.models.commercial_notification import CommercialNotification
+from app.db.models.corporate_profile import CorporateProfile
+from app.db.models.corporate_deal import CorporateDeal
+from app.db.models.vdr_document import VdrDocument
+from app.db.models.diligence_issue import DiligenceIssue
+from app.db.models.tabular_review import TabularReview
+from app.db.models.closing_checklist_item import ClosingChecklistItem
+from app.db.models.material_contract_item import MaterialContractItem
 
 __all__ = [
     "User",
@@ -37,4 +44,11 @@ __all__ = [
     "ContractDeviation",
     "PlaybookProposal",
     "CommercialNotification",
+    "CorporateProfile",
+    "CorporateDeal",
+    "VdrDocument",
+    "DiligenceIssue",
+    "TabularReview",
+    "ClosingChecklistItem",
+    "MaterialContractItem",
 ]
