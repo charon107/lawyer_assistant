@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Badge, Card, CardContent, Spinner } from "@/components/ui";
+import { Badge, Button, Card, CardContent, Input, Label, Spinner } from "@/components/ui";
 import { ROUTES } from "@/lib/constants";
 import { corporateApi } from "@/lib/corporate";
 import type {
@@ -13,7 +13,7 @@ import type {
   MaterialContractItem,
   VdrDocument,
 } from "@/types/corporate";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
 
 type Tab = "diligence" | "checklist" | "material" | "vdr";
 
@@ -31,6 +31,8 @@ const SEVERITY_VARIANT: Record<string, "destructive" | "default" | "secondary"> 
   low: "secondary",
 };
 
+const inputCls = "border-input bg-background mt-1 h-9 w-full rounded-md border px-3 text-sm";
+
 export default function CorporateDealDetailPage() {
   const params = useParams();
   const dealId = String(params.id);
@@ -43,8 +45,11 @@ export default function CorporateDealDetailPage() {
   const [vdr, setVdr] = useState<VdrDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<Record<string, string>>({});
 
-  const load = useCallback(async () => {
+  const reload = useCallback(async () => {
     try {
       const [d, dil, chk, mat, docs] = await Promise.all([
         corporateApi.getDeal(dealId),
@@ -66,8 +71,64 @@ export default function CorporateDealDetailPage() {
   }, [dealId]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    reload();
+  }, [reload]);
+
+  function switchTab(next: Tab) {
+    setTab(next);
+    setShowForm(false);
+    setForm({});
+    setError(null);
+  }
+
+  async function submitForm(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      if (tab === "diligence") {
+        if (!form.title?.trim()) return;
+        await corporateApi.createDiligence(dealId, {
+          title: form.title.trim(),
+          severity: form.severity || "medium",
+          finding: form.finding || null,
+          category: form.category || null,
+        });
+      } else if (tab === "checklist") {
+        if (!form.item?.trim()) return;
+        await corporateApi.createChecklistItem(dealId, {
+          item: form.item.trim(),
+          item_type: form.item_type || "condition",
+          approval_threshold: form.approval_threshold || null,
+        });
+      } else if (tab === "material") {
+        if (!form.contract?.trim()) return;
+        await corporateApi.createMaterialContract(dealId, {
+          contract: form.contract.trim(),
+          counterparty: form.counterparty || null,
+          threshold_basis: form.threshold_basis || null,
+        });
+      } else if (tab === "vdr") {
+        if (!form.filename?.trim()) return;
+        await corporateApi.createVdr(dealId, {
+          filename: form.filename.trim(),
+          category: form.category || null,
+          priority: form.priority || "normal",
+        });
+      }
+      setForm({});
+      setShowForm(false);
+      await reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "保存失败");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const set =
+    (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setForm((f) => ({ ...f, [k]: e.target.value }));
 
   if (loading) {
     return (
@@ -102,25 +163,140 @@ export default function CorporateDealDetailPage() {
         </div>
       )}
 
-      <div className="mb-4 flex gap-2 border-b">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm ${
-              tab === t.key
-                ? "border-brand text-brand font-medium"
-                : "text-muted-foreground border-transparent"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="mb-4 flex items-center justify-between border-b">
+        <div className="flex gap-2">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => switchTab(t.key)}
+              className={`-mb-px border-b-2 px-3 py-2 text-sm ${
+                tab === t.key
+                  ? "border-brand text-brand font-medium"
+                  : "text-muted-foreground border-transparent"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <Button size="sm" variant="ghost" onClick={() => setShowForm((v) => !v)}>
+          <Plus className="mr-1 h-4 w-4" />
+          新增
+        </Button>
       </div>
+
+      {showForm && (
+        <Card className="mb-4">
+          <CardContent className="p-5">
+            <form onSubmit={submitForm} className="flex flex-col gap-3">
+              {tab === "diligence" && (
+                <>
+                  <Field label="问题标题 *">
+                    <Input value={form.title ?? ""} onChange={set("title")} required />
+                  </Field>
+                  <Field label="严重程度">
+                    <select
+                      className={inputCls}
+                      value={form.severity ?? "medium"}
+                      onChange={set("severity")}
+                    >
+                      <option value="blocking">阻断</option>
+                      <option value="high">高</option>
+                      <option value="medium">中</option>
+                      <option value="low">低</option>
+                    </select>
+                  </Field>
+                  <Field label="发现说明">
+                    <Input value={form.finding ?? ""} onChange={set("finding")} />
+                  </Field>
+                </>
+              )}
+              {tab === "checklist" && (
+                <>
+                  <Field label="事项 *">
+                    <Input value={form.item ?? ""} onChange={set("item")} required />
+                  </Field>
+                  <Field label="类型">
+                    <select
+                      className={inputCls}
+                      value={form.item_type ?? "condition"}
+                      onChange={set("item_type")}
+                    >
+                      <option value="condition">交割条件</option>
+                      <option value="consent">同意</option>
+                      <option value="document">文件</option>
+                      <option value="filing">申报</option>
+                      <option value="shareholder_vote">股东表决</option>
+                      <option value="regulatory">监管</option>
+                      <option value="release">解除</option>
+                    </select>
+                  </Field>
+                  <Field label="批准门槛">
+                    <Input
+                      value={form.approval_threshold ?? ""}
+                      onChange={set("approval_threshold")}
+                    />
+                  </Field>
+                </>
+              )}
+              {tab === "material" && (
+                <>
+                  <Field label="合同 *">
+                    <Input value={form.contract ?? ""} onChange={set("contract")} required />
+                  </Field>
+                  <Field label="对方当事人">
+                    <Input value={form.counterparty ?? ""} onChange={set("counterparty")} />
+                  </Field>
+                  <Field label="满足的重大性条件">
+                    <Input
+                      value={form.threshold_basis ?? ""}
+                      onChange={set("threshold_basis")}
+                    />
+                  </Field>
+                </>
+              )}
+              {tab === "vdr" && (
+                <>
+                  <Field label="文件名 *">
+                    <Input value={form.filename ?? ""} onChange={set("filename")} required />
+                  </Field>
+                  <Field label="需求类别">
+                    <Input
+                      value={form.category ?? ""}
+                      onChange={set("category")}
+                      placeholder="如 重大合同 / 知识产权"
+                    />
+                  </Field>
+                  <Field label="优先级">
+                    <select
+                      className={inputCls}
+                      value={form.priority ?? "normal"}
+                      onChange={set("priority")}
+                    >
+                      <option value="normal">普通</option>
+                      <option value="high">高优</option>
+                    </select>
+                  </Field>
+                </>
+              )}
+              <div className="flex gap-2">
+                <Button type="submit" disabled={saving}>
+                  {saving ? "保存中…" : "保存"}
+                </Button>
+                <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>
+                  取消
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       {tab === "diligence" && (
         <ul className="flex flex-col gap-2">
-          {diligence.length === 0 && <Empty text="还没有尽调发现。" />}
+          {diligence.length === 0 && (
+            <Empty text="还没有尽调发现。点「新增」手动添加，或用 AI 跑尽调。" />
+          )}
           {diligence.map((i) => (
             <li key={i.id}>
               <Card>
@@ -200,6 +376,15 @@ export default function CorporateDealDetailPage() {
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <Label>{label}</Label>
+      {children}
     </div>
   );
 }

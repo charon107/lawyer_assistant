@@ -8,14 +8,18 @@
 
 import { apiClient } from "@/lib/api-client";
 import type {
+  ClosingChecklistItem,
   ClosingChecklistItemList,
   CorporateDeal,
   CorporateDealCreate,
   CorporateDealList,
   CorporateModuleStatusResponse,
+  DiligenceIssue,
   DiligenceIssueList,
+  MaterialContractItem,
   MaterialContractItemList,
   TabularReviewList,
+  VdrDocument,
   VdrDocumentList,
 } from "@/types/corporate";
 
@@ -57,5 +61,22 @@ export const corporateApi = {
   listVdr: (dealId: string, skip = 0, limit = 100) =>
     apiClient.get<VdrDocumentList>(
       `/corporate/deals/${dealId}/vdr?skip=${skip}&limit=${limit}`
+    ),
+
+  // ----- manual create (agent runs also populate these via /ws/corporate) ---
+
+  createVdr: (dealId: string, body: Record<string, unknown>) =>
+    apiClient.post<VdrDocument>(`/corporate/deals/${dealId}/vdr`, body),
+
+  createDiligence: (dealId: string, body: Record<string, unknown>) =>
+    apiClient.post<DiligenceIssue>(`/corporate/deals/${dealId}/diligence`, body),
+
+  createChecklistItem: (dealId: string, body: Record<string, unknown>) =>
+    apiClient.post<ClosingChecklistItem>(`/corporate/deals/${dealId}/checklist`, body),
+
+  createMaterialContract: (dealId: string, body: Record<string, unknown>) =>
+    apiClient.post<MaterialContractItem>(
+      `/corporate/deals/${dealId}/material-contracts`,
+      body
     ),
 };
