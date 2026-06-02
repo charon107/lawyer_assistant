@@ -78,9 +78,14 @@ export default function CorporateDealDetailPage() {
   }, [reload]);
 
   const chat = useCorporateChat(reload);
+  const [promptError, setPromptError] = useState<string | null>(null);
 
   function runAi(action: CorporateWsAction) {
-    if (!aiPrompt.trim()) return;
+    if (!aiPrompt.trim()) {
+      setPromptError("请先粘贴数据室文本或输入指令，再运行 AI。");
+      return;
+    }
+    setPromptError(null);
     chat.runSkill({
       action,
       deal_id: dealId,
@@ -196,7 +201,7 @@ export default function CorporateDealDetailPage() {
           <div className="flex flex-wrap gap-2">
             <Button
               size="sm"
-              disabled={chat.status === "running" || chat.status === "connecting" || !aiPrompt.trim()}
+              disabled={chat.status === "running" || chat.status === "connecting"}
               onClick={() => runAi("diligence")}
             >
               跑尽调提取
@@ -204,7 +209,7 @@ export default function CorporateDealDetailPage() {
             <Button
               size="sm"
               variant="secondary"
-              disabled={chat.status === "running" || chat.status === "connecting" || !aiPrompt.trim()}
+              disabled={chat.status === "running" || chat.status === "connecting"}
               onClick={() => runAi("tabular")}
             >
               表格化审查
@@ -212,7 +217,7 @@ export default function CorporateDealDetailPage() {
             <Button
               size="sm"
               variant="secondary"
-              disabled={chat.status === "running" || chat.status === "connecting" || !aiPrompt.trim()}
+              disabled={chat.status === "running" || chat.status === "connecting"}
               onClick={() => runAi("material")}
             >
               生成重大合同清单
@@ -220,7 +225,7 @@ export default function CorporateDealDetailPage() {
             <Button
               size="sm"
               variant="ghost"
-              disabled={chat.status === "running" || chat.status === "connecting" || !aiPrompt.trim()}
+              disabled={chat.status === "running" || chat.status === "connecting"}
               onClick={() => runAi("summary")}
             >
               交易团队简报
@@ -232,6 +237,7 @@ export default function CorporateDealDetailPage() {
               {chat.status === "connecting" ? "连接中…" : "AI 运行中…"}
             </div>
           )}
+          {promptError && <p className="text-destructive text-xs">{promptError}</p>}
           {chat.error && <p className="text-destructive text-xs">{chat.error}</p>}
           {(chat.streamingText || chat.finalOutput) && (
             <pre className="bg-background max-h-72 overflow-auto rounded-lg border p-3 text-xs whitespace-pre-wrap">
