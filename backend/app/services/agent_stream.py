@@ -91,7 +91,7 @@ async def stream_agent_run(
     agent: Any,
     prompt: str,
     deps: Any,
-    review_id: str,
+    review_id: str | None = None,
 ) -> bool:
     """Drive one agent run, forwarding streamed events. Returns success.
 
