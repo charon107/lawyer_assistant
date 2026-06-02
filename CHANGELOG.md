@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0.2] - 2026-06-03
+
+### Fixed
+
+- **公司并购模块宽度修复**: 移除概览、交易列表、交易工作区三处页面多余的 `max-w-5xl` 居中约束，改用 `w-full`，让内容随侧边栏自适应铺满可用宽度。
+
 ## [0.7.0.1] - 2026-06-03
 
 ### Changed
