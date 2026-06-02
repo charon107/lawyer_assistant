@@ -32,6 +32,11 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    # Skip if tables already exist (may have been created by create_all in dev)
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    if "commercial_matters" in inspector.get_table_names():
+        return
     # commercial_matters ------------------------------------------------------
     op.create_table(
         "commercial_matters",
@@ -179,21 +184,20 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    with op.batch_alter_table("contract_reviews", schema=None) as batch_op:
-        batch_op.drop_constraint("fk_contract_reviews_matter_id", type_="foreignkey")
+    # Drop the matter_id FK by its actual reflected name — name differs between
+    # create_all (contract_reviews_matter_id_fkey) and migration-created
+    # (fk_contract_reviews_matter_id) databases. Skip if neither exists.
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    for fk in inspector.get_foreign_keys("contract_reviews"):
+        if fk.get("referred_table") == "commercial_matters" and fk.get("name"):
+            with op.batch_alter_table("contract_reviews", schema=None) as batch_op:
+                batch_op.drop_constraint(fk["name"], type_="foreignkey")
 
-    op.drop_index("ix_playbook_proposals_clause_key", table_name="playbook_proposals")
-    op.drop_index("ix_playbook_proposals_user_id", table_name="playbook_proposals")
+    # drop_table drops the table's indexes automatically (SQLite); explicit
+    # drop_index is omitted to stay name-agnostic between create_all (*_idx)
+    # and migration-created (ix_*) databases.
     op.drop_table("playbook_proposals")
-
-    op.drop_index("ix_contract_deviations_clause_key", table_name="contract_deviations")
-    op.drop_index("ix_contract_deviations_review_id", table_name="contract_deviations")
-    op.drop_index("ix_contract_deviations_user_id", table_name="contract_deviations")
     op.drop_table("contract_deviations")
-
-    op.drop_index("ix_renewal_registrations_matter_id", table_name="renewal_registrations")
-    op.drop_index("ix_renewal_registrations_user_id", table_name="renewal_registrations")
     op.drop_table("renewal_registrations")
-
-    op.drop_index("ix_commercial_matters_user_id", table_name="commercial_matters")
     op.drop_table("commercial_matters")
