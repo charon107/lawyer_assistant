@@ -41,6 +41,7 @@ from app.schemas.corporate.deal import (
     CorporateDealUpdate,
 )
 from app.schemas.corporate.diligence import (
+    DiligenceIssueCreate,
     DiligenceIssueList,
     DiligenceIssueRead,
     DiligenceIssueUpdate,
@@ -221,6 +222,19 @@ def list_diligence(
         user_id=str(user.id), deal_id=deal_id, skip=skip, limit=limit
     )
     return DiligenceIssueList(items=items, total=total)
+
+
+@router.post(
+    "/deals/{deal_id}/diligence",
+    response_model=DiligenceIssueRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_diligence(
+    deal_id: str, data: DiligenceIssueCreate, user: CurrentUser, diligence_svc: DiligenceSvc
+) -> Any:
+    """Manually add a diligence finding (agent runs also create these via WS)."""
+    payload = data.model_copy(update={"deal_id": deal_id})
+    return diligence_svc.create(user_id=str(user.id), data=payload)
 
 
 @router.patch("/diligence/{issue_id}", response_model=DiligenceIssueRead)
