@@ -163,6 +163,106 @@ CommercialNotificationSvc = Annotated[
 ]
 
 
+# === Corporate-legal Services ===
+
+from app.services.corporate_child_services import (
+    ClosingChecklistService,
+    DiligenceService,
+    MaterialContractService,
+    TabularReviewService,
+    VdrService,
+)
+from app.services.corporate_deal_service import CorporateDealService
+from app.services.corporate_profile_service import CorporateProfileService
+
+
+def get_corporate_profile_service(db: DBSession) -> CorporateProfileService:
+    return CorporateProfileService(db)
+
+
+CorporateProfileSvc = Annotated[CorporateProfileService, Depends(get_corporate_profile_service)]
+
+
+def get_corporate_deal_service(db: DBSession) -> CorporateDealService:
+    return CorporateDealService(db)
+
+
+CorporateDealSvc = Annotated[CorporateDealService, Depends(get_corporate_deal_service)]
+
+
+def get_vdr_service(db: DBSession) -> VdrService:
+    return VdrService(db)
+
+
+VdrSvc = Annotated[VdrService, Depends(get_vdr_service)]
+
+
+def get_diligence_service(db: DBSession) -> DiligenceService:
+    return DiligenceService(db)
+
+
+DiligenceSvc = Annotated[DiligenceService, Depends(get_diligence_service)]
+
+
+def get_closing_checklist_service(db: DBSession) -> ClosingChecklistService:
+    return ClosingChecklistService(db)
+
+
+ClosingChecklistSvc = Annotated[ClosingChecklistService, Depends(get_closing_checklist_service)]
+
+
+def get_material_contract_service(db: DBSession) -> MaterialContractService:
+    return MaterialContractService(db)
+
+
+MaterialContractSvc = Annotated[MaterialContractService, Depends(get_material_contract_service)]
+
+
+def get_tabular_review_service(db: DBSession) -> TabularReviewService:
+    return TabularReviewService(db)
+
+
+TabularReviewSvc = Annotated[TabularReviewService, Depends(get_tabular_review_service)]
+
+
+from app.services.corporate_governance_services import (
+    BoardService,
+    CorporateNotificationService as CorporateNotifService,
+    EntityComplianceService,
+    IntegrationService,
+)
+
+
+def get_board_service(db: DBSession) -> BoardService:
+    return BoardService(db)
+
+
+BoardSvc = Annotated[BoardService, Depends(get_board_service)]
+
+
+def get_entity_compliance_service(db: DBSession) -> EntityComplianceService:
+    return EntityComplianceService(db)
+
+
+EntityComplianceSvc = Annotated[EntityComplianceService, Depends(get_entity_compliance_service)]
+
+
+def get_integration_service(db: DBSession) -> IntegrationService:
+    return IntegrationService(db)
+
+
+IntegrationSvc = Annotated[IntegrationService, Depends(get_integration_service)]
+
+
+def get_corporate_notification_service(db: DBSession) -> CorporateNotifService:
+    return CorporateNotifService(db)
+
+
+CorporateNotificationSvc = Annotated[
+    CorporateNotifService, Depends(get_corporate_notification_service)
+]
+
+
 # === Authentication Dependencies ===
 
 from app.core.exceptions import AuthenticationError, AuthorizationError

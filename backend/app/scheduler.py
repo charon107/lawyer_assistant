@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 # Job identifiers — stable so re-registration replaces rather than duplicates.
 JOB_RENEWAL_WATCHER = "renewal_watcher"
 JOB_DEAL_DEBRIEF = "deal_debrief"
+JOB_DATAROOM_WATCHER = "dataroom_watcher"
 
 
 def _run_in_session(task: Callable[..., object], task_name: str) -> None:
@@ -59,6 +60,12 @@ def _run_deal_debrief() -> None:
     _run_in_session(deal_debrief.run, JOB_DEAL_DEBRIEF)
 
 
+def _run_dataroom_watcher() -> None:
+    from app.tasks import dataroom_watcher
+
+    _run_in_session(dataroom_watcher.run, JOB_DATAROOM_WATCHER)
+
+
 def create_scheduler() -> AsyncIOScheduler:
     """Build the scheduler and register the weekly commercial jobs."""
     scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
@@ -75,6 +82,14 @@ def create_scheduler() -> AsyncIOScheduler:
         trigger=CronTrigger(day_of_week="mon", hour=10, minute=7),
         id=JOB_DEAL_DEBRIEF,
         name="Commercial deal debrief",
+        replace_existing=True,
+    )
+    # Corporate dataroom watcher — daily during active diligence.
+    scheduler.add_job(
+        _run_dataroom_watcher,
+        trigger=CronTrigger(hour=8, minute=17),
+        id=JOB_DATAROOM_WATCHER,
+        name="Corporate dataroom watcher",
         replace_existing=True,
     )
 
