@@ -16,6 +16,7 @@ import type {
   DiligenceIssueList,
   MaterialContractItemList,
   TabularReviewList,
+  VdrDocumentList,
 } from "@/types/corporate";
 
 export const corporateApi = {
@@ -51,5 +52,10 @@ export const corporateApi = {
   listTabular: (dealId: string, skip = 0, limit = 50) =>
     apiClient.get<TabularReviewList>(
       `/corporate/deals/${dealId}/tabular?skip=${skip}&limit=${limit}`
+    ),
+
+  listVdr: (dealId: string, skip = 0, limit = 100) =>
+    apiClient.get<VdrDocumentList>(
+      `/corporate/deals/${dealId}/vdr?skip=${skip}&limit=${limit}`
     ),
 };

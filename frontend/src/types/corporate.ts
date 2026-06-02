@@ -138,3 +138,22 @@ export interface MaterialContractItemList {
   items: MaterialContractItem[];
   total: number;
 }
+
+export interface VdrDocument {
+  id: string;
+  deal_id: string;
+  category: string | null;
+  folder: string | null;
+  filename: string;
+  file_path: string | null;
+  priority: "high" | "normal";
+  status: "new" | "reviewing" | "reviewed";
+  source: string;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface VdrDocumentList {
+  items: VdrDocument[];
+  total: number;
+}
