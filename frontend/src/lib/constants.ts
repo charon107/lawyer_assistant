@@ -37,6 +37,8 @@ export const ROUTES = {
   COMMERCIAL_REVIEW: "/commercial/review",
   COMMERCIAL_RENEWALS: "/commercial/renewals",
   COMMERCIAL_MATTERS: "/commercial/matters",
+  CORPORATE: "/corporate",
+  CORPORATE_DEALS: "/corporate/deals",
   SETTINGS: "/settings",
   ADMIN_RATINGS: "/admin/ratings",
   ADMIN_USERS: "/admin/users",
