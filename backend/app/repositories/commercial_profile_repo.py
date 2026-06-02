@@ -53,6 +53,8 @@ def create(
     gc_name: str | None = None,
     monthly_volume: str | None = None,
     side: str = "purchasing",
+    setup_depth: str = "full",
+    used_by: str = "lawyer",
     profile_content: str | None = None,
     playbook_sales: Any = None,
     playbook_purchasing: Any = None,
@@ -74,6 +76,8 @@ def create(
         gc_name=gc_name,
         monthly_volume=monthly_volume,
         side=side,
+        setup_depth=setup_depth,
+        used_by=used_by,
         setup_status=setup_status,
         profile_content=profile_content,
         playbook_sales=_to_json(playbook_sales),
@@ -98,6 +102,8 @@ def update(
     gc_name: str | None = None,
     monthly_volume: str | None = None,
     side: str | None = None,
+    setup_depth: str | None = None,
+    used_by: str | None = None,
     setup_status: str | None = None,
     profile_content: str | None = None,
     playbook_sales: Any = None,
@@ -123,6 +129,10 @@ def update(
         profile.monthly_volume = monthly_volume
     if side is not None:
         profile.side = side
+    if setup_depth is not None:
+        profile.setup_depth = setup_depth
+    if used_by is not None:
+        profile.used_by = used_by
     if setup_status is not None:
         profile.setup_status = setup_status
     if profile_content is not None:

@@ -16,6 +16,7 @@ import { StepTeam, type TeamAnswers } from "./steps/step-team";
 import { StepPlaybook } from "./steps/step-playbook";
 import { StepEscalation } from "./steps/step-escalation";
 import { StepSeedFiles } from "./steps/step-seed-files";
+import { planForMode } from "./steps/wizard-plan";
 
 /**
  * Cold-start wizard — drives the 5-step interview defined by
@@ -29,7 +30,6 @@ import { StepSeedFiles } from "./steps/step-seed-files";
  */
 
 const STEP_TITLES = ["配置方式", "团队信息", "合同手册", "上报矩阵", "历史合同"];
-const LAST_STEP: ColdStartStep = 4;
 
 interface ColdStartWizardProps {
   /** Called once the final step is submitted and the profile is built. */
@@ -47,6 +47,10 @@ export function ColdStartWizard({ onComplete }: ColdStartWizardProps) {
   const [team, setTeam] = useState<TeamAnswers>({ side: "purchasing" });
   const [playbook, setPlaybook] = useState<Playbook | null>(null);
   const [escalation, setEscalation] = useState<EscalationRule[]>([]);
+
+  // Depth gates the step plan: quick = 2 steps, full = 5 steps.
+  const plan = planForMode(quickMode);
+  const lastStep = plan[plan.length - 1];
 
   // A playbook is stored per concrete side; "both" defaults to purchasing.
   const effectiveSide: Side = team.side === "sales" ? "sales" : "purchasing";
@@ -100,13 +104,13 @@ export function ColdStartWizard({ onComplete }: ColdStartWizardProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Progress rail */}
+      {/* Progress rail — only the steps the chosen depth will visit. */}
       <ol className="flex items-center gap-2">
-        {STEP_TITLES.map((title, i) => {
-          const done = i < stepIndex;
-          const active = i === stepIndex;
+        {plan.map((step, i) => {
+          const done = step < stepIndex;
+          const active = step === stepIndex;
           return (
-            <li key={title} className="flex flex-1 items-center gap-2">
+            <li key={step} className="flex flex-1 items-center gap-2">
               <div
                 className={cn(
                   "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium transition-colors",
@@ -123,9 +127,9 @@ export function ColdStartWizard({ onComplete }: ColdStartWizardProps) {
                   active ? "text-foreground font-medium" : "text-muted-foreground",
                 )}
               >
-                {title}
+                {STEP_TITLES[step]}
               </span>
-              {i < STEP_TITLES.length - 1 && (
+              {i < plan.length - 1 && (
                 <div className="bg-muted hidden h-px flex-1 sm:block" />
               )}
             </li>
@@ -169,8 +173,8 @@ export function ColdStartWizard({ onComplete }: ColdStartWizardProps) {
         </Button>
         <Button onClick={goNext} disabled={submitting}>
           {submitting && <Spinner className="mr-1.5 h-4 w-4" />}
-          {stepIndex === LAST_STEP ? "完成配置" : "下一步"}
-          {!submitting && stepIndex !== LAST_STEP && (
+          {stepIndex === lastStep ? "完成配置" : "下一步"}
+          {!submitting && stepIndex !== lastStep && (
             <ArrowRight className="ml-1.5 h-4 w-4" />
           )}
         </Button>

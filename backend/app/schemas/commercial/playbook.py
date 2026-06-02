@@ -18,6 +18,13 @@ from app.schemas.base import BaseSchema
 # Side semantics: the user's role on a deal.
 Side = Literal["sales", "purchasing", "both"]
 
+# Cold-start depth: "quick" = defaults-only (downstream must not auto-greenlight);
+# "full" = authoritative, lawyer-reviewed positions.
+SetupDepth = Literal["quick", "full"]
+
+# Who uses the module: drives work-product header + UPL guardrail.
+UsedBy = Literal["lawyer", "non_lawyer"]
+
 # How a single clause position translates to risk if missing/weaker than standard.
 ClausePosition = Literal["standard", "floor", "never_accept"]
 

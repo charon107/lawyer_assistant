@@ -39,6 +39,26 @@ from app.schemas.commercial.cold_start import (
 MODULE_NAME = "commercial-legal"
 TOTAL_STEPS = 5
 
+# Depth gates how many steps the wizard runs (mirrors claude-for-legal-zh:
+# quick = working defaults only; full = the authoritative interview).
+#   quick → mode + team, then materialize a defaults-only profile.
+#   full  → mode + team + playbook + escalation + seed files.
+QUICK_PLAN: tuple[int, ...] = (0, 1)
+FULL_PLAN: tuple[int, ...] = (0, 1, 2, 3, 4)
+
+
+def _plan_for(quick_mode: bool) -> tuple[int, ...]:
+    return QUICK_PLAN if quick_mode else FULL_PLAN
+
+
+def _next_step_in_plan(plan: tuple[int, ...], current: int) -> int:
+    """Step after `current` in the plan; clamps to the plan's final step."""
+    if current in plan:
+        idx = plan.index(current)
+        return plan[min(idx + 1, len(plan) - 1)]
+    # `current` not in this depth's plan — fall back to the final step.
+    return plan[-1]
+
 
 def _decode_setup_data(cfg: ModuleConfig | None) -> dict[str, Any]:
     if cfg is None or not cfg.setup_data:
@@ -89,6 +109,7 @@ def _compile_profile_kwargs(setup_data: dict[str, Any]) -> dict[str, Any]:
         s = steps.get(str(n), {})
         return s.get("answers", {}) if isinstance(s, dict) else {}
 
+    mode = step(0)
     team = step(1)
     playbook = step(2)
     escalation = step(3)
@@ -100,6 +121,9 @@ def _compile_profile_kwargs(setup_data: dict[str, Any]) -> dict[str, Any]:
         "gc_name": team.get("gc_name"),
         "monthly_volume": team.get("monthly_volume"),
         "side": team.get("side") or "purchasing",
+        # Differentiation axes — previously collected but dropped here.
+        "setup_depth": "quick" if setup_data.get("quick_mode") else "full",
+        "used_by": mode.get("used_by") or "lawyer",
         "renewal_alert_channel": team.get("renewal_alert_channel"),
         "output_destination": team.get("output_destination"),
         "playbook_sales": playbook.get("playbook_sales"),
@@ -124,6 +148,7 @@ class ColdStartService:
         """
         cfg = module_config_repo.get(self.db, user_id=user_id, module_name=MODULE_NAME)
         setup_data = _decode_setup_data(cfg)
+        plan = _plan_for(bool(setup_data.get("quick_mode")))
         steps_done = sum(
             1
             for _s, payload in (setup_data.get("steps") or {}).items()
@@ -132,11 +157,11 @@ class ColdStartService:
         completed = bool(cfg and cfg.setup_status == "completed")
         latest = setup_data.get("latest_step")
         next_step: ColdStartStep = (
-            0 if latest is None else min(int(latest) + 1, TOTAL_STEPS - 1)  # type: ignore[assignment]
+            0 if latest is None else _next_step_in_plan(plan, int(latest))  # type: ignore[assignment]
         )
         return ColdStartResponse(
             step=next_step,
-            progress=min(steps_done / TOTAL_STEPS, 1.0),
+            progress=min(steps_done / len(plan), 1.0),
             completed=completed,
             partial_config=setup_data,
         )
@@ -152,10 +177,11 @@ class ColdStartService:
         also compiles a `commercial_profiles` row and marks the
         module_config row `completed`.
         """
-        if request.step < 0 or request.step >= TOTAL_STEPS:
+        plan = _plan_for(request.quick_mode)
+        if request.step not in plan:
             raise ValidationError(
-                message="Invalid cold-start step",
-                details={"step": request.step, "total_steps": TOTAL_STEPS},
+                message="Invalid cold-start step for the selected depth",
+                details={"step": request.step, "plan": list(plan)},
             )
 
         cfg = module_config_repo.get(self.db, user_id=user_id, module_name=MODULE_NAME)
@@ -168,7 +194,9 @@ class ColdStartService:
             quick_mode=request.quick_mode,
         )
 
-        is_final_step = request.step == TOTAL_STEPS - 1
+        # The final step is the LAST step of the active depth's plan, not a
+        # fixed index — quick mode finishes at step 1, full mode at step 4.
+        is_final_step = request.step == plan[-1]
         next_status = "completed" if is_final_step else "in_progress"
 
         module_config_repo.upsert(
@@ -189,11 +217,11 @@ class ColdStartService:
             if isinstance(payload, dict) and payload.get("completed")
         )
         next_step: ColdStartStep = (
-            request.step if is_final_step else min(request.step + 1, TOTAL_STEPS - 1)  # type: ignore[assignment]
+            request.step if is_final_step else _next_step_in_plan(plan, request.step)  # type: ignore[assignment]
         )
         return ColdStartResponse(
             step=next_step,
-            progress=min(steps_done / TOTAL_STEPS, 1.0),
+            progress=min(steps_done / len(plan), 1.0),
             completed=is_final_step,
             partial_config=merged,
         )

@@ -7,6 +7,10 @@
 
 export type Side = "sales" | "purchasing" | "both";
 
+export type SetupDepth = "quick" | "full";
+
+export type UsedBy = "lawyer" | "non_lawyer";
+
 export type ModuleStatus = "not_started" | "in_progress" | "completed";
 
 export type ResultStatus = "in_progress" | "green" | "yellow" | "red";
@@ -44,6 +48,8 @@ export interface CommercialProfile {
   gc_name?: string | null;
   monthly_volume?: string | null;
   side: Side;
+  setup_depth?: SetupDepth;
+  used_by?: UsedBy;
   setup_status: ModuleStatus;
   profile_content?: string | null;
   playbook_sales?: Playbook | null;

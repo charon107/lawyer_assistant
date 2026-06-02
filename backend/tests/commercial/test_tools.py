@@ -87,6 +87,41 @@ class TestReadPracticeProfile:
         assert "20-50" in result
         assert "标准合同周期" in result
 
+    def test_quick_depth_emits_downgrade_banner(self, db, user_id):
+        commercial_profile_repo.create(
+            db,
+            user_id=user_id,
+            company_name="Acme",
+            side="purchasing",
+            setup_depth="quick",
+            used_by="non_lawyer",
+            profile_content="x",
+            setup_status="completed",
+        )
+        deps = CommercialDeps(user_id=user_id, db=db)
+        result = _run(read_practice_profile(_FakeRunContext(deps)))
+        # Authorization banner must warn downstream not to auto-greenlight.
+        assert "快速" in result or "默认值" in result
+        assert "绿色" in result
+        # Role surfaced for the UPL guardrail.
+        assert "业务团队" in result or "非法务" in result
+
+    def test_full_depth_with_playbook_has_no_downgrade_banner(self, db, user_id):
+        commercial_profile_repo.create(
+            db,
+            user_id=user_id,
+            company_name="Acme",
+            side="purchasing",
+            setup_depth="full",
+            used_by="lawyer",
+            playbook_purchasing={"side": "purchasing", "entries": []},
+            profile_content="x",
+            setup_status="completed",
+        )
+        deps = CommercialDeps(user_id=user_id, db=db)
+        result = _run(read_practice_profile(_FakeRunContext(deps)))
+        assert "不得据此发出" not in result
+
 
 # ---------------------------------------------------------------------------
 # write_practice_profile

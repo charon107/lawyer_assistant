@@ -1,9 +1,13 @@
 """Cold-start interview request / response schemas.
 
-The cold-start wizard is a 5-step state machine. The frontend POSTs
+The cold-start wizard is a depth-driven state machine. The frontend POSTs
 once per step; the backend persists intermediate `setup_data` JSON to
-`module_configs.setup_data` and, at step 5, compiles the answers into
-a `CommercialProfile`.
+`module_configs.setup_data` and, at the final step, compiles the answers
+into a `CommercialProfile`.
+
+The chosen depth gates how many steps run (see `cold_start_service`):
+    - quick → steps (0, 1): mode + team only; defaults-only profile.
+    - full  → steps (0, 1, 2, 3, 4): adds playbook, escalation, seed files.
 
 Step semantics:
     0 = mode select (quick / full) + who-uses (lawyer / non-lawyer)
