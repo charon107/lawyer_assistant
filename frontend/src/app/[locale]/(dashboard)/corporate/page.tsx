@@ -52,7 +52,7 @@ export default function CorporatePage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
+    <div className="w-full py-10">
       {/* Header */}
       <div className="mb-10">
         <h1 className="flex items-center gap-3 text-2xl font-bold tracking-tight">

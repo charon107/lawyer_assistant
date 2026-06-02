@@ -159,7 +159,7 @@ export default function CorporateDealDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-10">
+    <div className="w-full py-10">
       <Link
         href={ROUTES.CORPORATE_DEALS}
         className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1.5 text-sm"
