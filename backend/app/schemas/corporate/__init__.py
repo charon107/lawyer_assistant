@@ -20,11 +20,40 @@ from app.schemas.corporate.diligence import (
     DiligenceIssueRead,
     DiligenceIssueUpdate,
 )
+from app.schemas.corporate.entity import (
+    CorporateEntityCreate,
+    CorporateEntityList,
+    CorporateEntityRead,
+    CorporateEntityUpdate,
+    EntityComplianceItemCreate,
+    EntityComplianceItemList,
+    EntityComplianceItemRead,
+    EntityComplianceItemUpdate,
+)
+from app.schemas.corporate.governance import (
+    BoardDocumentCreate,
+    BoardDocumentList,
+    BoardDocumentRead,
+    BoardDocumentUpdate,
+    BoardMeetingCreate,
+    BoardMeetingList,
+    BoardMeetingRead,
+)
+from app.schemas.corporate.integration import (
+    IntegrationTaskCreate,
+    IntegrationTaskList,
+    IntegrationTaskRead,
+    IntegrationTaskUpdate,
+)
 from app.schemas.corporate.material_contract import (
     MaterialContractItemCreate,
     MaterialContractItemList,
     MaterialContractItemRead,
     MaterialContractItemUpdate,
+)
+from app.schemas.corporate.notification import (
+    CorporateNotificationList,
+    CorporateNotificationRead,
 )
 from app.schemas.corporate.profile import (
     CorporateModule,
@@ -89,4 +118,29 @@ __all__ = [
     "MaterialContractItemList",
     "MaterialContractItemRead",
     "MaterialContractItemUpdate",
+    # governance
+    "BoardMeetingCreate",
+    "BoardMeetingList",
+    "BoardMeetingRead",
+    "BoardDocumentCreate",
+    "BoardDocumentList",
+    "BoardDocumentRead",
+    "BoardDocumentUpdate",
+    # entity / compliance
+    "CorporateEntityCreate",
+    "CorporateEntityList",
+    "CorporateEntityRead",
+    "CorporateEntityUpdate",
+    "EntityComplianceItemCreate",
+    "EntityComplianceItemList",
+    "EntityComplianceItemRead",
+    "EntityComplianceItemUpdate",
+    # integration
+    "IntegrationTaskCreate",
+    "IntegrationTaskList",
+    "IntegrationTaskRead",
+    "IntegrationTaskUpdate",
+    # notifications
+    "CorporateNotificationList",
+    "CorporateNotificationRead",
 ]

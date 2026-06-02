@@ -8,6 +8,7 @@ per-task tests in Phase C Track C2.
 from apscheduler.triggers.cron import CronTrigger
 
 from app.scheduler import (
+    JOB_DATAROOM_WATCHER,
     JOB_DEAL_DEBRIEF,
     JOB_RENEWAL_WATCHER,
     create_scheduler,
@@ -23,7 +24,7 @@ class TestCreateScheduler:
     def test_registers_both_jobs(self):
         scheduler = create_scheduler()
         ids = {job.id for job in scheduler.get_jobs()}
-        assert ids == {JOB_RENEWAL_WATCHER, JOB_DEAL_DEBRIEF}
+        assert ids == {JOB_RENEWAL_WATCHER, JOB_DEAL_DEBRIEF, JOB_DATAROOM_WATCHER}
 
     def test_renewal_watcher_runs_monday_0907(self):
         scheduler = create_scheduler()

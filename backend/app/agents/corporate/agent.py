@@ -20,18 +20,23 @@ from pydantic_ai.settings import ModelSettings
 
 from app.agents.corporate.deps import CorporateDeps
 from app.agents.corporate.prompts import (
+    build_board_minutes_system_prompt,
     build_deal_team_summary_system_prompt,
     build_diligence_system_prompt,
+    build_integration_system_prompt,
     build_material_contract_system_prompt,
     build_tabular_system_prompt,
+    build_written_consent_system_prompt,
 )
 from app.agents.corporate.tools import (
     list_diligence_issues,
     read_corporate_profile,
     read_deal_context,
     read_vdr_documents,
+    write_board_document,
     write_checklist_item,
     write_diligence_issue,
+    write_integration_task,
     write_material_contract_item,
     write_tabular_review,
 )
@@ -43,6 +48,9 @@ SkillName = Literal[
     "tabular-review",
     "material-contract-schedule",
     "deal-team-summary",
+    "board-minutes",
+    "written-consent",
+    "integration-management",
 ]
 
 _PROMPT_BUILDERS: dict[SkillName, Callable[..., str]] = {
@@ -50,6 +58,9 @@ _PROMPT_BUILDERS: dict[SkillName, Callable[..., str]] = {
     "tabular-review": build_tabular_system_prompt,
     "material-contract-schedule": build_material_contract_system_prompt,
     "deal-team-summary": build_deal_team_summary_system_prompt,
+    "board-minutes": build_board_minutes_system_prompt,
+    "written-consent": build_written_consent_system_prompt,
+    "integration-management": build_integration_system_prompt,
 }
 
 # Module-local tools each skill may call. Kept explicit (vs. registering
@@ -78,12 +89,31 @@ _SKILL_TOOLS: dict[SkillName, tuple[Callable[..., object], ...]] = {
         read_deal_context,
         list_diligence_issues,
     ),
+    "board-minutes": (
+        read_corporate_profile,
+        write_board_document,
+    ),
+    "written-consent": (
+        read_corporate_profile,
+        write_board_document,
+    ),
+    "integration-management": (
+        read_deal_context,
+        list_diligence_issues,
+        write_integration_task,
+    ),
 }
 
 # Skills that benefit from the project-wide legal-knowledge tools
 # (search_law / get_law_article) for 公司法2024 grounding.
 _LAW_TOOL_SKILLS: frozenset[SkillName] = frozenset(
-    {"diligence-issue-extraction", "material-contract-schedule"}
+    {
+        "diligence-issue-extraction",
+        "material-contract-schedule",
+        "board-minutes",
+        "written-consent",
+        "integration-management",
+    }
 )
 
 

@@ -225,6 +225,44 @@ def get_tabular_review_service(db: DBSession) -> TabularReviewService:
 TabularReviewSvc = Annotated[TabularReviewService, Depends(get_tabular_review_service)]
 
 
+from app.services.corporate_governance_services import (
+    BoardService,
+    CorporateNotificationService as CorporateNotifService,
+    EntityComplianceService,
+    IntegrationService,
+)
+
+
+def get_board_service(db: DBSession) -> BoardService:
+    return BoardService(db)
+
+
+BoardSvc = Annotated[BoardService, Depends(get_board_service)]
+
+
+def get_entity_compliance_service(db: DBSession) -> EntityComplianceService:
+    return EntityComplianceService(db)
+
+
+EntityComplianceSvc = Annotated[EntityComplianceService, Depends(get_entity_compliance_service)]
+
+
+def get_integration_service(db: DBSession) -> IntegrationService:
+    return IntegrationService(db)
+
+
+IntegrationSvc = Annotated[IntegrationService, Depends(get_integration_service)]
+
+
+def get_corporate_notification_service(db: DBSession) -> CorporateNotifService:
+    return CorporateNotifService(db)
+
+
+CorporateNotificationSvc = Annotated[
+    CorporateNotifService, Depends(get_corporate_notification_service)
+]
+
+
 # === Authentication Dependencies ===
 
 from app.core.exceptions import AuthenticationError, AuthorizationError

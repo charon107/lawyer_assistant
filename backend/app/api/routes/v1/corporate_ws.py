@@ -58,7 +58,16 @@ _SKILL_BY_ACTION: dict[str, SkillName] = {
     "tabular": "tabular-review",
     "material": "material-contract-schedule",
     "summary": "deal-team-summary",
+    "board": "board-minutes",
+    "consent": "written-consent",
+    "integration": "integration-management",
 }
+
+# Skills scoped to a deal (need a `deal_id`). board-minutes / written-consent
+# are user-scoped governance drafting and do not require a deal.
+_DEAL_SCOPED_ACTIONS: frozenset[str] = frozenset(
+    {"diligence", "tabular", "material", "summary", "integration"}
+)
 
 
 def _resolve_user_llm_config(user: User) -> dict[str, Any]:
@@ -94,10 +103,11 @@ async def _run_skill(
     *, websocket: WebSocket, user: User, data: dict[str, Any], action: str
 ) -> None:
     skill = _SKILL_BY_ACTION[action]
+    deal_scoped = action in _DEAL_SCOPED_ACTIONS
 
     deal_id = data.get("deal_id")
     prompt = (data.get("prompt") or "").strip()
-    if not deal_id:
+    if deal_scoped and not deal_id:
         await manager.send_event(websocket, "error", {"message": "deal_id is required"})
         return
     if not prompt:
@@ -107,14 +117,17 @@ async def _run_skill(
         return
 
     # Ownership pre-check (fail fast with a clear message).
-    with contextmanager(get_db_session)() as db:
-        deal = corporate_deal_repo.get_by_id(db, deal_id)
-        if deal is None or deal.user_id != str(user.id):
-            await manager.send_event(
-                websocket, "error", {"message": "Deal not found or not owned by you"}
-            )
-            return
-    await manager.send_event(websocket, "deal_resolved", {"deal_id": deal_id})
+    if deal_scoped:
+        with contextmanager(get_db_session)() as db:
+            deal = corporate_deal_repo.get_by_id(db, deal_id)
+            if deal is None or deal.user_id != str(user.id):
+                await manager.send_event(
+                    websocket, "error", {"message": "Deal not found or not owned by you"}
+                )
+                return
+        await manager.send_event(websocket, "deal_resolved", {"deal_id": deal_id})
+    else:
+        deal_id = None
 
     # tabular: pre-create the row the agent will fill.
     tabular_review_id: str | None = None

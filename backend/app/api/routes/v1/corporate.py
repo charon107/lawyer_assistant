@@ -15,11 +15,15 @@ from typing import Any
 from fastapi import APIRouter, Query, status
 
 from app.api.deps import (
+    BoardSvc,
     ClosingChecklistSvc,
     CorporateDealSvc,
+    CorporateNotificationSvc,
     CorporateProfileSvc,
     CurrentUser,
     DiligenceSvc,
+    EntityComplianceSvc,
+    IntegrationSvc,
     MaterialContractSvc,
     TabularReviewSvc,
     VdrSvc,
@@ -41,12 +45,42 @@ from app.schemas.corporate.diligence import (
     DiligenceIssueRead,
     DiligenceIssueUpdate,
 )
+from app.schemas.corporate.entity import (
+    CorporateEntityCreate,
+    CorporateEntityList,
+    CorporateEntityRead,
+    CorporateEntityUpdate,
+    EntityComplianceItemCreate,
+    EntityComplianceItemList,
+    EntityComplianceItemRead,
+    EntityComplianceItemUpdate,
+)
+from app.schemas.corporate.governance import (
+    BoardDocumentCreate,
+    BoardDocumentList,
+    BoardDocumentRead,
+    BoardDocumentUpdate,
+    BoardMeetingCreate,
+    BoardMeetingList,
+    BoardMeetingRead,
+)
+from app.schemas.corporate.integration import (
+    IntegrationTaskCreate,
+    IntegrationTaskList,
+    IntegrationTaskRead,
+    IntegrationTaskUpdate,
+)
 from app.schemas.corporate.material_contract import (
     MaterialContractItemCreate,
     MaterialContractItemList,
     MaterialContractItemRead,
 )
+from app.schemas.corporate.notification import (
+    CorporateNotificationList,
+    CorporateNotificationRead,
+)
 from app.schemas.corporate.profile import (
+    CorporateProfileCreate,
     CorporateProfileRead,
     CorporateProfileUpdate,
 )
@@ -77,6 +111,22 @@ def get_module_status(user: CurrentUser, profile_svc: CorporateProfileSvc) -> di
         "setup_status": profile.setup_status,
         "active_modules": modules,
     }
+
+
+@router.post("/setup", response_model=CorporateProfileRead, status_code=status.HTTP_201_CREATED)
+def cold_start_setup(
+    data: CorporateProfileCreate, user: CurrentUser, profile_svc: CorporateProfileSvc
+) -> Any:
+    """Cold-start interview submission: upsert the profile and mark setup complete.
+
+    Single-step setup — the frontend collects the selected modules
+    (并购/董事会/公众公司/主体管理), the compiled `profile_content`, and the
+    scalar fields, then posts them here.
+    """
+    profile_svc.upsert_my_profile(str(user.id), data)
+    return profile_svc.upsert_my_profile(
+        str(user.id), CorporateProfileUpdate(setup_status="completed")
+    )
 
 
 @router.get("/profile", response_model=CorporateProfileRead)
@@ -274,3 +324,142 @@ def list_tabular(
 @router.get("/tabular/{review_id}", response_model=TabularReviewRead)
 def get_tabular(review_id: str, user: CurrentUser, tabular_svc: TabularReviewSvc) -> Any:
     return tabular_svc.get_owned(review_id, user_id=str(user.id))
+
+
+# --- board governance --------------------------------------------------------
+
+
+@router.get("/board/meetings", response_model=BoardMeetingList)
+def list_board_meetings(user: CurrentUser, board_svc: BoardSvc) -> Any:
+    items, total = board_svc.list_meetings(user_id=str(user.id))
+    return BoardMeetingList(items=items, total=total)
+
+
+@router.post(
+    "/board/meetings", response_model=BoardMeetingRead, status_code=status.HTTP_201_CREATED
+)
+def create_board_meeting(data: BoardMeetingCreate, user: CurrentUser, board_svc: BoardSvc) -> Any:
+    return board_svc.create_meeting(user_id=str(user.id), data=data)
+
+
+@router.get("/board/documents", response_model=BoardDocumentList)
+def list_board_documents(user: CurrentUser, board_svc: BoardSvc) -> Any:
+    items, total = board_svc.list_documents(user_id=str(user.id))
+    return BoardDocumentList(items=items, total=total)
+
+
+@router.post(
+    "/board/documents", response_model=BoardDocumentRead, status_code=status.HTTP_201_CREATED
+)
+def create_board_document(data: BoardDocumentCreate, user: CurrentUser, board_svc: BoardSvc) -> Any:
+    return board_svc.create_document(user_id=str(user.id), data=data)
+
+
+@router.patch("/board/documents/{doc_id}", response_model=BoardDocumentRead)
+def update_board_document(
+    doc_id: str, data: BoardDocumentUpdate, user: CurrentUser, board_svc: BoardSvc
+) -> Any:
+    return board_svc.update_document(doc_id, user_id=str(user.id), data=data)
+
+
+# --- entities + compliance calendar ------------------------------------------
+
+
+@router.get("/entities", response_model=CorporateEntityList)
+def list_entities(user: CurrentUser, entity_svc: EntityComplianceSvc) -> Any:
+    items, total = entity_svc.list_entities(user_id=str(user.id))
+    return CorporateEntityList(items=items, total=total)
+
+
+@router.post("/entities", response_model=CorporateEntityRead, status_code=status.HTTP_201_CREATED)
+def create_entity(
+    data: CorporateEntityCreate, user: CurrentUser, entity_svc: EntityComplianceSvc
+) -> Any:
+    return entity_svc.create_entity(user_id=str(user.id), data=data)
+
+
+@router.patch("/entities/{entity_id}", response_model=CorporateEntityRead)
+def update_entity(
+    entity_id: str,
+    data: CorporateEntityUpdate,
+    user: CurrentUser,
+    entity_svc: EntityComplianceSvc,
+) -> Any:
+    return entity_svc.update_entity(entity_id, user_id=str(user.id), data=data)
+
+
+@router.get("/entities/{entity_id}/compliance", response_model=EntityComplianceItemList)
+def list_entity_compliance(
+    entity_id: str, user: CurrentUser, entity_svc: EntityComplianceSvc
+) -> Any:
+    items, total = entity_svc.list_compliance(entity_id, user_id=str(user.id))
+    return EntityComplianceItemList(items=items, total=total)
+
+
+@router.post(
+    "/entities/{entity_id}/compliance",
+    response_model=EntityComplianceItemRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_entity_compliance(
+    entity_id: str,
+    data: EntityComplianceItemCreate,
+    user: CurrentUser,
+    entity_svc: EntityComplianceSvc,
+) -> Any:
+    payload = data.model_copy(update={"entity_id": entity_id})
+    return entity_svc.create_compliance(user_id=str(user.id), data=payload)
+
+
+@router.patch("/compliance/{item_id}", response_model=EntityComplianceItemRead)
+def update_entity_compliance(
+    item_id: str,
+    data: EntityComplianceItemUpdate,
+    user: CurrentUser,
+    entity_svc: EntityComplianceSvc,
+) -> Any:
+    return entity_svc.update_compliance(item_id, user_id=str(user.id), data=data)
+
+
+# --- integration tasks -------------------------------------------------------
+
+
+@router.get("/deals/{deal_id}/integration", response_model=IntegrationTaskList)
+def list_integration(deal_id: str, user: CurrentUser, integration_svc: IntegrationSvc) -> Any:
+    items, total = integration_svc.list_for_deal(user_id=str(user.id), deal_id=deal_id)
+    return IntegrationTaskList(items=items, total=total)
+
+
+@router.post(
+    "/deals/{deal_id}/integration",
+    response_model=IntegrationTaskRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_integration(
+    deal_id: str, data: IntegrationTaskCreate, user: CurrentUser, integration_svc: IntegrationSvc
+) -> Any:
+    payload = data.model_copy(update={"deal_id": deal_id})
+    return integration_svc.create(user_id=str(user.id), data=payload)
+
+
+@router.patch("/integration/{task_id}", response_model=IntegrationTaskRead)
+def update_integration(
+    task_id: str, data: IntegrationTaskUpdate, user: CurrentUser, integration_svc: IntegrationSvc
+) -> Any:
+    return integration_svc.update(task_id, user_id=str(user.id), data=data)
+
+
+# --- notifications -----------------------------------------------------------
+
+
+@router.get("/notifications", response_model=CorporateNotificationList)
+def list_notifications(user: CurrentUser, notif_svc: CorporateNotificationSvc) -> Any:
+    items, total, unread = notif_svc.list_for_user(user_id=str(user.id))
+    return CorporateNotificationList(items=items, total=total, unread=unread)
+
+
+@router.post("/notifications/{notif_id}/read", response_model=CorporateNotificationRead)
+def mark_notification_read(
+    notif_id: str, user: CurrentUser, notif_svc: CorporateNotificationSvc
+) -> Any:
+    return notif_svc.mark_read(notif_id, user_id=str(user.id))

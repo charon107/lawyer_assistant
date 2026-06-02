@@ -1,5 +1,9 @@
 """Prompt assets for the corporate-legal agent."""
 
+from app.agents.corporate.prompts.board import (
+    build_board_minutes_system_prompt,
+    build_written_consent_system_prompt,
+)
 from app.agents.corporate.prompts.deal_team_summary import (
     DEAL_TEAM_SUMMARY_SYSTEM_PROMPT,
     build_deal_team_summary_system_prompt,
@@ -8,6 +12,7 @@ from app.agents.corporate.prompts.diligence import (
     DILIGENCE_SYSTEM_PROMPT,
     build_diligence_system_prompt,
 )
+from app.agents.corporate.prompts.integration import build_integration_system_prompt
 from app.agents.corporate.prompts.material_contract import (
     MATERIAL_CONTRACT_SYSTEM_PROMPT,
     build_material_contract_system_prompt,
@@ -24,8 +29,11 @@ __all__ = [
     "MATERIAL_CONTRACT_SYSTEM_PROMPT",
     "SECURITY_MECHANISMS",
     "TABULAR_SYSTEM_PROMPT",
+    "build_board_minutes_system_prompt",
     "build_deal_team_summary_system_prompt",
     "build_diligence_system_prompt",
+    "build_integration_system_prompt",
     "build_material_contract_system_prompt",
     "build_tabular_system_prompt",
+    "build_written_consent_system_prompt",
 ]
