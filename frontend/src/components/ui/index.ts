@@ -28,7 +28,6 @@ export {
 } from "./alert-dialog";
 export { Avatar, AvatarImage, AvatarFallback } from "./avatar";
 export { Skeleton } from "./skeleton";
-export { Separator } from "./separator";
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./tooltip";
 export { Tabs, TabsList, TabsTrigger, TabsContent } from "./tabs";
 export {
@@ -41,7 +40,6 @@ export {
   SelectItem,
   SelectSeparator,
 } from "./select";
-export { ScrollArea, ScrollBar } from "./scroll-area";
 export {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -58,7 +56,6 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
 } from "./dropdown-menu";
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from "./popover";
 export {
   Table,
   TableHeader,
