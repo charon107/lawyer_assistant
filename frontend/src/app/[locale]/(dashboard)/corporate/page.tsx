@@ -52,26 +52,27 @@ export default function CorporatePage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <div className="mb-8">
-        <h1 className="mb-1 flex items-center gap-2 text-2xl font-bold">
+    <div className="mx-auto max-w-5xl px-6 py-10">
+      {/* Header */}
+      <div className="mb-10">
+        <h1 className="flex items-center gap-3 text-2xl font-bold tracking-tight">
           <Building2 className="text-brand h-6 w-6" />
           公司并购
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-relaxed">
           并购交易全流程：数据室尽调、表格化批量审查、重大合同披露清单与交割检查表，依据《公司法》（2024 修订）。
         </p>
       </div>
 
       {error && (
-        <p className="border-destructive/30 bg-destructive/5 text-destructive mb-6 rounded-lg border px-4 py-2.5 text-sm">
+        <p className="border-destructive/30 bg-destructive/5 text-destructive mb-8 rounded-lg border px-4 py-3 text-sm">
           {error}
         </p>
       )}
 
       {status && !status.configured && (
-        <Card className="border-brand/20 bg-brand/5 mb-8">
-          <CardContent className="p-5 text-sm">
+        <Card className="border-brand/20 bg-brand/5 mb-10">
+          <CardContent className="p-6 text-sm leading-relaxed">
             <p className="text-muted-foreground">
               尚未完成公司并购模块配置。你仍可创建交易并开始尽调；完成冷启动配置后，
               技能将更贴合你的尽调结构与重要性阈值。
@@ -81,46 +82,53 @@ export default function CorporatePage() {
       )}
 
       {/* Quick actions */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2">
-        <Link href={ROUTES.CORPORATE_DEALS}>
-          <Card className="hover:border-brand/40 h-full transition-colors">
-            <CardContent className="flex flex-col gap-2 p-5">
-              <Briefcase className="text-brand h-5 w-5" />
-              <h3 className="font-medium">交易工作区</h3>
-              <p className="text-muted-foreground text-sm">
-                新建并管理并购交易，按交易归集数据室、尽调发现与交割清单。
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href={ROUTES.CORPORATE_DEALS}>
-          <Card className="hover:border-brand/40 h-full transition-colors">
-            <CardContent className="flex flex-col gap-2 p-5">
-              <FileSearch className="text-brand h-5 w-5" />
-              <h3 className="font-medium">尽调问题提取</h3>
-              <p className="text-muted-foreground text-sm">
-                进入交易，用 AI 对数据室文件按类别与重要性阈值提取问题。
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href={ROUTES.CORPORATE_DEALS}>
-          <Card className="hover:border-brand/40 h-full transition-colors">
-            <CardContent className="flex flex-col gap-2 p-5">
-              <Table2 className="text-brand h-5 w-5" />
-              <h3 className="font-medium">表格化审查</h3>
-              <p className="text-muted-foreground text-sm">
-                进入交易，一行一文件、一列一数据点，每格附逐字来源，导出 Excel。
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
-      </div>
+      <section className="mb-10">
+        <h2 className="text-foreground mb-4 text-sm font-semibold tracking-wide uppercase">
+          快捷操作
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Link href={ROUTES.CORPORATE_DEALS}>
+            <Card className="hover:border-brand/40 group h-full transition-colors">
+              <CardContent className="flex flex-col gap-3 p-6">
+                <Briefcase className="text-brand h-5 w-5" />
+                <h3 className="text-sm font-semibold">交易工作区</h3>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  新建并管理并购交易，按交易归集数据室、尽调发现与交割清单。
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href={ROUTES.CORPORATE_DEALS}>
+            <Card className="hover:border-brand/40 group h-full transition-colors">
+              <CardContent className="flex flex-col gap-3 p-6">
+                <FileSearch className="text-brand h-5 w-5" />
+                <h3 className="text-sm font-semibold">尽调问题提取</h3>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  进入交易，用 AI 对数据室文件按类别与重要性阈值提取问题。
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href={ROUTES.CORPORATE_DEALS}>
+            <Card className="hover:border-brand/40 group h-full transition-colors">
+              <CardContent className="flex flex-col gap-3 p-6">
+                <Table2 className="text-brand h-5 w-5" />
+                <h3 className="text-sm font-semibold">表格化审查</h3>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  一行一文件、一列一数据点，每格附逐字来源，导出 Excel。
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      </section>
 
       {/* Recent deals */}
-      <div>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold tracking-wide uppercase">近期交易</h2>
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-foreground text-sm font-semibold tracking-wide uppercase">
+            近期交易
+          </h2>
           <Link href={ROUTES.CORPORATE_DEALS}>
             <Button variant="ghost" size="sm">
               全部交易
@@ -129,16 +137,18 @@ export default function CorporatePage() {
           </Link>
         </div>
         {deals.length === 0 ? (
-          <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-8 text-center text-sm">
-            还没有交易。前往「交易工作区」创建第一笔并购交易。
-          </p>
+          <div className="rounded-xl border border-dashed px-6 py-12 text-center">
+            <p className="text-muted-foreground text-sm">
+              还没有交易。前往「交易工作区」创建第一笔并购交易。
+            </p>
+          </div>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-3">
             {deals.map((d) => (
               <li key={d.id}>
                 <Link
                   href={`${ROUTES.CORPORATE_DEALS}/${d.id}`}
-                  className="hover:border-brand/40 flex items-center gap-3 rounded-xl border p-4 transition-colors"
+                  className="hover:border-brand/40 flex items-center gap-4 rounded-xl border px-5 py-4 transition-colors"
                 >
                   <span
                     className={`h-2.5 w-2.5 shrink-0 rounded-full ${
@@ -150,7 +160,7 @@ export default function CorporatePage() {
                       {d.code}
                       {d.counterparty ? ` · ${d.counterparty}` : ""}
                     </p>
-                    <p className="text-muted-foreground truncate text-xs">
+                    <p className="text-muted-foreground mt-0.5 truncate text-xs">
                       {d.deal_type || "并购交易"}
                     </p>
                   </div>
@@ -162,7 +172,7 @@ export default function CorporatePage() {
             ))}
           </ul>
         )}
-      </div>
+      </section>
     </div>
   );
 }

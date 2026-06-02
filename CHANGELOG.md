@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0.1] - 2026-06-03
+
+### Changed
+
+- **公司并购模块 UI 排版优化**: 概览、交易列表、交易工作区三处页面的间距与文字层级全面调整，修复文字拥挤、排版不整齐问题。
+  - 容器宽度 `max-w-4xl` → `max-w-5xl`，水平内边距 `px-4` → `px-6`
+  - 标题区、卡片、列表项的垂直间距统一加大（`gap-2` → `gap-3`/`gap-4`，`p-4` → `px-5 py-4`/`p-6`）
+  - 表单字段通过 `Field` 组件统一 `mt-1.5` 与 Label 分离
+  - Tab 栏按钮加大点击区域，非活跃态加 hover 反馈
+  - 空状态占位符 padding 加大，文字层级统一
+
 ## [0.7.0.0] - 2026-06-02
 
 ### Added

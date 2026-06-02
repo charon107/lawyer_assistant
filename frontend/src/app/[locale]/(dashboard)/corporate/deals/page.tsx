@@ -65,33 +65,36 @@ export default function CorporateDealsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
+    <div className="mx-auto max-w-5xl px-6 py-10">
       <Link
         href={ROUTES.CORPORATE}
-        className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1 text-sm"
+        className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1.5 text-sm"
       >
         <ArrowLeft className="h-4 w-4" />
         公司并购
       </Link>
 
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">交易工作区</h1>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">交易工作区</h1>
+          <p className="text-muted-foreground mt-1 text-sm">管理所有并购交易，按交易归集尽调与交割数据。</p>
+        </div>
         <Button onClick={() => setShowForm((v) => !v)}>
-          <Plus className="mr-1 h-4 w-4" />
+          <Plus className="mr-1.5 h-4 w-4" />
           新建交易
         </Button>
       </div>
 
       {error && (
-        <p className="border-destructive/30 bg-destructive/5 text-destructive mb-6 rounded-lg border px-4 py-2.5 text-sm">
+        <p className="border-destructive/30 bg-destructive/5 text-destructive mb-8 rounded-lg border px-4 py-3 text-sm">
           {error}
         </p>
       )}
 
       {showForm && (
-        <Card className="mb-6">
-          <CardContent className="p-5">
-            <form onSubmit={handleCreate} className="flex flex-col gap-4">
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <form onSubmit={handleCreate} className="flex flex-col gap-5">
               <div>
                 <Label htmlFor="code">交易代码 *</Label>
                 <Input
@@ -100,6 +103,7 @@ export default function CorporateDealsPage() {
                   onChange={(e) => setCode(e.target.value)}
                   placeholder="如 acme-2026"
                   required
+                  className="mt-1.5"
                 />
               </div>
               <div>
@@ -109,6 +113,7 @@ export default function CorporateDealsPage() {
                   value={counterparty}
                   onChange={(e) => setCounterparty(e.target.value)}
                   placeholder="目标公司 / 交易对手"
+                  className="mt-1.5"
                 />
               </div>
               <div>
@@ -117,14 +122,14 @@ export default function CorporateDealsPage() {
                   id="side"
                   value={side}
                   onChange={(e) => setSide(e.target.value as DealSide)}
-                  className="border-input bg-background mt-1 h-9 w-full rounded-md border px-3 text-sm"
+                  className="border-input bg-background mt-1.5 h-9 w-full rounded-md border px-3 text-sm"
                 >
                   <option value="buyer">收购方</option>
                   <option value="seller">出售方</option>
                   <option value="na">不适用</option>
                 </select>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3 pt-1">
                 <Button type="submit" disabled={creating || !code.trim()}>
                   {creating ? "创建中…" : "创建"}
                 </Button>
@@ -142,23 +147,25 @@ export default function CorporateDealsPage() {
           <Spinner className="text-brand h-6 w-6" />
         </div>
       ) : deals.length === 0 ? (
-        <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-10 text-center text-sm">
-          还没有交易。点击「新建交易」创建第一笔。
-        </p>
+        <div className="rounded-xl border border-dashed px-6 py-14 text-center">
+          <p className="text-muted-foreground text-sm">
+            还没有交易。点击「新建交易」创建第一笔。
+          </p>
+        </div>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {deals.map((d) => (
             <li key={d.id}>
               <Link
                 href={`${ROUTES.CORPORATE_DEALS}/${d.id}`}
-                className="hover:border-brand/40 flex items-center gap-3 rounded-xl border p-4 transition-colors"
+                className="hover:border-brand/40 flex items-center gap-4 rounded-xl border px-5 py-4 transition-colors"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">
                     {d.code}
                     {d.counterparty ? ` · ${d.counterparty}` : ""}
                   </p>
-                  <p className="text-muted-foreground truncate text-xs">
+                  <p className="text-muted-foreground mt-0.5 truncate text-xs">
                     {SIDE_LABEL[d.side ?? "na"]} · {d.deal_type || "并购交易"} · {d.status}
                   </p>
                 </div>
