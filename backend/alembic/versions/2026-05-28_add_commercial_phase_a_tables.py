@@ -32,6 +32,11 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    # Skip if tables already exist (may have been created by create_all in dev)
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    if "commercial_profiles" in inspector.get_table_names():
+        return
     # commercial_profiles -----------------------------------------------------
     op.create_table(
         "commercial_profiles",
@@ -171,13 +176,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index("ix_module_configs_module_name", table_name="module_configs")
-    op.drop_index("ix_module_configs_user_id", table_name="module_configs")
+    # drop_table drops the table's indexes automatically (SQLite); explicit
+    # drop_index is omitted to stay name-agnostic between create_all (*_idx)
+    # and migration-created (ix_*) databases.
     op.drop_table("module_configs")
-
-    op.drop_index("ix_contract_reviews_matter_id", table_name="contract_reviews")
-    op.drop_index("ix_contract_reviews_user_id", table_name="contract_reviews")
     op.drop_table("contract_reviews")
-
-    op.drop_index("ix_commercial_profiles_user_id", table_name="commercial_profiles")
     op.drop_table("commercial_profiles")

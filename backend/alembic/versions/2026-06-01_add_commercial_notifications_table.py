@@ -22,6 +22,11 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    # Skip if table already exists (may have been created by create_all in dev)
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    if "commercial_notifications" in inspector.get_table_names():
+        return
     op.create_table(
         "commercial_notifications",
         sa.Column("id", sa.String(36), primary_key=True),
@@ -50,7 +55,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index("ix_commercial_notifications_read", table_name="commercial_notifications")
-    op.drop_index("ix_commercial_notifications_type", table_name="commercial_notifications")
-    op.drop_index("ix_commercial_notifications_user_id", table_name="commercial_notifications")
+    # drop_table drops the table's indexes automatically (SQLite); explicit
+    # drop_index is omitted to stay name-agnostic between create_all (*_idx)
+    # and migration-created (ix_*) databases.
     op.drop_table("commercial_notifications")
