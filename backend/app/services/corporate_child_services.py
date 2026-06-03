@@ -75,6 +75,59 @@ class VdrService(_DealScoped):
         filename = fields.pop("filename")
         return vdr_document_repo.create(self.db, deal_id=deal_id, filename=filename, **fields)
 
+    def create_with_file(
+        self,
+        *,
+        user_id: str,
+        deal_id: str,
+        filename: str,
+        file_data: bytes,
+        content_type: str | None = None,
+        category: str | None = None,
+        priority: str = "normal",
+    ) -> VdrDocument:
+        """Upload a file to the VDR: store on disk, parse content, create record."""
+        import uuid
+        from pathlib import Path
+
+        from app.core.config import settings
+        from app.services.file_storage import classify_file
+        from app.services.file_upload import FileUploadService
+
+        self._ensure_owned(deal_id, user_id=user_id)
+
+        # Validate
+        valid, err = FileUploadService.validate_upload(content_type, len(file_data))
+        if not valid:
+            from app.core.exceptions import AppException
+
+            raise AppException(message=err or "Invalid file", status_code=400)
+
+        # Store file on local filesystem
+        media_dir = Path(getattr(settings, "MEDIA_DIR", "media"))
+        user_dir = media_dir / user_id
+        user_dir.mkdir(parents=True, exist_ok=True)
+        storage_name = f"{uuid.uuid4().hex[:12]}_{filename}"
+        file_path = user_dir / storage_name
+        file_path.write_bytes(file_data)
+        storage_path = f"{user_id}/{storage_name}"
+
+        # Parse content
+        file_type = classify_file(content_type or "", filename)
+        svc = FileUploadService(self.db)
+        parsed = svc.parse_content(file_data, file_type, content_type or "")
+
+        return vdr_document_repo.create(
+            self.db,
+            deal_id=deal_id,
+            filename=filename,
+            file_path=storage_path,
+            category=category,
+            priority=priority,
+            source="manual",
+            parsed_content=parsed,
+        )
+
     def update(self, doc_id: str, *, user_id: str, data: VdrDocumentUpdate) -> VdrDocument:
         doc = vdr_document_repo.get_by_id(self.db, doc_id)
         if doc is None:
