@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.1.0] - 2026-06-03
+
+### Added
+
+- **VDR 数据室文件上传**: 交易工作区「数据室」标签页支持直接上传 PDF、Word、文本等文件，AI 可读取文件内容进行尽调提取。
+  - 后端新增 `POST /deals/{deal_id}/vdr/upload` 端点，支持 multipart/form-data 文件上传
+  - `VdrService.create_with_file` 存储文件并解析内容到 `parsed_content` 字段
+  - `read_vdr_documents` 工具增强：优先返回已解析内容，AI 可读取文件实际文本
+  - 前端 `apiClient.upload()` 方法支持 FormData 上传
+  - Next.js 代理路由自动检测并转发 multipart 请求
+  - 数据室标签页「新增」改为「上传文件」，支持 PDF/DOCX/TXT/CSV/MD
+
 ## [0.7.0.2] - 2026-06-03
 
 ### Fixed
