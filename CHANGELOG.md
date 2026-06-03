@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0.0] - 2026-06-03
+
+### Added
+
+- **劳动用工模块（Employment-Legal）**: 全新第3个业务模块，覆盖招聘审查、解除审查、假期管理、内部调查、地域扩张等 16 项技能。
+  - 后端数据层：6 个 SQLAlchemy 模型（employment_profile、employment_review、leave_registration、employment_investigation、employment_expansion、employment_notification）+ Alembic 迁移 + 6 个 Repository
+  - 后端服务层：冷启动状态机（6 步向导）、画像管理、审查历史、假期登记、调查管理、扩张管理、通知服务
+  - 后端技能引擎：9 个 Agent 技能（hiring/termination/classification/policy/wage_hour/handbook/expansion/inv_query/inv_memo/inv_summary）+ PydanticAI tools
+  - 后端 API：REST 端点（/api/v1/employment/*）+ WebSocket 端点（/ws/employment）+ 假期追踪定时任务
+  - 前端页面：概览、冷启动向导、用工审查、假期管理、调查管理、地域扩张、设置（共 10 个页面）
+  - 前端组件：审查类型选择器、高风险标记徽章、假期表单、假期紧急度徽章、通知区域
+  - 前端基础设施：API 客户端、WebSocket hook、代理路由、i18n 中英文翻译
+
 ## [0.7.1.0] - 2026-06-03
 
 ### Added
