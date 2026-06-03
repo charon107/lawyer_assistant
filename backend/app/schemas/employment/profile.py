@@ -32,8 +32,8 @@ class EmploymentProfileCreate(BaseSchema):
     office_model: OfficeModel = "in_office"
     user_role: UserRole = "attorney"
     lawyer_contact: str | None = Field(default=None, max_length=255)
-    hiring_trigger: dict[str, Any] | None = None
-    termination_trigger: dict[str, Any] | None = None
+    hiring_trigger: str | dict[str, Any] | None = None
+    termination_trigger: str | dict[str, Any] | None = None
     standard_severance: str | None = Field(default=None, max_length=40)
     high_risk_flags: list[str] | None = None
     policy_location: str | None = Field(default=None, max_length=255)
@@ -55,8 +55,8 @@ class EmploymentProfileUpdate(BaseSchema):
     office_model: OfficeModel | None = None
     user_role: UserRole | None = None
     lawyer_contact: str | None = Field(default=None, max_length=255)
-    hiring_trigger: dict[str, Any] | None = None
-    termination_trigger: dict[str, Any] | None = None
+    hiring_trigger: str | dict[str, Any] | None = None
+    termination_trigger: str | dict[str, Any] | None = None
     standard_severance: str | None = Field(default=None, max_length=40)
     high_risk_flags: list[str] | None = None
     policy_location: str | None = Field(default=None, max_length=255)
@@ -81,8 +81,8 @@ class EmploymentProfileRead(BaseSchema, TimestampSchema):
     office_model: OfficeModel = "in_office"
     user_role: UserRole = "attorney"
     lawyer_contact: str | None = None
-    hiring_trigger: dict[str, Any] | None = None
-    termination_trigger: dict[str, Any] | None = None
+    hiring_trigger: str | dict[str, Any] | None = None
+    termination_trigger: str | dict[str, Any] | None = None
     standard_severance: str | None = None
     high_risk_flags: list[str] | None = None
     policy_location: str | None = None
@@ -100,6 +100,15 @@ class EmploymentProfileRead(BaseSchema, TimestampSchema):
     @classmethod
     def _decode_json(cls, v: object) -> object:
         return parse_json_field(v)
+
+    @field_validator("user_role", mode="before")
+    @classmethod
+    def _coerce_user_role(cls, v: object) -> object:
+        """Accept legacy values written before the enum was tightened."""
+        _ROLE_MAP = {"lawyer": "attorney", "non_lawyer": "non_attorney_without"}
+        if isinstance(v, str) and v in _ROLE_MAP:
+            return _ROLE_MAP[v]
+        return v
 
 
 class EmploymentModuleStatusResponse(BaseSchema):

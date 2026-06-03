@@ -39,7 +39,7 @@ export default function EmploymentSetupPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Step 0
-  const [userRole, setUserRole] = useState<"lawyer" | "non_lawyer">("lawyer");
+  const [userRole, setUserRole] = useState<"attorney" | "non_attorney_with_lawyer" | "non_attorney_without">("attorney");
   const [practiceScenario, setPracticeScenario] = useState("");
 
   // Step 1
@@ -74,7 +74,7 @@ export default function EmploymentSetupPage() {
   const buildAnswers = (step: number): Record<string, unknown> => {
     switch (step) {
       case 0:
-        return { user_role: userRole, practice_scenario: practiceScenario };
+        return { user_role: userRole, practice_scenario: practiceScenario.trim() || null };
       case 1:
         return {
           jurisdictions,
@@ -83,9 +83,9 @@ export default function EmploymentSetupPage() {
         };
       case 2:
         return {
-          hiring_trigger: hiringTrigger,
-          termination_trigger: terminationTrigger,
-          standard_severance: standardSeverance,
+          hiring_trigger: hiringTrigger.trim() || null,
+          termination_trigger: terminationTrigger.trim() || null,
+          standard_severance: standardSeverance.trim() || null,
         };
       case 3:
         return { high_risk_flags: highRiskFlags, policy_location: policyLocation };
@@ -211,20 +211,24 @@ export default function EmploymentSetupPage() {
             </div>
             <div className="flex flex-col gap-1.5">
               <span className="text-sm font-medium">你的角色</span>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {(["lawyer", "non_lawyer"] as const).map((r) => (
+              <div className="grid gap-2 sm:grid-cols-3">
+                {([
+                  { value: "attorney", label: "律师 / 法务" },
+                  { value: "non_attorney_with_lawyer", label: "非律师（有外部律师）" },
+                  { value: "non_attorney_without", label: "非律师（无外部律师）" },
+                ] as const).map((r) => (
                   <button
-                    key={r}
+                    key={r.value}
                     type="button"
-                    onClick={() => setUserRole(r)}
+                    onClick={() => setUserRole(r.value)}
                     className={cn(
                       "rounded-lg border px-3.5 py-2.5 text-left text-sm transition-colors",
-                      userRole === r
+                      userRole === r.value
                         ? "border-brand bg-brand/5 ring-brand/20 ring-1"
                         : "border-border hover:border-brand/40",
                     )}
                   >
-                    {r === "lawyer" ? "律师 / 法务" : "HR / 业务负责人"}
+                    {r.label}
                   </button>
                 ))}
               </div>

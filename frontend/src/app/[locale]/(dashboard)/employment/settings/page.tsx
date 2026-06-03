@@ -51,12 +51,12 @@ export default function EmploymentSettingsPage() {
     setSaved(false);
     try {
       await employmentApi.updateProfile({
-        default_jurisdiction: defaultJurisdiction,
-        hiring_trigger: hiringTrigger,
-        termination_trigger: terminationTrigger,
-        standard_severance: standardSeverance,
-        policy_location: policyLocation,
-        profile_content: profileContent,
+        default_jurisdiction: defaultJurisdiction.trim() || null,
+        hiring_trigger: hiringTrigger.trim() || null,
+        termination_trigger: terminationTrigger.trim() || null,
+        standard_severance: standardSeverance.trim() || null,
+        policy_location: policyLocation.trim() || null,
+        profile_content: profileContent.trim() || null,
       });
       setSaved(true);
     } catch (e) {
