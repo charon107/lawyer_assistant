@@ -10,6 +10,7 @@ from apscheduler.triggers.cron import CronTrigger
 from app.scheduler import (
     JOB_DATAROOM_WATCHER,
     JOB_DEAL_DEBRIEF,
+    JOB_LEAVE_TRACKER,
     JOB_RENEWAL_WATCHER,
     create_scheduler,
 )
@@ -24,7 +25,20 @@ class TestCreateScheduler:
     def test_registers_both_jobs(self):
         scheduler = create_scheduler()
         ids = {job.id for job in scheduler.get_jobs()}
-        assert ids == {JOB_RENEWAL_WATCHER, JOB_DEAL_DEBRIEF, JOB_DATAROOM_WATCHER}
+        assert ids == {
+            JOB_RENEWAL_WATCHER,
+            JOB_DEAL_DEBRIEF,
+            JOB_DATAROOM_WATCHER,
+            JOB_LEAVE_TRACKER,
+        }
+
+    def test_leave_tracker_runs_monday_0937(self):
+        scheduler = create_scheduler()
+        trigger = scheduler.get_job(JOB_LEAVE_TRACKER).trigger
+        assert isinstance(trigger, CronTrigger)
+        assert _field(trigger, "day_of_week") == "mon"
+        assert _field(trigger, "hour") == "9"
+        assert _field(trigger, "minute") == "37"
 
     def test_renewal_watcher_runs_monday_0907(self):
         scheduler = create_scheduler()
