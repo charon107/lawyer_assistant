@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 JOB_RENEWAL_WATCHER = "renewal_watcher"
 JOB_DEAL_DEBRIEF = "deal_debrief"
 JOB_DATAROOM_WATCHER = "dataroom_watcher"
+JOB_LEAVE_TRACKER = "employment_leave_tracker"
 
 
 def _run_in_session(task: Callable[..., object], task_name: str) -> None:
@@ -66,6 +67,12 @@ def _run_dataroom_watcher() -> None:
     _run_in_session(dataroom_watcher.run, JOB_DATAROOM_WATCHER)
 
 
+def _run_leave_tracker() -> None:
+    from app.tasks import employment_leave_tracker
+
+    _run_in_session(employment_leave_tracker.run, JOB_LEAVE_TRACKER)
+
+
 def create_scheduler() -> AsyncIOScheduler:
     """Build the scheduler and register the weekly commercial jobs."""
     scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
@@ -90,6 +97,14 @@ def create_scheduler() -> AsyncIOScheduler:
         trigger=CronTrigger(hour=8, minute=17),
         id=JOB_DATAROOM_WATCHER,
         name="Corporate dataroom watcher",
+        replace_existing=True,
+    )
+    # Employment leave tracker — weekly Monday (off-hour to avoid the 09:07 stampede).
+    scheduler.add_job(
+        _run_leave_tracker,
+        trigger=CronTrigger(day_of_week="mon", hour=9, minute=37),
+        id=JOB_LEAVE_TRACKER,
+        name="Employment leave tracker",
         replace_existing=True,
     )
 
