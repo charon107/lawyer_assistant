@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Badge, Button, Card, CardContent, Input, Label, Spinner, Textarea } from "@/components/ui";
@@ -15,7 +15,7 @@ import type {
   MaterialContractItem,
   VdrDocument,
 } from "@/types/corporate";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Upload } from "lucide-react";
 
 type Tab = "diligence" | "checklist" | "material" | "vdr";
 
@@ -51,6 +51,8 @@ export default function CorporateDealDetailPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
   const [aiPrompt, setAiPrompt] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reload = useCallback(async () => {
     try {
@@ -99,6 +101,22 @@ export default function CorporateDealDetailPage() {
     setShowForm(false);
     setForm({});
     setError(null);
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      await corporateApi.uploadVdr(dealId, file);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "上传失败");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function submitForm(e: React.FormEvent) {
@@ -266,10 +284,35 @@ export default function CorporateDealDetailPage() {
             </button>
           ))}
         </div>
-        <Button size="sm" variant="ghost" onClick={() => setShowForm((v) => !v)}>
-          <Plus className="mr-1.5 h-4 w-4" />
-          新增
-        </Button>
+        {tab === "vdr" ? (
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.docx,.doc,.txt,.csv,.md"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploading ? (
+                <Spinner className="mr-1.5 h-4 w-4" />
+              ) : (
+                <Upload className="mr-1.5 h-4 w-4" />
+              )}
+              {uploading ? "上传中…" : "上传文件"}
+            </Button>
+          </>
+        ) : (
+          <Button size="sm" variant="ghost" onClick={() => setShowForm((v) => !v)}>
+            <Plus className="mr-1.5 h-4 w-4" />
+            新增
+          </Button>
+        )}
       </div>
 
       {/* Inline form */}
@@ -451,7 +494,9 @@ export default function CorporateDealDetailPage() {
 
       {tab === "vdr" && (
         <ul className="flex flex-col gap-3">
-          {vdr.length === 0 && <Empty text="还没有数据室文档。" />}
+          {vdr.length === 0 && (
+            <Empty text="还没有数据室文档。点击「上传文件」上传 PDF、Word 或文本文件，AI 将自动解析内容用于尽调提取。" />
+          )}
           {vdr.map((d) => (
             <li key={d.id} className="flex items-center gap-4 rounded-xl border px-5 py-4">
               <Badge variant={d.priority === "high" ? "destructive" : "secondary"} className="shrink-0">
@@ -461,6 +506,7 @@ export default function CorporateDealDetailPage() {
                 <p className="text-sm font-medium">{d.filename}</p>
                 <p className="text-muted-foreground mt-0.5 text-xs">
                   {d.category || "未分类"} · {d.status}
+                  {d.file_path ? " · 已存储" : ""}
                 </p>
               </div>
             </li>
