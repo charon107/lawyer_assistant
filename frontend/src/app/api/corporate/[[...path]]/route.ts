@@ -59,6 +59,20 @@ async function forwardWithBody(
     }
     const pathStr = await resolvePath(ctx.params);
     const url = buildBackendUrl(pathStr, request.nextUrl.searchParams);
+    const contentType = request.headers.get("content-type") || "";
+
+    // File upload: forward as-is (multipart/form-data)
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      const data = await backendFetch(url, {
+        method,
+        headers: getAuthHeaders(accessToken),
+        body: formData,
+      });
+      return NextResponse.json(data);
+    }
+
+    // JSON body: forward as text
     const body = await request.text();
     const data = await backendFetch(url, {
       method,
