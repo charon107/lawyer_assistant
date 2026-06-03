@@ -39,6 +39,7 @@ class VdrDocumentRead(BaseSchema, TimestampSchema):
     priority: VdrPriority = "normal"
     status: VdrStatus = "new"
     source: VdrSource = "manual"
+    has_content: bool = False
 
 
 class VdrDocumentList(BaseSchema):

@@ -12,7 +12,7 @@ entry and editing.
 
 from typing import Any
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, File, Form, Query, UploadFile, status
 
 from app.api.deps import (
     BoardSvc,
@@ -205,6 +205,36 @@ def create_vdr(deal_id: str, data: VdrDocumentCreate, user: CurrentUser, vdr_svc
     # path deal_id is authoritative
     payload = data.model_copy(update={"deal_id": deal_id})
     return vdr_svc.create(user_id=str(user.id), data=payload)
+
+
+@router.post(
+    "/deals/{deal_id}/vdr/upload",
+    response_model=VdrDocumentRead,
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_vdr_file(
+    deal_id: str,
+    file: UploadFile = File(...),
+    category: str | None = Form(None),
+    priority: str = Form("normal"),
+    user: CurrentUser = ...,
+    vdr_svc: VdrSvc = ...,
+) -> Any:
+    """Upload a document to the deal's data room.
+
+    Accepts PDF, DOCX, and text files. Content is parsed and stored
+    so the AI agent can read it during diligence extraction.
+    """
+    file_data = await file.read()
+    return vdr_svc.create_with_file(
+        user_id=str(user.id),
+        deal_id=deal_id,
+        filename=file.filename or "unnamed",
+        file_data=file_data,
+        content_type=file.content_type,
+        category=category,
+        priority=priority,
+    )
 
 
 # --- diligence issues --------------------------------------------------------

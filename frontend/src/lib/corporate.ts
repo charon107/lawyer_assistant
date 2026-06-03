@@ -68,6 +68,14 @@ export const corporateApi = {
   createVdr: (dealId: string, body: Record<string, unknown>) =>
     apiClient.post<VdrDocument>(`/corporate/deals/${dealId}/vdr`, body),
 
+  uploadVdr: (dealId: string, file: File, category?: string, priority?: string) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (category) formData.append("category", category);
+    if (priority) formData.append("priority", priority);
+    return apiClient.upload<VdrDocument>(`/corporate/deals/${dealId}/vdr/upload`, formData);
+  },
+
   createDiligence: (dealId: string, body: Record<string, unknown>) =>
     apiClient.post<DiligenceIssue>(`/corporate/deals/${dealId}/diligence`, body),
 
