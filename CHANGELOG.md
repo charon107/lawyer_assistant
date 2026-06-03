@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0.1] - 2026-06-03
+
+### Changed
+
+- **劳动用工模块提示词法律保真度提升**: 从源 SKILL.md 逐字补全 7 个 Agent 提示词（termination/hiring/worker-classification/policy/wage-hour/handbook/expansion），将对 CLAUDE.md/文件路径的引用映射为本系统工具调用。
+  - 解除审查：完整高风险标记表（8 项，含 id）、工时制度分类错误三条件触发、N/2N 经济补偿与赔偿金区分、解除当日检查清单、非律师后续行动门槛。
+  - 录用审查：竞业限制《劳动合同法》第23-24条三要件、试用期第19条、要约效力、告知义务第8条、禁止扣证收财第9条。
+  - 劳动关系认定：前瞻性硬门槛、劳社部发〔2005〕12号三要素、差距分析 🔴/🟡/✅。
+  - 工资工时：加班费计算基数框架（基数认定 + 150%/200%/300% + 公式 + 21.75 + 仲裁时效一年 + 省级叠加）。
+  - 制度起草/更新：《劳动合同法》第4条民主程序与公示、省级补充条款、连锁影响 diff。
+  - 异地扩张：直接用工/劳务派遣/业务外包结构框架、新地域清单。
+  - 全部沿用来源标注纪律（[法条原文]/[需核实]）与"不自作补充"三值选择。
+
+### Maintenance
+
+- **CI Action 版本统一升级**（Node 24 兼容）: actions/checkout v4→v6、docker/setup-buildx-action v3→v4、docker/login-action v3→v4、docker/build-push-action v6→v7；appleboy/ssh-action 维持 v1.2.5（sha 钉住）。
+
 ## [0.8.0.0] - 2026-06-03
 
 ### Added
