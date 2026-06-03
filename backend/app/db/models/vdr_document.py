@@ -8,7 +8,7 @@ with its due-diligence request category and a priority flag (high for
 
 import uuid
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
@@ -48,6 +48,8 @@ class VdrDocument(Base, TimestampMixin):
         nullable=False,
         default="manual",
     )  # manual / feishu / box / nutstore
+
+    parsed_content: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     def __repr__(self) -> str:
         return f"<VdrDocument(id={self.id}, deal_id={self.deal_id}, filename={self.filename}, status={self.status})>"
