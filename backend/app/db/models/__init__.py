@@ -28,6 +28,17 @@ from app.db.models.board_meeting import BoardMeeting, BoardDocument
 from app.db.models.corporate_entity import CorporateEntity, EntityComplianceItem
 from app.db.models.integration_task import IntegrationTask
 from app.db.models.corporate_notification import CorporateNotification
+from app.db.models.employment_profile import EmploymentProfile
+from app.db.models.leave_registration import LeaveRegistration
+from app.db.models.employment_review import EmploymentReview
+from app.db.models.employment_investigation import (
+    EmploymentInvestigation,
+    InvestigationLogEntry,
+    InvestigationSource,
+    InvestigationGap,
+)
+from app.db.models.employment_expansion import EmploymentExpansion
+from app.db.models.employment_notification import EmploymentNotification
 
 __all__ = [
     "User",
@@ -61,4 +72,13 @@ __all__ = [
     "EntityComplianceItem",
     "IntegrationTask",
     "CorporateNotification",
+    "EmploymentProfile",
+    "LeaveRegistration",
+    "EmploymentReview",
+    "EmploymentInvestigation",
+    "InvestigationLogEntry",
+    "InvestigationSource",
+    "InvestigationGap",
+    "EmploymentExpansion",
+    "EmploymentNotification",
 ]

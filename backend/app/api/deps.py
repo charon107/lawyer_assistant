@@ -263,6 +263,70 @@ CorporateNotificationSvc = Annotated[
 ]
 
 
+# === Employment-legal Services ===
+
+from app.services.employment_cold_start_service import EmploymentColdStartService
+from app.services.employment_notification_service import EmploymentNotificationService
+from app.services.employment_profile_service import EmploymentProfileService
+from app.services.employment_review_service import EmploymentReviewService
+from app.services.expansion_service import ExpansionService
+from app.services.investigation_service import InvestigationService
+from app.services.leave_service import LeaveService
+
+
+def get_employment_profile_service(db: DBSession) -> EmploymentProfileService:
+    return EmploymentProfileService(db)
+
+
+EmploymentProfileSvc = Annotated[EmploymentProfileService, Depends(get_employment_profile_service)]
+
+
+def get_employment_cold_start_service(db: DBSession) -> EmploymentColdStartService:
+    return EmploymentColdStartService(db)
+
+
+EmploymentColdStartSvc = Annotated[
+    EmploymentColdStartService, Depends(get_employment_cold_start_service)
+]
+
+
+def get_employment_review_service(db: DBSession) -> EmploymentReviewService:
+    return EmploymentReviewService(db)
+
+
+EmploymentReviewSvc = Annotated[EmploymentReviewService, Depends(get_employment_review_service)]
+
+
+def get_leave_service(db: DBSession) -> LeaveService:
+    return LeaveService(db)
+
+
+LeaveSvc = Annotated[LeaveService, Depends(get_leave_service)]
+
+
+def get_investigation_service(db: DBSession) -> InvestigationService:
+    return InvestigationService(db)
+
+
+InvestigationSvc = Annotated[InvestigationService, Depends(get_investigation_service)]
+
+
+def get_expansion_service(db: DBSession) -> ExpansionService:
+    return ExpansionService(db)
+
+
+ExpansionSvc = Annotated[ExpansionService, Depends(get_expansion_service)]
+
+
+def get_employment_notification_service(db: DBSession) -> EmploymentNotificationService:
+    return EmploymentNotificationService(db)
+
+
+EmploymentNotificationSvc = Annotated[
+    EmploymentNotificationService, Depends(get_employment_notification_service)
+]
+
+
 # === Authentication Dependencies ===
 
 from app.core.exceptions import AuthenticationError, AuthorizationError
