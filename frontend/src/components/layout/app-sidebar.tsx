@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { APP_NAME, ROUTES } from "@/lib/constants";
 import { useAuth } from "@/hooks";
-import { LayoutDashboard, MessageSquare, UserCircle, Star, List, ScrollText, Activity, UserCog, Handshake, Building2 } from "lucide-react";
+import { LayoutDashboard, MessageSquare, UserCircle, Star, List, ScrollText, Activity, UserCog, Handshake, Building2, Users } from "lucide-react";
 import { ThemeToggle } from "@/components/theme";
 import { LanguageSwitcherCompact } from "@/components/language-switcher";
 
@@ -55,6 +55,7 @@ export function AppSidebar() {
     { name: t("dashboard"), href: ROUTES.DASHBOARD, icon: LayoutDashboard },
     { name: t("commercial"), href: ROUTES.COMMERCIAL, icon: Handshake },
     { name: t("corporate"), href: ROUTES.CORPORATE, icon: Building2 },
+    { name: t("employment"), href: ROUTES.EMPLOYMENT, icon: Users },
     { name: t("conversations"), href: ROUTES.CHAT, icon: MessageSquare },
     { name: t("profile"), href: ROUTES.PROFILE, icon: UserCircle },
   ];
