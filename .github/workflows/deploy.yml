@@ -82,19 +82,22 @@ jobs:
           script: |
             set -euo pipefail
 
-            # Handle one-time migration from the old deployment path
-            if [ ! -d /opt/lexmind ]; then
-              if [ -d /opt/lpa_review_app ]; then
-                echo "=== Migrating server directory: lpa_review_app → lexmind ==="
-                mv /opt/lpa_review_app /opt/lexmind
-              else
-                echo "ERROR: /opt/lexmind does not exist." >&2
-                echo "Run: git clone <repo-url> /opt/lexmind && cp /path/to/backend/.env /opt/lexmind/backend/.env" >&2
-                exit 1
-              fi
+            # Deployment lives at /root/lawyer_assistant (compose project name
+            # "lawyer_assistant", derived from the directory basename). This exact
+            # path MUST be preserved: the data volumes are project-scoped
+            # (lawyer_assistant_qdrant_data holds the law-article vectors and
+            # lawyer_assistant_backend_data holds the embedding model cache).
+            # Deploying from a different directory would change the compose
+            # project name, rebind to empty volumes, and require a manual
+            # re-import of the law corpus.
+            DEPLOY_DIR=/root/lawyer_assistant
+            if [ ! -d "$DEPLOY_DIR" ]; then
+              echo "ERROR: $DEPLOY_DIR does not exist." >&2
+              echo "Run: git clone https://github.com/charon107/lawyer_assistant.git $DEPLOY_DIR && cp /path/to/backend/.env $DEPLOY_DIR/backend/.env" >&2
+              exit 1
             fi
 
-            cd /opt/lexmind
+            cd "$DEPLOY_DIR"
 
             # Sync to latest code.
             # Use fetch + hard reset rather than `git pull`: the server can
