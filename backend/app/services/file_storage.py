@@ -9,6 +9,8 @@ import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+from app.core.sanitize import sanitize_filename, validate_safe_path
+
 logger = logging.getLogger(__name__)
 
 ALLOWED_MIME_TYPES = {
@@ -49,8 +51,14 @@ def classify_file(mime_type: str, filename: str) -> str:
 
 
 def make_storage_filename(filename: str) -> str:
-    """Create a unique storage filename to prevent collisions."""
-    return f"{uuid.uuid4().hex[:12]}_{filename}"
+    """Create a unique, path-traversal-safe storage filename.
+
+    The user-controlled ``filename`` is sanitized (path separators and ``..``
+    stripped) before the uuid prefix so it cannot escape the per-user
+    directory. ``allow_unicode=True`` preserves non-ASCII names (e.g. Chinese).
+    """
+    safe = sanitize_filename(filename, allow_unicode=True)
+    return f"{uuid.uuid4().hex[:12]}_{safe}"
 
 
 class BaseFileStorage(ABC):
@@ -84,7 +92,8 @@ class LocalFileStorage(BaseFileStorage):
         user_dir = self.base_dir / user_id
         user_dir.mkdir(parents=True, exist_ok=True)
         storage_name = make_storage_filename(filename)
-        file_path = user_dir / storage_name
+        # Defense-in-depth: ensure the resolved write path stays inside user_dir.
+        file_path = validate_safe_path(user_dir, storage_name)
         file_path.write_bytes(data)
         return f"{user_id}/{storage_name}"
 

@@ -87,11 +87,11 @@ class VdrService(_DealScoped):
         priority: str = "normal",
     ) -> VdrDocument:
         """Upload a file to the VDR: store on disk, parse content, create record."""
-        import uuid
         from pathlib import Path
 
         from app.core.config import settings
-        from app.services.file_storage import classify_file
+        from app.core.sanitize import validate_safe_path
+        from app.services.file_storage import classify_file, make_storage_filename
         from app.services.file_upload import FileUploadService
 
         self._ensure_owned(deal_id, user_id=user_id)
@@ -107,8 +107,9 @@ class VdrService(_DealScoped):
         media_dir = Path(getattr(settings, "MEDIA_DIR", "media"))
         user_dir = media_dir / user_id
         user_dir.mkdir(parents=True, exist_ok=True)
-        storage_name = f"{uuid.uuid4().hex[:12]}_{filename}"
-        file_path = user_dir / storage_name
+        storage_name = make_storage_filename(filename)
+        # Defense-in-depth: ensure the resolved write path stays inside user_dir.
+        file_path = validate_safe_path(user_dir, storage_name)
         file_path.write_bytes(file_data)
         storage_path = f"{user_id}/{storage_name}"
 

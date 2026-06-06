@@ -5,9 +5,26 @@ from typing import Any
 
 from pydantic import EmailStr, Field, field_validator, model_validator
 
+from app.core.sanitize import SSRFBlockedError, validate_webhook_url
 from app.schemas.base import BaseSchema, TimestampSchema
 
 # === LLM Config schemas ===
+
+
+def _check_llm_base_url(value: str | None) -> str | None:
+    """Reject SSRF-prone LLM ``base_url`` values.
+
+    The stored URL is later used by the OpenAI client for server-side requests,
+    so an unvalidated value enables SSRF (cloud metadata / internal hosts).
+    Empty/None is allowed (optional field). Raises ``ValueError`` so Pydantic
+    surfaces a 422 to the client.
+    """
+    if not value:
+        return value
+    try:
+        return validate_webhook_url(value)
+    except (SSRFBlockedError, ValueError) as err:
+        raise ValueError(f"base_url 被安全策略拒绝：{err}") from err
 
 
 class LLMConfigCreate(BaseSchema):
@@ -18,6 +35,11 @@ class LLMConfigCreate(BaseSchema):
     api_key: str | None = Field(default=None, max_length=500)
     base_url: str | None = Field(default=None, max_length=500)
 
+    @field_validator("base_url")
+    @classmethod
+    def _validate_base_url(cls, v: str | None) -> str | None:
+        return _check_llm_base_url(v)
+
 
 class LLMConfigUpdate(BaseSchema):
     """Schema for updating an LLM provider config."""
@@ -26,6 +48,11 @@ class LLMConfigUpdate(BaseSchema):
     model: str | None = Field(default=None, max_length=100)
     api_key: str | None = Field(default=None, max_length=500)
     base_url: str | None = Field(default=None, max_length=500)
+
+    @field_validator("base_url")
+    @classmethod
+    def _validate_base_url(cls, v: str | None) -> str | None:
+        return _check_llm_base_url(v)
 
 
 class LLMConfigRead(BaseSchema):
