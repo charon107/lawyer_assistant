@@ -327,6 +327,52 @@ EmploymentNotificationSvc = Annotated[
 ]
 
 
+# === Privacy-legal Services ===
+
+from app.services.privacy_cold_start_service import PrivacyColdStartService
+from app.services.privacy_dsar_service import PrivacyDsarService
+from app.services.privacy_notification_service import PrivacyNotificationService
+from app.services.privacy_profile_service import PrivacyProfileService
+from app.services.privacy_review_service import PrivacyReviewService
+
+
+def get_privacy_profile_service(db: DBSession) -> PrivacyProfileService:
+    return PrivacyProfileService(db)
+
+
+PrivacyProfileSvc = Annotated[PrivacyProfileService, Depends(get_privacy_profile_service)]
+
+
+def get_privacy_cold_start_service(db: DBSession) -> PrivacyColdStartService:
+    return PrivacyColdStartService(db)
+
+
+PrivacyColdStartSvc = Annotated[PrivacyColdStartService, Depends(get_privacy_cold_start_service)]
+
+
+def get_privacy_review_service(db: DBSession) -> PrivacyReviewService:
+    return PrivacyReviewService(db)
+
+
+PrivacyReviewSvc = Annotated[PrivacyReviewService, Depends(get_privacy_review_service)]
+
+
+def get_privacy_dsar_service(db: DBSession) -> PrivacyDsarService:
+    return PrivacyDsarService(db)
+
+
+PrivacyDsarSvc = Annotated[PrivacyDsarService, Depends(get_privacy_dsar_service)]
+
+
+def get_privacy_notification_service(db: DBSession) -> PrivacyNotificationService:
+    return PrivacyNotificationService(db)
+
+
+PrivacyNotificationSvc = Annotated[
+    PrivacyNotificationService, Depends(get_privacy_notification_service)
+]
+
+
 # === Authentication Dependencies ===
 
 from app.core.exceptions import AuthenticationError, AuthorizationError

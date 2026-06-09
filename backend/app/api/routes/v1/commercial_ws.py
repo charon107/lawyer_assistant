@@ -206,19 +206,17 @@ async def _run_one_review(
         )
 
         # 3. Stream the agent.
-        try:
-            ok = await stream_agent_run(
-                manager=manager,
-                websocket=websocket,
-                agent=agent,
-                prompt=contract_text,
-                deps=deps,
-                review_id=review_id,
-            )
-            if not ok:
-                return
-        finally:
-            db.commit()  # persist any tool-side writes
+        ok = await stream_agent_run(
+            manager=manager,
+            websocket=websocket,
+            agent=agent,
+            prompt=contract_text,
+            deps=deps,
+            review_id=review_id,
+        )
+        if not ok:
+            return
+        db.commit()  # persist any tool-side writes
 
     await manager.send_event(websocket, "complete", {})
 
@@ -282,19 +280,17 @@ async def _run_downstream_skill(
 
         prompt = "请基于已完成的合同审查结论执行本技能，读取该审查并写回结果。"
 
-        try:
-            ok = await stream_agent_run(
-                manager=manager,
-                websocket=websocket,
-                agent=agent,
-                prompt=prompt,
-                deps=deps,
-                review_id=review_id,
-            )
-            if not ok:
-                return
-        finally:
-            db.commit()
+        ok = await stream_agent_run(
+            manager=manager,
+            websocket=websocket,
+            agent=agent,
+            prompt=prompt,
+            deps=deps,
+            review_id=review_id,
+        )
+        if not ok:
+            return
+        db.commit()
 
     await manager.send_event(websocket, "complete", {})
 

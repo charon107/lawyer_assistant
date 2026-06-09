@@ -11,6 +11,7 @@ from app.scheduler import (
     JOB_DATAROOM_WATCHER,
     JOB_DEAL_DEBRIEF,
     JOB_LEAVE_TRACKER,
+    JOB_PRIVACY_POLICY_SWEEP,
     JOB_RENEWAL_WATCHER,
     create_scheduler,
 )
@@ -30,7 +31,16 @@ class TestCreateScheduler:
             JOB_DEAL_DEBRIEF,
             JOB_DATAROOM_WATCHER,
             JOB_LEAVE_TRACKER,
+            JOB_PRIVACY_POLICY_SWEEP,
         }
+
+    def test_privacy_policy_sweep_runs_monday_0923(self):
+        scheduler = create_scheduler()
+        trigger = scheduler.get_job(JOB_PRIVACY_POLICY_SWEEP).trigger
+        assert isinstance(trigger, CronTrigger)
+        assert _field(trigger, "day_of_week") == "mon"
+        assert _field(trigger, "hour") == "9"
+        assert _field(trigger, "minute") == "23"
 
     def test_leave_tracker_runs_monday_0937(self):
         scheduler = create_scheduler()

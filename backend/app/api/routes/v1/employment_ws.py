@@ -155,18 +155,16 @@ async def _run_skill(
             expansion_id=expansion_id,
             output_dir=str(Path("outputs") / "employment" / str(user.id)),
         )
-        try:
-            ok = await stream_agent_run(
-                manager=manager,
-                websocket=websocket,
-                agent=agent,
-                prompt=prompt,
-                deps=deps,
-            )
-            if not ok:
-                return
-        finally:
-            db.commit()
+        ok = await stream_agent_run(
+            manager=manager,
+            websocket=websocket,
+            agent=agent,
+            prompt=prompt,
+            deps=deps,
+        )
+        if not ok:
+            return
+        db.commit()
 
     await manager.send_event(websocket, "complete", {})
 
