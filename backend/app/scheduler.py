@@ -29,6 +29,7 @@ JOB_RENEWAL_WATCHER = "renewal_watcher"
 JOB_DEAL_DEBRIEF = "deal_debrief"
 JOB_DATAROOM_WATCHER = "dataroom_watcher"
 JOB_LEAVE_TRACKER = "employment_leave_tracker"
+JOB_PRIVACY_POLICY_SWEEP = "privacy_policy_sweep_reminder"
 
 
 def _run_in_session(task: Callable[..., object], task_name: str) -> None:
@@ -73,6 +74,12 @@ def _run_leave_tracker() -> None:
     _run_in_session(employment_leave_tracker.run, JOB_LEAVE_TRACKER)
 
 
+def _run_privacy_policy_sweep() -> None:
+    from app.tasks import privacy_policy_sweep_reminder
+
+    _run_in_session(privacy_policy_sweep_reminder.run, JOB_PRIVACY_POLICY_SWEEP)
+
+
 def create_scheduler() -> AsyncIOScheduler:
     """Build the scheduler and register the weekly commercial jobs."""
     scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
@@ -105,6 +112,14 @@ def create_scheduler() -> AsyncIOScheduler:
         trigger=CronTrigger(day_of_week="mon", hour=9, minute=37),
         id=JOB_LEAVE_TRACKER,
         name="Employment leave tracker",
+        replace_existing=True,
+    )
+    # Privacy policy-sweep reminder — weekly Monday (09:23, off the 09:07/09:37 marks).
+    scheduler.add_job(
+        _run_privacy_policy_sweep,
+        trigger=CronTrigger(day_of_week="mon", hour=9, minute=23),
+        id=JOB_PRIVACY_POLICY_SWEEP,
+        name="Privacy policy-sweep reminder",
         replace_existing=True,
     )
 

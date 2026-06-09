@@ -16,6 +16,8 @@ from app.api.routes.v1 import corporate
 from app.api.routes.v1 import corporate_ws
 from app.api.routes.v1 import employment
 from app.api.routes.v1 import employment_ws
+from app.api.routes.v1 import privacy
+from app.api.routes.v1 import privacy_ws
 
 v1_router = APIRouter()
 
@@ -57,6 +59,10 @@ v1_router.include_router(corporate_ws.router, tags=["corporate-ws"])
 # Employment-legal module (劳动用工)
 v1_router.include_router(employment.router, prefix="/employment", tags=["employment"])
 v1_router.include_router(employment_ws.router, tags=["employment-ws"])
+
+# Privacy-legal module (个人信息保护)
+v1_router.include_router(privacy.router, prefix="/privacy", tags=["privacy"])
+v1_router.include_router(privacy_ws.router, tags=["privacy-ws"])
 
 # Admin: system status (RAG health) and logs
 v1_router.include_router(admin_system.router, prefix="/admin/system", tags=["admin:system"])

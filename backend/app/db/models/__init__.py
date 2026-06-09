@@ -39,6 +39,10 @@ from app.db.models.employment_investigation import (
 )
 from app.db.models.employment_expansion import EmploymentExpansion
 from app.db.models.employment_notification import EmploymentNotification
+from app.db.models.privacy_profile import PrivacyProfile
+from app.db.models.privacy_review import PrivacyReview
+from app.db.models.privacy_dsar import PrivacyDsar
+from app.db.models.privacy_notification import PrivacyNotification
 
 __all__ = [
     "User",
@@ -81,4 +85,8 @@ __all__ = [
     "InvestigationGap",
     "EmploymentExpansion",
     "EmploymentNotification",
+    "PrivacyProfile",
+    "PrivacyReview",
+    "PrivacyDsar",
+    "PrivacyNotification",
 ]
