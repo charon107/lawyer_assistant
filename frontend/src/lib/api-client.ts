@@ -50,11 +50,9 @@ class ApiClient {
       } catch {
         errorData = null;
       }
-      throw new ApiError(
-        response.status,
-        errorData?.detail || errorData?.message || "Request failed",
-        errorData
-      );
+      const rawDetail = errorData?.detail || errorData?.message || "Request failed";
+      const message = typeof rawDetail === "string" ? rawDetail : JSON.stringify(rawDetail);
+      throw new ApiError(response.status, message, errorData);
     }
 
     // Handle empty responses
@@ -100,11 +98,9 @@ class ApiClient {
       } catch {
         errorData = null;
       }
-      throw new ApiError(
-        response.status,
-        errorData?.detail || errorData?.message || "Upload failed",
-        errorData
-      );
+      const rawDetail = errorData?.detail || errorData?.message || "Upload failed";
+      const message = typeof rawDetail === "string" ? rawDetail : JSON.stringify(rawDetail);
+      throw new ApiError(response.status, message, errorData);
     }
 
     const text = await response.text();

@@ -2,6 +2,7 @@
 
 import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { AlertCircle, ArrowLeft, Loader2, MailQuestion } from "lucide-react";
 import { Button, Card, CardContent, Spinner } from "@/components/ui";
 import { MarkdownContent } from "@/components/chat";
@@ -17,6 +18,7 @@ export default function PrivacyDsarDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const t = useTranslations("privacy");
   const [dsar, setDsar] = useState<PrivacyDsar | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function PrivacyDsarDetailPage({
       const d = await privacyApi.getDsar(id);
       setDsar(d);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败");
+      setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
       setLoading(false);
     }
@@ -59,7 +61,7 @@ export default function PrivacyDsarDetailPage({
         className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1.5 text-sm transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
-        返回请求列表
+        {t("dsar.detail.backToList")}
       </Link>
 
       {loading ? (
@@ -68,7 +70,7 @@ export default function PrivacyDsarDetailPage({
         </div>
       ) : error || !dsar ? (
         <p className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border px-4 py-2.5 text-sm">
-          {error || "未找到该请求"}
+          {error || t("dsar.detail.notFound")}
         </p>
       ) : (
         <>
@@ -78,43 +80,42 @@ export default function PrivacyDsarDetailPage({
             </div>
             <h1 className="flex items-center gap-2 text-2xl font-bold">
               <MailQuestion className="text-brand h-6 w-6" />
-              {(dsar.request_types || []).join(" / ") || "权利请求"}
+              {(dsar.request_types || []).join(" / ") || t("dsar.title")}
             </h1>
             <p className="text-muted-foreground mt-1 text-sm">
-              主体 {dsar.data_subject_ref || "—"} · 收到 {dsar.date_received || "—"}
-              {dsar.response_deadline ? ` · 截止 ${dsar.response_deadline}` : ""}
-              {dsar.verification_method ? ` · 验证 ${dsar.verification_method}` : ""}
+              {t("dsar.detail.subject")} {dsar.data_subject_ref || "—"} · {t("dsar.received")} {dsar.date_received || "—"}
+              {dsar.response_deadline ? ` · ${t("dsar.deadline")} ${dsar.response_deadline}` : ""}
+              {dsar.verification_method ? ` · ${t("dsar.detail.verified")} ${dsar.verification_method}` : ""}
             </p>
           </div>
 
-          {/* Draft action */}
           {status === "idle" ? (
             <div className="mb-6 flex items-center gap-3">
               <Button onClick={handleDraft}>
                 <MailQuestion className="mr-1.5 h-4 w-4" />
-                {dsar.ack_letter ? "重新起草两函" : "起草确认函与实质回复函"}
+                {dsar.ack_letter ? t("dsar.detail.redraftLetters") : t("dsar.detail.draftLetters")}
               </Button>
               <span className="text-muted-foreground text-xs">
-                AI 起草，发送前须由律师审核。
+                {t("dsar.detail.aiDisclaimer")}
               </span>
             </div>
           ) : (
             <div className="mb-6 flex items-center justify-between">
               <div className="text-muted-foreground flex items-center gap-2 text-sm">
                 {isBusy && <Loader2 className="text-brand h-4 w-4 animate-spin" />}
-                {status === "connecting" && "正在连接……"}
-                {status === "running" && "AI 正在起草……"}
-                {status === "done" && "起草完成"}
+                {status === "connecting" && t("dsar.detail.connecting")}
+                {status === "running" && t("dsar.detail.drafting")}
+                {status === "done" && t("dsar.detail.draftDone")}
                 {status === "error" && (
                   <span className="text-destructive flex items-center gap-1.5">
                     <AlertCircle className="h-4 w-4" />
-                    起草失败
+                    {t("dsar.detail.draftFailed")}
                   </span>
                 )}
               </div>
               {!isBusy && (
                 <Button variant="ghost" size="sm" onClick={reset}>
-                  收起
+                  {t("dsar.detail.collapse")}
                 </Button>
               )}
             </div>
@@ -126,7 +127,6 @@ export default function PrivacyDsarDetailPage({
             </p>
           )}
 
-          {/* Live stream while running */}
           {isBusy && streamingText && (
             <Card className="mb-6">
               <CardContent className="prose-sm max-w-none p-6 text-sm leading-relaxed">
@@ -135,10 +135,11 @@ export default function PrivacyDsarDetailPage({
             </Card>
           )}
 
-          {/* Persisted letters */}
           {dsar.ack_letter && (
             <section className="mb-6">
-              <h2 className="mb-2 text-sm font-semibold tracking-wide uppercase">确认函</h2>
+              <h2 className="mb-2 text-sm font-semibold tracking-wide uppercase">
+                {t("dsar.detail.ackLetter")}
+              </h2>
               <Card>
                 <CardContent className="prose-sm max-w-none p-6 text-sm leading-relaxed">
                   <MarkdownContent content={dsar.ack_letter} />
@@ -148,7 +149,9 @@ export default function PrivacyDsarDetailPage({
           )}
           {dsar.response_letter && (
             <section className="mb-6">
-              <h2 className="mb-2 text-sm font-semibold tracking-wide uppercase">实质回复函</h2>
+              <h2 className="mb-2 text-sm font-semibold tracking-wide uppercase">
+                {t("dsar.detail.responseLetter")}
+              </h2>
               <Card>
                 <CardContent className="prose-sm max-w-none p-6 text-sm leading-relaxed">
                   <MarkdownContent content={dsar.response_letter} />
@@ -160,7 +163,7 @@ export default function PrivacyDsarDetailPage({
           {dsar.exemptions && dsar.exemptions.length > 0 && (
             <section>
               <h2 className="mb-2 text-sm font-semibold tracking-wide uppercase">
-                豁免分析（需律师审核）
+                {t("dsar.detail.exemptions")}
               </h2>
               <Card>
                 <CardContent className="p-6 text-sm">

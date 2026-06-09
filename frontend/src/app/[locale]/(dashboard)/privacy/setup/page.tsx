@@ -3,59 +3,47 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, ArrowRight, Check, ShieldCheck } from "lucide-react";
 import { Button, Input, Label, Spinner, Textarea } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants";
 import { privacyApi } from "@/lib/privacy";
 
-/**
- * Privacy cold-start wizard — 6 steps (mirrors the backend state machine).
- *
- * 0: role + practice setting        1: regulatory footprint + business model
- * 2: DPA playbook                   3: internal norms (PIA + DSAR)
- * 4: seed files                     5: generate profile
- */
-
-const STEP_TITLES = ["角色与场景", "监管覆盖", "DPA 立场", "内部规范", "种子文件", "生成画像"];
-const QUICK_PLAN = [0, 1, 5];
-const FULL_PLAN = [0, 1, 2, 3, 4, 5];
-
-const REGULATIONS = [
-  "个人信息保护法",
-  "数据安全法",
-  "网络安全法",
-  "金融监管（个人金融信息）",
-  "医疗健康数据监管",
-  "儿童个人信息网络保护规定",
-  "汽车数据安全管理若干规定",
-];
-
 const ROLES = [
-  { value: "attorney", label: "律师 / 法务" },
-  { value: "non_attorney_with_lawyer", label: "非律师（有外部律师）" },
-  { value: "non_attorney_without", label: "非律师（无外部律师）" },
+  { value: "attorney", key: "attorney" },
+  { value: "non_attorney_with_lawyer", key: "nonAttorneyWithLawyer" },
+  { value: "non_attorney_without", key: "nonAttorneyWithout" },
 ] as const;
 
 type UserRole = (typeof ROLES)[number]["value"];
 
+const REGULATIONS_KEYS = [
+  "regulations.0", "regulations.1", "regulations.2", "regulations.3",
+  "regulations.4", "regulations.5", "regulations.6",
+] as const;
+
+const QUICK_PLAN = [0, 1, 5];
+const FULL_PLAN = [0, 1, 2, 3, 4, 5];
+
 export default function PrivacySetupPage() {
   const router = useRouter();
+  const t = useTranslations("privacy");
+
+  const STEP_TITLES = [0, 1, 2, 3, 4, 5].map((i) => t(`setup.steps.${i}`));
+  const REGULATIONS = REGULATIONS_KEYS.map((k) => t(`setup.${k}`));
+
   const [quickMode, setQuickMode] = useState(true);
   const [stepIndex, setStepIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Step 0
   const [userRole, setUserRole] = useState<UserRole>("attorney");
   const [practiceSetting, setPracticeSetting] = useState("");
-  // Step 1
-  const [footprint, setFootprint] = useState<string[]>(["个人信息保护法"]);
+  const [footprint, setFootprint] = useState<string[]>([REGULATIONS[0] ?? ""]);
   const [businessModel, setBusinessModel] = useState<"handler" | "entrusted" | "both">("handler");
   const [dataResidency, setDataResidency] = useState("");
-  // Step 2
   const [dpaNotes, setDpaNotes] = useState("");
-  // Step 3
   const [piaTrigger, setPiaTrigger] = useState("");
   const [dsarSystems, setDsarSystems] = useState("");
   const [dsarSla, setDsarSla] = useState("");
@@ -109,7 +97,7 @@ export default function PrivacySetupPage() {
       }
       setStepIndex(res.step);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "提交失败，请重试");
+      setError(e instanceof Error ? e.message : "Failed to submit, please retry");
     } finally {
       setSubmitting(false);
     }
@@ -130,15 +118,13 @@ export default function PrivacySetupPage() {
           className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1.5 text-sm transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          返回个人信息保护
+          {t("back")}
         </Link>
         <h1 className="mb-1 flex items-center gap-2 text-2xl font-bold">
           <ShieldCheck className="text-brand h-6 w-6" />
-          配置个人信息保护模块
+          {t("setup.title")}
         </h1>
-        <p className="text-muted-foreground">
-          告诉我们你的监管覆盖范围、DPA 立场和内部规范，之后所有技能都会自动适配。
-        </p>
+        <p className="text-muted-foreground">{t("setup.description")}</p>
       </div>
 
       <ol className="mb-6 flex items-center gap-2">
@@ -175,7 +161,7 @@ export default function PrivacySetupPage() {
         {stepIndex === 0 && (
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">配置方式</span>
+              <span className="text-sm font-medium">{t("setup.modeLabel")}</span>
               <div className="grid gap-2 sm:grid-cols-2">
                 <button
                   type="button"
@@ -185,8 +171,8 @@ export default function PrivacySetupPage() {
                     quickMode ? "border-brand bg-brand/5 ring-brand/20 ring-1" : "border-border hover:border-brand/40",
                   )}
                 >
-                  <span className="text-sm font-medium">快速配置</span>
-                  <span className="text-muted-foreground text-xs">仅需 3 步</span>
+                  <span className="text-sm font-medium">{t("setup.quickMode")}</span>
+                  <span className="text-muted-foreground text-xs">{t("setup.quickModeHint")}</span>
                 </button>
                 <button
                   type="button"
@@ -196,13 +182,13 @@ export default function PrivacySetupPage() {
                     !quickMode ? "border-brand bg-brand/5 ring-brand/20 ring-1" : "border-border hover:border-brand/40",
                   )}
                 >
-                  <span className="text-sm font-medium">完整配置</span>
-                  <span className="text-muted-foreground text-xs">全部 6 步</span>
+                  <span className="text-sm font-medium">{t("setup.fullMode")}</span>
+                  <span className="text-muted-foreground text-xs">{t("setup.fullModeHint")}</span>
                 </button>
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">你的角色</span>
+              <span className="text-sm font-medium">{t("setup.yourRole")}</span>
               <div className="grid gap-2 sm:grid-cols-3">
                 {ROLES.map((r) => (
                   <button
@@ -214,18 +200,18 @@ export default function PrivacySetupPage() {
                       userRole === r.value ? "border-brand bg-brand/5 ring-brand/20 ring-1" : "border-border hover:border-brand/40",
                     )}
                   >
-                    {r.label}
+                    {t(`setup.roles.${r.key}`)}
                   </button>
                 ))}
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="setting">执业场景（可选）</Label>
+              <Label htmlFor="setting">{t("setup.practiceSetting")}</Label>
               <Input
                 id="setting"
                 value={practiceSetting}
                 onChange={(e) => setPracticeSetting(e.target.value)}
-                placeholder="例如：企业法务 / 中型律所 / 互联网公司隐私团队"
+                placeholder={t("setup.practiceSettingPlaceholder")}
               />
             </div>
           </div>
@@ -233,7 +219,7 @@ export default function PrivacySetupPage() {
 
         {stepIndex === 1 && (
           <div className="flex flex-col gap-4">
-            <p className="text-muted-foreground text-sm">选择实际适用的监管制度（可多选）：</p>
+            <p className="text-muted-foreground text-sm">{t("setup.regulationsLabel")}</p>
             <div className="flex flex-wrap gap-2">
               {REGULATIONS.map((r) => {
                 const selected = footprint.includes(r);
@@ -253,12 +239,12 @@ export default function PrivacySetupPage() {
               })}
             </div>
             <div className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">业务模式（DPA 默认方向）</span>
+              <span className="text-sm font-medium">{t("setup.businessModelLabel")}</span>
               <div className="grid gap-2 sm:grid-cols-3">
                 {([
-                  { value: "handler", label: "主要是处理者" },
-                  { value: "entrusted", label: "主要是受托处理者" },
-                  { value: "both", label: "两者皆有" },
+                  { value: "handler", key: "handler" },
+                  { value: "entrusted", key: "entrusted" },
+                  { value: "both", key: "both" },
                 ] as const).map((b) => (
                   <button
                     key={b.value}
@@ -269,18 +255,18 @@ export default function PrivacySetupPage() {
                       businessModel === b.value ? "border-brand bg-brand/5 ring-brand/20 ring-1" : "border-border hover:border-brand/40",
                     )}
                   >
-                    {b.label}
+                    {t(`setup.businessModel.${b.key}`)}
                   </button>
                 ))}
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="residency">数据存储地</Label>
+              <Label htmlFor="residency">{t("setup.dataResidency")}</Label>
               <Input
                 id="residency"
                 value={dataResidency}
                 onChange={(e) => setDataResidency(e.target.value)}
-                placeholder="例如：仅中国境内 / 多区域部署"
+                placeholder={t("setup.dataResidencyPlaceholder")}
               />
             </div>
           </div>
@@ -288,14 +274,12 @@ export default function PrivacySetupPage() {
 
         {stepIndex === 2 && (
           <div className="flex flex-col gap-4">
-            <p className="text-muted-foreground text-sm">
-              简述你的 DPA 谈判立场（审计权、泄露通知时限、转委托、数据出境、删除、责任上限等）。可留空稍后补充。
-            </p>
+            <p className="text-muted-foreground text-sm">{t("setup.dpaNotesDesc")}</p>
             <Textarea
               value={dpaNotes}
               onChange={(e) => setDpaNotes(e.target.value)}
               rows={8}
-              placeholder="作为受托处理者时：审计权接受 ISO 27001/等保三级报告……&#10;作为处理者时：要求供应商提供下游处理者清单、72小时泄露通知……"
+              placeholder={t("setup.dpaNotesPlaceholder")}
             />
           </div>
         )}
@@ -303,31 +287,31 @@ export default function PrivacySetupPage() {
         {stepIndex === 3 && (
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="pia-trigger">PIA 触发标准</Label>
+              <Label htmlFor="pia-trigger">{t("setup.piaTrigger")}</Label>
               <Input
                 id="pia-trigger"
                 value={piaTrigger}
                 onChange={(e) => setPiaTrigger(e.target.value)}
-                placeholder="例如：处理敏感个人信息 / 自动化决策 / 数据出境（个保法第55条）"
+                placeholder={t("setup.piaTriggerPlaceholder")}
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="dsar-systems">DSAR 系统清单（顿号/换行分隔）</Label>
+              <Label htmlFor="dsar-systems">{t("setup.dsarSystems")}</Label>
               <Textarea
                 id="dsar-systems"
                 value={dsarSystems}
                 onChange={(e) => setDsarSystems(e.target.value)}
                 rows={4}
-                placeholder="生产数据库、数据分析平台、客服工单、CRM、邮件营销、日志、备份"
+                placeholder={t("setup.dsarSystemsPlaceholder")}
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="dsar-sla">DSAR 回复 SLA</Label>
+              <Label htmlFor="dsar-sla">{t("setup.dsarSla")}</Label>
               <Input
                 id="dsar-sla"
                 value={dsarSla}
                 onChange={(e) => setDsarSla(e.target.value)}
-                placeholder="例如：15 个工作日内（个保法第45条「及时」，内部更严）"
+                placeholder={t("setup.dsarSlaPlaceholder")}
               />
             </div>
           </div>
@@ -335,10 +319,8 @@ export default function PrivacySetupPage() {
 
         {stepIndex === 4 && (
           <div className="flex flex-col gap-3">
-            <p className="text-muted-foreground text-sm">
-              你可以稍后在设置页面补充种子文件（处理规则、DPA 模板、参考 PIA）。此步骤在快速配置模式下会跳过。
-            </p>
-            <p className="text-muted-foreground text-xs">暂不上传，直接点击「下一步」继续。</p>
+            <p className="text-muted-foreground text-sm">{t("setup.seedNote")}</p>
+            <p className="text-muted-foreground text-xs">{t("setup.seedSkip")}</p>
           </div>
         )}
 
@@ -347,10 +329,8 @@ export default function PrivacySetupPage() {
             <div className="bg-brand/10 flex h-14 w-14 items-center justify-center rounded-2xl">
               <Check className="text-brand h-7 w-7" />
             </div>
-            <h2 className="text-lg font-semibold">准备生成画像</h2>
-            <p className="text-muted-foreground max-w-md text-sm">
-              点击「完成配置」后，系统将根据你的回答生成实践画像，用于所有技能的个性化。
-            </p>
+            <h2 className="text-lg font-semibold">{t("setup.readyTitle")}</h2>
+            <p className="text-muted-foreground max-w-md text-sm">{t("setup.readyDesc")}</p>
           </div>
         )}
       </div>
@@ -364,11 +344,11 @@ export default function PrivacySetupPage() {
       <div className="mt-6 flex items-center justify-between">
         <Button variant="ghost" onClick={goBack} disabled={stepIndex === plan[0] || submitting}>
           <ArrowLeft className="mr-1.5 h-4 w-4" />
-          上一步
+          {t("setup.prevStep")}
         </Button>
         <Button onClick={goNext} disabled={submitting}>
           {submitting && <Spinner className="mr-1.5 h-4 w-4" />}
-          {stepIndex === lastStep ? "完成配置" : "下一步"}
+          {stepIndex === lastStep ? t("setup.finishSetup") : t("setup.nextStep")}
           {!submitting && stepIndex !== lastStep && <ArrowRight className="ml-1.5 h-4 w-4" />}
         </Button>
       </div>

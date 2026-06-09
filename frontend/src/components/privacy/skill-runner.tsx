@@ -2,6 +2,7 @@
 
 import { type ReactNode, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { AlertCircle, ArrowLeft, Loader2, type LucideIcon } from "lucide-react";
 import { Button, Card, CardContent, Input, Label, Textarea } from "@/components/ui";
 import { MarkdownContent } from "@/components/chat";
@@ -19,9 +20,7 @@ interface SkillRunnerProps {
   subjectLabel?: string;
   subjectPlaceholder?: string;
   runLabel?: string;
-  /** Optional extra fields rendered above the prompt; values folded in via composePrompt. */
   extraFields?: ReactNode;
-  /** Compose the final prompt sent to the agent (defaults to the raw prompt text). */
   composePrompt?: (prompt: string) => string;
 }
 
@@ -34,10 +33,11 @@ export function SkillRunner({
   promptPlaceholder,
   subjectLabel,
   subjectPlaceholder,
-  runLabel = "开始分析",
+  runLabel = "Start Analysis",
   extraFields,
   composePrompt,
 }: SkillRunnerProps) {
+  const t = useTranslations("privacy");
   const { streamingText, finalOutput, reviewId, status, error, runSkill, reset } =
     usePrivacyChat();
   const [subject, setSubject] = useState("");
@@ -68,7 +68,7 @@ export function SkillRunner({
           className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1.5 text-sm transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          返回个人信息保护
+          {t("skillRunner.back")}
         </Link>
         <h1 className="mb-1 flex items-center gap-2 text-2xl font-bold">
           <Icon className="text-brand h-6 w-6" />
@@ -113,13 +113,13 @@ export function SkillRunner({
           <div className="flex items-center justify-between">
             <div className="text-muted-foreground flex items-center gap-2 text-sm">
               {isBusy && <Loader2 className="text-brand h-4 w-4 animate-spin" />}
-              {status === "connecting" && "正在连接……"}
-              {status === "running" && "AI 正在分析……"}
-              {status === "done" && "分析完成"}
+              {status === "connecting" && t("skillRunner.connecting")}
+              {status === "running" && t("skillRunner.analyzing")}
+              {status === "done" && t("skillRunner.done")}
               {status === "error" && (
                 <span className="text-destructive flex items-center gap-1.5">
                   <AlertCircle className="h-4 w-4" />
-                  分析失败
+                  {t("skillRunner.failed")}
                 </span>
               )}
             </div>
@@ -127,13 +127,13 @@ export function SkillRunner({
               {reviewId && status === "done" && (
                 <Link href={`${ROUTES.PRIVACY_REVIEWS}/${reviewId}`}>
                   <Button variant="ghost" size="sm">
-                    查看产出
+                    {t("skillRunner.viewOutput")}
                   </Button>
                 </Link>
               )}
               {!isBusy && (
                 <Button variant="ghost" size="sm" onClick={handleReset}>
-                  新的分析
+                  {t("skillRunner.newAnalysis")}
                 </Button>
               )}
             </div>

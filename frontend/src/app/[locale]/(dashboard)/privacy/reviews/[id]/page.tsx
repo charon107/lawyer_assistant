@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, Spinner } from "@/components/ui";
 import { MarkdownContent } from "@/components/chat";
@@ -16,6 +17,7 @@ export default function PrivacyReviewDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const t = useTranslations("privacy");
   const [review, setReview] = useState<PrivacyReview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export default function PrivacyReviewDetailPage({
         const r = await privacyApi.getReview(id);
         if (!cancelled) setReview(r);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "加载失败");
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -44,7 +46,7 @@ export default function PrivacyReviewDetailPage({
         className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1.5 text-sm transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
-        返回产出列表
+        {t("reviews.detail.backToList")}
       </Link>
 
       {loading ? (
@@ -53,7 +55,7 @@ export default function PrivacyReviewDetailPage({
         </div>
       ) : error || !review ? (
         <p className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border px-4 py-2.5 text-sm">
-          {error || "未找到该产出"}
+          {error || t("reviews.detail.notFound")}
         </p>
       ) : (
         <>
@@ -63,7 +65,7 @@ export default function PrivacyReviewDetailPage({
               <TriageClassificationBadge value={review.classification} />
               <SeverityBadge value={review.severity} />
             </div>
-            <h1 className="text-2xl font-bold">{review.subject || "（未命名）"}</h1>
+            <h1 className="text-2xl font-bold">{review.subject || t("reviews.unnamed")}</h1>
             {review.result_summary && (
               <p className="text-muted-foreground mt-1">{review.result_summary}</p>
             )}
@@ -80,7 +82,7 @@ export default function PrivacyReviewDetailPage({
             </Card>
           ) : (
             <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-10 text-center text-sm">
-              该产出尚无备忘录内容。
+              {t("reviews.detail.noMemo")}
             </p>
           )}
         </>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, MailQuestion, Plus } from "lucide-react";
 import { Button, Card, CardContent, Input, Label, Spinner } from "@/components/ui";
 import { DsarStatusBadge } from "@/components/privacy";
@@ -10,16 +11,18 @@ import { privacyApi } from "@/lib/privacy";
 import { cn } from "@/lib/utils";
 import type { DsarRequestType, PrivacyDsar } from "@/types/privacy";
 
-const REQUEST_TYPES: { value: DsarRequestType; label: string }[] = [
-  { value: "access", label: "查阅（第45条）" },
-  { value: "copy", label: "复制（第45条）" },
-  { value: "delete", label: "删除（第47条）" },
-  { value: "correct", label: "更正（第46条）" },
-  { value: "explain", label: "解释说明（第48条）" },
-  { value: "restrict", label: "限制（第44条）" },
-];
-
 export default function PrivacyDsarPage() {
+  const t = useTranslations("privacy");
+
+  const REQUEST_TYPES: { value: DsarRequestType; label: string }[] = [
+    { value: "access", label: t("dsar.types.access") },
+    { value: "copy", label: t("dsar.types.copy") },
+    { value: "delete", label: t("dsar.types.delete") },
+    { value: "correct", label: t("dsar.types.correct") },
+    { value: "explain", label: t("dsar.types.explain") },
+    { value: "restrict", label: t("dsar.types.restrict") },
+  ];
+
   const [items, setItems] = useState<PrivacyDsar[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,23 +34,23 @@ export default function PrivacyDsarPage() {
   const [verification, setVerification] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  async function load() {
+  const load = useCallback(async () => {
     try {
       const res = await privacyApi.listDsar(0, 100);
       setItems(res.items);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败");
+      setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
-  function toggleType(t: DsarRequestType) {
-    setTypes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
+  function toggleType(rt: DsarRequestType) {
+    setTypes((prev) => (prev.includes(rt) ? prev.filter((x) => x !== rt) : [...prev, rt]));
   }
 
   async function handleCreate() {
@@ -68,7 +71,7 @@ export default function PrivacyDsarPage() {
       setLoading(true);
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "创建失败");
+      setError(e instanceof Error ? e.message : "Failed to create");
     } finally {
       setSubmitting(false);
     }
@@ -81,22 +84,20 @@ export default function PrivacyDsarPage() {
         className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1.5 text-sm transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
-        返回个人信息保护
+        {t("back")}
       </Link>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="flex items-center gap-2 text-2xl font-bold">
           <MailQuestion className="text-brand h-6 w-6" />
-          个人信息主体权利请求
+          {t("dsar.title")}
         </h1>
         <Button onClick={() => setShowForm((s) => !s)}>
           <Plus className="mr-1.5 h-4 w-4" />
-          新建请求
+          {t("dsar.newRequest")}
         </Button>
       </div>
 
-      <p className="text-muted-foreground mb-6 text-sm">
-        建档时请最小化个人信息——主体标识用编号而非真实姓名。建档后进入详情页起草确认函与实质回复函。
-      </p>
+      <p className="text-muted-foreground mb-6 text-sm">{t("dsar.description")}</p>
 
       {error && (
         <p className="border-destructive/30 bg-destructive/5 text-destructive mb-6 rounded-lg border px-4 py-2.5 text-sm">
@@ -108,7 +109,7 @@ export default function PrivacyDsarPage() {
         <Card className="mb-6">
           <CardContent className="flex flex-col gap-4 p-6">
             <div className="flex flex-col gap-1.5">
-              <Label>请求类型（可多选）</Label>
+              <Label>{t("dsar.requestTypes")}</Label>
               <div className="flex flex-wrap gap-2">
                 {REQUEST_TYPES.map((rt) => (
                   <button
@@ -129,16 +130,16 @@ export default function PrivacyDsarPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="dsar-ref">主体标识（最小化）</Label>
+                <Label htmlFor="dsar-ref">{t("dsar.subjectRef")}</Label>
                 <Input
                   id="dsar-ref"
                   value={subjectRef}
                   onChange={(e) => setSubjectRef(e.target.value)}
-                  placeholder="例如：u-1024"
+                  placeholder={t("dsar.subjectRefPlaceholder")}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="dsar-received">收到日期</Label>
+                <Label htmlFor="dsar-received">{t("dsar.dateReceived")}</Label>
                 <Input
                   id="dsar-received"
                   type="date"
@@ -147,18 +148,18 @@ export default function PrivacyDsarPage() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="dsar-verify">验证方式</Label>
+                <Label htmlFor="dsar-verify">{t("dsar.verificationMethod")}</Label>
                 <Input
                   id="dsar-verify"
                   value={verification}
                   onChange={(e) => setVerification(e.target.value)}
-                  placeholder="例如：已登录会话 / 邮件匹配"
+                  placeholder={t("dsar.verificationPlaceholder")}
                 />
               </div>
             </div>
             <div className="flex justify-end">
               <Button onClick={handleCreate} disabled={types.length === 0 || submitting}>
-                {submitting ? "创建中……" : "创建档案"}
+                {submitting ? t("dsar.creating") : t("dsar.createArchive")}
               </Button>
             </div>
           </CardContent>
@@ -171,7 +172,7 @@ export default function PrivacyDsarPage() {
         </div>
       ) : items.length === 0 ? (
         <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-10 text-center text-sm">
-          还没有权利请求。点击「新建请求」建档。
+          {t("dsar.empty")}
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -186,16 +187,16 @@ export default function PrivacyDsarPage() {
                     <DsarStatusBadge value={d.status} />
                   </div>
                   <p className="truncate text-sm font-medium">
-                    {(d.request_types || []).join(" / ") || "请求"} · {d.data_subject_ref || "—"}
+                    {(d.request_types || []).join(" / ") || "Request"} · {d.data_subject_ref || "—"}
                   </p>
                   <p className="text-muted-foreground truncate text-xs">
-                    收到 {d.date_received || "—"}
-                    {d.response_deadline ? ` · 截止 ${d.response_deadline}` : ""}
+                    {t("dsar.received")} {d.date_received || "—"}
+                    {d.response_deadline ? ` · ${t("dsar.deadline")} ${d.response_deadline}` : ""}
                   </p>
                 </div>
                 {d.escalation_flag && (
                   <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-950/40 dark:text-red-300">
-                    需升级
+                    {t("dsar.escalated")}
                   </span>
                 )}
               </Link>

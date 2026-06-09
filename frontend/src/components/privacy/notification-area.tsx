@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Bell, ShieldAlert, type LucideIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { privacyApi } from "@/lib/privacy";
 import type { PrivacyNotification } from "@/types/privacy";
@@ -23,6 +24,7 @@ const FALLBACK_META = {
 } as const;
 
 export function NotificationArea() {
+  const t = useTranslations("privacy");
   const [items, setItems] = useState<PrivacyNotification[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -60,7 +62,7 @@ export function NotificationArea() {
     <section className="mb-8 rounded-xl border">
       <header className="flex items-center gap-2 px-4 py-3">
         <Bell className="text-brand h-4 w-4" />
-        <h2 className="text-sm font-semibold">提醒</h2>
+        <h2 className="text-sm font-semibold">{t("notifications.title")}</h2>
         {items.some((n) => !n.read) && (
           <span className="bg-brand inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium text-white">
             {items.filter((n) => !n.read).length}
@@ -90,7 +92,9 @@ export function NotificationArea() {
                   <Icon className="h-4 w-4" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{n.title || "提醒"}</p>
+                  <p className="truncate text-sm font-medium">
+                    {n.title || t("notifications.fallbackTitle")}
+                  </p>
                   {n.body && <p className="text-muted-foreground truncate text-xs">{n.body}</p>}
                 </div>
                 {!n.read && <span className="bg-brand h-2 w-2 shrink-0 rounded-full" />}

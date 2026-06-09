@@ -238,6 +238,259 @@
     "signIn": "登录",
     "register": "注册"
   },
+  "privacy": {
+    "title": "个人信息保护",
+    "description": "处理活动分诊、影响评估、DPA 审查、主体权利响应、法规差距与处理规则监控，依据《个人信息保护法》《数据安全法》《网络安全法》。",
+    "back": "返回个人信息保护",
+    "unconfiguredTitle": "尚未完成个人信息保护模块配置",
+    "unconfiguredDesc": "先用几分钟告诉我们你的监管覆盖范围、DPA 立场和内部规范，之后所有技能都会自动适配。",
+    "startSetup": "开始配置",
+    "recentOutputs": "最近产出",
+    "viewAll": "全部",
+    "noOutputs": "还没有分析产出。",
+    "unnamed": "（未命名）",
+    "inProgress": "进行中",
+    "actions": {
+      "triage": { "title": "处理活动分诊", "desc": "判断是否需要 PIA / 是否触发个保法第55条法定评估。" },
+      "dpa": { "title": "DPA 审查（双向）", "desc": "自动识别受托处理者 / 处理者，逐条对照操作手册。" },
+      "pia": { "title": "影响评估 (PIA)", "desc": "按内部格式生成个人信息保护影响评估。" },
+      "dsar": { "title": "主体权利响应", "desc": "验证→定位→豁免→起草确认函与实质回复函。" },
+      "gap": { "title": "法规差距分析", "desc": "新法规 vs 现行处理规则，输出整改计划。" },
+      "policyMonitor": { "title": "处理规则监控", "desc": "扫描漂移或对拟议实践做直接查询。" },
+      "settings": { "title": "实践画像设置", "desc": "更新监管覆盖、DPA 操作手册、DSAR 流程。" }
+    },
+    "setup": {
+      "title": "配置个人信息保护模块",
+      "description": "告诉我们你的监管覆盖范围、DPA 立场和内部规范，之后所有技能都会自动适配。",
+      "steps": ["角色与场景", "监管覆盖", "DPA 立场", "内部规范", "种子文件", "生成画像"],
+      "modeLabel": "配置方式",
+      "quickMode": "快速配置",
+      "quickModeHint": "仅需 3 步",
+      "fullMode": "完整配置",
+      "fullModeHint": "全部 6 步",
+      "yourRole": "你的角色",
+      "roles": {
+        "attorney": "律师 / 法务",
+        "nonAttorneyWithLawyer": "非律师（有外部律师）",
+        "nonAttorneyWithout": "非律师（无外部律师）"
+      },
+      "practiceSetting": "执业场景（可选）",
+      "practiceSettingPlaceholder": "例如：企业法务 / 中型律所 / 互联网公司隐私团队",
+      "regulationsLabel": "选择实际适用的监管制度（可多选）：",
+      "regulations": [
+        "个人信息保护法",
+        "数据安全法",
+        "网络安全法",
+        "金融监管（个人金融信息）",
+        "医疗健康数据监管",
+        "儿童个人信息网络保护规定",
+        "汽车数据安全管理若干规定"
+      ],
+      "businessModelLabel": "业务模式（DPA 默认方向）",
+      "businessModel": {
+        "handler": "主要是处理者",
+        "entrusted": "主要是受托处理者",
+        "both": "两者皆有"
+      },
+      "dataResidency": "数据存储地",
+      "dataResidencyPlaceholder": "例如：仅中国境内 / 多区域部署",
+      "dpaNotesDesc": "简述你的 DPA 谈判立场（审计权、泄露通知时限、转委托、数据出境、删除、责任上限等）。可留空稍后补充。",
+      "dpaNotesPlaceholder": "作为受托处理者时：审计权接受 ISO 27001/等保三级报告……\n作为处理者时：要求供应商提供下游处理者清单、72小时泄露通知……",
+      "piaTrigger": "PIA 触发标准",
+      "piaTriggerPlaceholder": "例如：处理敏感个人信息 / 自动化决策 / 数据出境（个保法第55条）",
+      "dsarSystems": "DSAR 系统清单（顿号/换行分隔）",
+      "dsarSystemsPlaceholder": "生产数据库、数据分析平台、客服工单、CRM、邮件营销、日志、备份",
+      "dsarSla": "DSAR 回复 SLA",
+      "dsarSlaPlaceholder": "例如：15 个工作日内（个保法第45条「及时」，内部更严）",
+      "seedNote": "你可以稍后在设置页面补充种子文件（处理规则、DPA 模板、参考 PIA）。此步骤在快速配置模式下会跳过。",
+      "seedSkip": "暂不上传，直接点击「下一步」继续。",
+      "readyTitle": "准备生成画像",
+      "readyDesc": "点击「完成配置」后，系统将根据你的回答生成实践画像，用于所有技能的个性化。",
+      "finishSetup": "完成配置",
+      "nextStep": "下一步",
+      "prevStep": "上一步"
+    },
+    "skillRunner": {
+      "back": "返回个人信息保护",
+      "connecting": "正在连接……",
+      "analyzing": "AI 正在分析……",
+      "done": "分析完成",
+      "failed": "分析失败",
+      "viewOutput": "查看产出",
+      "newAnalysis": "新的分析",
+      "startAnalysis": "开始分析"
+    },
+    "triage": {
+      "title": "处理活动分诊",
+      "description": "描述一项个人信息处理活动，AI 判断是否需要 PIA、是否触发个保法第55条法定评估，或可直接推进，并排查处理规则冲突。",
+      "subjectLabel": "活动 / 功能名称（可选）",
+      "subjectPlaceholder": "例如：基于行为数据的内容个性化推荐",
+      "promptLabel": "活动描述",
+      "promptPlaceholder": "数据类别、个人信息主体、目的、是否新收集、是否涉第三方供应商、是否自动化决策、部署场景……",
+      "runLabel": "开始分诊"
+    },
+    "dpa": {
+      "title": "DPA 审查（双向）",
+      "description": "审查个人信息处理协议。自动识别你是受托处理者还是处理者，逐条对照操作手册，含六维度风险与修订建议。",
+      "subjectLabel": "对方当事人",
+      "subjectPlaceholder": "例如：某云服务供应商 / 某企业客户",
+      "promptLabel": "DPA 文本 / 关键条款",
+      "promptPlaceholder": "粘贴 DPA 文本或关键条款（审计权、泄露通知、转委托、数据出境、删除、责任……）",
+      "runLabel": "开始审查",
+      "directionLabel": "审查方向",
+      "directionAuto": "自动识别",
+      "directionEntrusted": "我们是受托处理者（客户发来）",
+      "directionHandler": "我们是处理者（审供应商）"
+    },
+    "pia": {
+      "title": "个人信息保护影响评估 (PIA)",
+      "description": "按内部格式生成 PIA：合法性基础（个保法第13条）、敏感个人信息（第28-30条）、数据出境（第38条）、风险与缓解、主体权利（第44-50条）与建议。",
+      "subjectLabel": "功能 / 处理活动名称",
+      "subjectPlaceholder": "例如：位置共享功能",
+      "promptLabel": "功能描述 / PRD 摘要",
+      "promptPlaceholder": "功能解决什么问题、涉及哪些个人信息字段、是否新收集、谁可访问、存储区域、保留期限、第三方共享……",
+      "runLabel": "生成 PIA"
+    },
+    "gap": {
+      "title": "法规差距分析",
+      "description": "将新出台或变更的法规与现行处理规则及实践做差异对比，输出差距清单和带负责人、截止日期的整改计划。",
+      "subjectLabel": "法规名称",
+      "subjectPlaceholder": "例如：个人信息出境标准合同办法",
+      "promptLabel": "法规文本 / 摘要 / 指引",
+      "promptPlaceholder": "粘贴法规文本或摘要，或描述要对照的法规变化……",
+      "runLabel": "开始差距分析"
+    },
+    "policyMonitor": {
+      "title": "处理规则监控",
+      "description": "扫描已保存产出找出处理规则漂移，或对拟议的新实践做直接查询（多表面：网站政策 / CMP / App 标签 / 产品内同意 / 行业通知）。",
+      "modeLabel": "模式",
+      "modeSweep": "扫描漂移",
+      "modeQuery": "直接查询",
+      "sweepHint": "扫描模式将比对自上次扫描以来的分析产出与处理规则承诺，找出必须 / 建议更新，并更新上次扫描日期。",
+      "queryLabel": "拟议的新实践",
+      "queryPlaceholder": "例如：我们想开始用行为数据个性化引导邮件……（数据 / 目的 / 供应商 / 主体 / 是否新披露）",
+      "runSweep": "运行扫描",
+      "runQuery": "查询",
+      "connecting": "正在连接……",
+      "analyzing": "AI 正在分析……",
+      "done": "完成",
+      "failed": "失败",
+      "newCheck": "新的检查"
+    },
+    "dsar": {
+      "title": "个人信息主体权利请求",
+      "description": "建档时请最小化个人信息——主体标识用编号而非真实姓名。建档后进入详情页起草确认函与实质回复函。",
+      "newRequest": "新建请求",
+      "requestTypes": "请求类型（可多选）",
+      "types": {
+        "access": "查阅（第45条）",
+        "copy": "复制（第45条）",
+        "delete": "删除（第47条）",
+        "correct": "更正（第46条）",
+        "explain": "解释说明（第48条）",
+        "restrict": "限制（第44条）"
+      },
+      "subjectRef": "主体标识（最小化）",
+      "subjectRefPlaceholder": "例如：u-1024",
+      "dateReceived": "收到日期",
+      "verificationMethod": "验证方式",
+      "verificationPlaceholder": "例如：已登录会话 / 邮件匹配",
+      "creating": "创建中……",
+      "createArchive": "创建档案",
+      "empty": "还没有权利请求。点击「新建请求」建档。",
+      "escalated": "需升级",
+      "received": "收到",
+      "deadline": "截止",
+      "detail": {
+        "backToList": "返回请求列表",
+        "notFound": "未找到该请求",
+        "subject": "主体",
+        "verified": "验证",
+        "draftLetters": "起草确认函与实质回复函",
+        "redraftLetters": "重新起草两函",
+        "aiDisclaimer": "AI 起草，发送前须由律师审核。",
+        "connecting": "正在连接……",
+        "drafting": "AI 正在起草……",
+        "draftDone": "起草完成",
+        "draftFailed": "起草失败",
+        "collapse": "收起",
+        "ackLetter": "确认函",
+        "responseLetter": "实质回复函",
+        "exemptions": "豁免分析（需律师审核）"
+      },
+      "status": {
+        "received": "已收到",
+        "verifying": "验证中",
+        "locating": "数据定位中",
+        "exemptionAnalysis": "豁免分析中",
+        "drafted": "已起草",
+        "responded": "已回复",
+        "escalated": "已升级"
+      }
+    },
+    "reviews": {
+      "title": "分析产出",
+      "back": "返回个人信息保护",
+      "tabs": {
+        "all": "全部",
+        "triage": "分诊",
+        "pia": "PIA",
+        "dpa": "DPA",
+        "gap": "差距分析",
+        "policySweep": "政策扫描"
+      },
+      "empty": "还没有分析产出。从概览页运行分诊 / PIA / DPA 等技能后会出现在这里。",
+      "unnamed": "（未命名）",
+      "inProgress": "进行中",
+      "detail": {
+        "backToList": "返回产出列表",
+        "notFound": "未找到该产出",
+        "noMemo": "该产出尚无备忘录内容。"
+      }
+    },
+    "settings": {
+      "title": "实践画像设置",
+      "description": "更新监管覆盖范围、数据存储地与实践画像内容。修改后所有技能将使用新配置。",
+      "back": "返回个人信息保护",
+      "saved": "保存成功",
+      "basicSettings": "基本设置",
+      "regulatoryLabel": "监管覆盖范围（顿号或逗号分隔）",
+      "regulatoryPlaceholder": "例如：个人信息保护法、数据安全法、网络安全法",
+      "dataResidency": "数据存储地",
+      "dataResidencyPlaceholder": "例如：仅中国境内 / 多区域部署",
+      "dpoLabel": "个人信息保护负责人 / 升级联系人",
+      "dpoPlaceholder": "例如：法务总监 张三",
+      "profileSection": "实践画像（Markdown）",
+      "profileHint": "画像内容会作为上下文注入所有 Agent 技能，可包含 DPA 操作手册、处理规则承诺、PIA 内部规范、DSAR 流程等。",
+      "profilePlaceholder": "# 个人信息保护实践画像\n\n## DPA 操作手册\n...\n## 处理规则承诺\n...\n## DSAR 流程\n...",
+      "save": "保存设置"
+    },
+    "badges": {
+      "classification": {
+        "PROCEED": "可直接推进",
+        "PIA_REQUIRED": "需影响评估",
+        "DPIA_MANDATORY": "法定评估强制",
+        "STOP": "停止"
+      },
+      "severity": {
+        "blocking": "阻断",
+        "high": "高",
+        "medium": "中",
+        "low": "低"
+      },
+      "reviewType": {
+        "triage": "处理活动分诊",
+        "pia": "影响评估 (PIA)",
+        "dpa": "DPA 审查",
+        "gap": "法规差距分析",
+        "policy_sweep": "处理规则扫描"
+      }
+    },
+    "notifications": {
+      "title": "提醒",
+      "fallbackTitle": "提醒"
+    }
+  },
   "cases": {
     "title": "案件管理",
     "createCase": "新建案件",

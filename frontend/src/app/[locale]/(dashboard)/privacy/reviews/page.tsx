@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { Spinner } from "@/components/ui";
 import { ReviewTypeBadge, SeverityBadge, TriageClassificationBadge } from "@/components/privacy";
@@ -10,16 +11,18 @@ import { privacyApi } from "@/lib/privacy";
 import { cn } from "@/lib/utils";
 import type { PrivacyReview, ReviewType } from "@/types/privacy";
 
-const TABS: { value: ReviewType | "all"; label: string }[] = [
-  { value: "all", label: "全部" },
-  { value: "triage", label: "分诊" },
-  { value: "pia", label: "PIA" },
-  { value: "dpa", label: "DPA" },
-  { value: "gap", label: "差距分析" },
-  { value: "policy_sweep", label: "政策扫描" },
-];
-
 export default function PrivacyReviewsPage() {
+  const t = useTranslations("privacy");
+
+  const TABS: { value: ReviewType | "all"; label: string }[] = [
+    { value: "all", label: t("reviews.tabs.all") },
+    { value: "triage", label: t("reviews.tabs.triage") },
+    { value: "pia", label: t("reviews.tabs.pia") },
+    { value: "dpa", label: t("reviews.tabs.dpa") },
+    { value: "gap", label: t("reviews.tabs.gap") },
+    { value: "policy_sweep", label: t("reviews.tabs.policySweep") },
+  ];
+
   const [tab, setTab] = useState<ReviewType | "all">("all");
   const [items, setItems] = useState<PrivacyReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +36,7 @@ export default function PrivacyReviewsPage() {
         const res = await privacyApi.listReviews(0, 100, tab === "all" ? undefined : tab);
         if (!cancelled) setItems(res.items);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "加载失败");
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -50,24 +53,24 @@ export default function PrivacyReviewsPage() {
         className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1.5 text-sm transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
-        返回个人信息保护
+        {t("reviews.back")}
       </Link>
-      <h1 className="mb-6 text-2xl font-bold">分析产出</h1>
+      <h1 className="mb-6 text-2xl font-bold">{t("reviews.title")}</h1>
 
       <div className="mb-5 flex flex-wrap gap-2">
-        {TABS.map((t) => (
+        {TABS.map((tabItem) => (
           <button
-            key={t.value}
+            key={tabItem.value}
             type="button"
-            onClick={() => setTab(t.value)}
+            onClick={() => setTab(tabItem.value)}
             className={cn(
               "rounded-md border px-3 py-1.5 text-sm transition-colors",
-              tab === t.value
+              tab === tabItem.value
                 ? "border-brand bg-brand/10 text-brand font-medium"
                 : "text-muted-foreground hover:bg-muted",
             )}
           >
-            {t.label}
+            {tabItem.label}
           </button>
         ))}
       </div>
@@ -84,7 +87,7 @@ export default function PrivacyReviewsPage() {
         </div>
       ) : items.length === 0 ? (
         <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-10 text-center text-sm">
-          还没有分析产出。从概览页运行分诊 / PIA / DPA 等技能后会出现在这里。
+          {t("reviews.empty")}
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -100,9 +103,11 @@ export default function PrivacyReviewsPage() {
                     <TriageClassificationBadge value={r.classification} />
                     <SeverityBadge value={r.severity} />
                   </div>
-                  <p className="truncate text-sm font-medium">{r.subject || "（未命名）"}</p>
+                  <p className="truncate text-sm font-medium">
+                    {r.subject || t("reviews.unnamed")}
+                  </p>
                   <p className="text-muted-foreground line-clamp-2 text-xs">
-                    {r.result_summary || "进行中"}
+                    {r.result_summary || t("reviews.inProgress")}
                   </p>
                 </div>
                 <time className="text-muted-foreground shrink-0 text-xs">
