@@ -147,6 +147,34 @@ class TestPortfolioDeadlines:
         urgent = buckets["grace_lapsed"] + buckets["due_30"]
         assert len(urgent) == 1
 
+    def test_copyright_excluded_from_all_buckets(self, db, user_id):
+        # Copyright has no renewal cycle — it must not appear in any bucket
+        # (regression: previously fell into the "unknown / data-missing" bucket).
+        ip_portfolio_repo.create(
+            db,
+            user_id=user_id,
+            asset_type="copyright",
+            jurisdiction="CN",
+            title="某作品",
+            status="registered",
+            registration_date=date.today() - timedelta(days=400),
+        )
+        report = IpPortfolioService(db).report(user_id=user_id)
+        assert all(len(v) == 0 for v in report["buckets"].values())
+
+    def test_patent_without_filing_date_is_unknown(self, db, user_id):
+        # grant_date alone cannot place the term/fee schedule under CN law.
+        dl = ip_deadline_rules.compute_next_deadline(
+            asset_type="patent_invention",
+            jurisdiction="CN",
+            status="granted",
+            filing_date=None,
+            registration_date=None,
+            grant_date=date(2010, 1, 1),
+        )
+        assert dl.status == "unknown"
+        assert dl.due_date is None
+
 
 class TestRenewalWatcher:
     def _completed_profile(self, db, user_id):

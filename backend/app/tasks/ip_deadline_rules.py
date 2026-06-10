@@ -17,6 +17,7 @@ Jurisdiction baseline (中国, as of the source plugin's ip-core-rules.md):
 
 from __future__ import annotations
 
+import calendar
 from dataclasses import dataclass, field
 from datetime import date
 
@@ -44,8 +45,8 @@ def _add_months(d: date, months: int) -> date:
     month = d.month - 1 + months
     year = d.year + month // 12
     month = month % 12 + 1
-    day = min(d.day, 28)
-    return date(year, month, day)
+    last_day = calendar.monthrange(year, month)[1]
+    return date(year, month, min(d.day, last_day))
 
 
 @dataclass
@@ -72,12 +73,13 @@ def compute_next_deadline(
     today = today or date.today()
     juris = (jurisdiction or "CN").upper()
 
-    # Copyright has no renewal.
+    # Copyright has no renewal — surfaced as its own status so the bucketer can
+    # skip it rather than mislabel it as "data missing".
     if asset_type == "copyright":
-        return Deadline("无续展", None, None, "著作权无需续展", "upcoming")
+        return Deadline("无续展", None, None, "著作权无需续展", "no_renewal")
 
-    # Madrid international registration — 10-year renewal from registration_date.
-    if "MADRID" in juris or "马德里" in (jurisdiction or ""):
+    # Madrid international registration (trademarks only) — 10-year renewal.
+    if asset_type == "trademark" and ("MADRID" in juris or "马德里" in (jurisdiction or "")):
         if registration_date is None:
             return Deadline("马德里续展", None, None, "缺注册日，无法计算", "unknown")
         due = _add_years(registration_date, 10)
@@ -95,9 +97,10 @@ def compute_next_deadline(
         grace_end = _add_months(due, _TRADEMARK_GRACE_MONTHS)
         return _classify("商标续展", due, grace_end, "商标法§40：10年，6个月宽展", today)
 
-    # Patents — annual maintenance fee on the filing anniversary; flag term expiry.
+    # Patents — term and annual fees both run from the filing date (申请日) under
+    # CN law; grant_date alone cannot place the term, so require filing_date.
     if asset_type in {"patent_invention", "patent_utility", "patent_design"}:
-        anchor = filing_date or grant_date
+        anchor = filing_date
         if anchor is None:
             return Deadline("专利年费", None, None, "缺申请日，无法计算", "unknown")
         term_years = _TERM_YEARS[asset_type]
@@ -192,18 +195,6 @@ def bucket_assets(assets: list[object], today: date | None = None) -> DeadlineBu
     today = today or date.today()
     buckets = DeadlineBuckets()
     for asset in assets:
-        if getattr(asset, "agent_managed", False):
-            dl = compute_next_deadline(
-                asset_type=getattr(asset, "asset_type", ""),
-                jurisdiction=getattr(asset, "jurisdiction", None),
-                status=getattr(asset, "status", ""),
-                filing_date=getattr(asset, "filing_date", None),
-                registration_date=getattr(asset, "registration_date", None),
-                grant_date=getattr(asset, "grant_date", None),
-                today=today,
-            )
-            buckets.agent_managed.append(_asset_entry(asset, dl))
-            continue
         dl = compute_next_deadline(
             asset_type=getattr(asset, "asset_type", ""),
             jurisdiction=getattr(asset, "jurisdiction", None),
@@ -213,6 +204,12 @@ def bucket_assets(assets: list[object], today: date | None = None) -> DeadlineBu
             grant_date=getattr(asset, "grant_date", None),
             today=today,
         )
+        # Assets with no renewal cycle (e.g. copyright) are never surfaced.
+        if dl.status == "no_renewal":
+            continue
+        if getattr(asset, "agent_managed", False):
+            buckets.agent_managed.append(_asset_entry(asset, dl))
+            continue
         entry = _asset_entry(asset, dl)
         if dl.status in {"grace", "lapsed"}:
             buckets.grace_lapsed.append(entry)
