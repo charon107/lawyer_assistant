@@ -36,7 +36,8 @@
     "adminUsers": "User Management",
     "adminConversations": "All Conversations",
     "adminLogs": "System Logs",
-    "adminSystem": "System Status"
+    "adminSystem": "System Status",
+    "ip": "IP"
   },
   "auth": {
     "login": "Login",
@@ -251,18 +252,46 @@
     "unnamed": "(Unnamed)",
     "inProgress": "In Progress",
     "actions": {
-      "triage": { "title": "Processing Activity Triage", "desc": "Determine whether a PIA is required, whether Art. 55 PIPL mandatory assessment is triggered, or whether the activity can proceed." },
-      "dpa": { "title": "DPA Review (Bidirectional)", "desc": "Auto-identify processor/controller role and review clause-by-clause against your playbook." },
-      "pia": { "title": "Impact Assessment (PIA)", "desc": "Generate a PIPL-compliant privacy impact assessment in your internal format." },
-      "dsar": { "title": "Data Subject Rights", "desc": "Verify → locate → exemption analysis → draft acknowledgment and substantive response letters." },
-      "gap": { "title": "Regulatory Gap Analysis", "desc": "New regulation vs. current processing rules — output a remediation plan." },
-      "policyMonitor": { "title": "Processing Rule Monitor", "desc": "Scan for drift or run direct queries against proposed new practices." },
-      "settings": { "title": "Practice Profile Settings", "desc": "Update regulatory coverage, DPA playbook, and DSAR procedures." }
+      "triage": {
+        "title": "Processing Activity Triage",
+        "desc": "Determine whether a PIA is required, whether Art. 55 PIPL mandatory assessment is triggered, or whether the activity can proceed."
+      },
+      "dpa": {
+        "title": "DPA Review (Bidirectional)",
+        "desc": "Auto-identify processor/controller role and review clause-by-clause against your playbook."
+      },
+      "pia": {
+        "title": "Impact Assessment (PIA)",
+        "desc": "Generate a PIPL-compliant privacy impact assessment in your internal format."
+      },
+      "dsar": {
+        "title": "Data Subject Rights",
+        "desc": "Verify → locate → exemption analysis → draft acknowledgment and substantive response letters."
+      },
+      "gap": {
+        "title": "Regulatory Gap Analysis",
+        "desc": "New regulation vs. current processing rules — output a remediation plan."
+      },
+      "policyMonitor": {
+        "title": "Processing Rule Monitor",
+        "desc": "Scan for drift or run direct queries against proposed new practices."
+      },
+      "settings": {
+        "title": "Practice Profile Settings",
+        "desc": "Update regulatory coverage, DPA playbook, and DSAR procedures."
+      }
     },
     "setup": {
       "title": "Configure Privacy Module",
       "description": "Tell us your regulatory coverage, DPA stance, and internal norms — all skills will then auto-adapt.",
-      "steps": ["Role & Context", "Regulatory Coverage", "DPA Stance", "Internal Norms", "Seed Files", "Generate Profile"],
+      "steps": [
+        "Role & Context",
+        "Regulatory Coverage",
+        "DPA Stance",
+        "Internal Norms",
+        "Seed Files",
+        "Generate Profile"
+      ],
       "modeLabel": "Setup Mode",
       "quickMode": "Quick Setup",
       "quickModeHint": "3 steps only",
@@ -541,5 +570,345 @@
     "documentTypeArticlesOfAssociation": "Articles of Association",
     "documentTypeMaritalProperty": "Marital Property Agreement",
     "documentTypeWillEstate": "Will / Estate"
+  },
+  "ip": {
+    "title": "IP",
+    "description": "Trademark, copyright, patent, trade secret & OSS compliance",
+    "back": "Back",
+    "unconfiguredTitle": "Set up the IP module",
+    "unconfiguredDesc": "Complete the cold-start interview so skills reflect your enforcement posture, IP portfolio and approval matrix.",
+    "startSetup": "Start setup",
+    "recentOutputs": "Recent outputs",
+    "viewAll": "View all",
+    "noOutputs": "No analysis outputs yet",
+    "unnamed": "Untitled",
+    "inProgress": "In progress…",
+    "actions": {
+      "clearance": {
+        "title": "Trademark clearance",
+        "desc": "Inherent barriers + confusion screening"
+      },
+      "fto": {
+        "title": "Patent FTO triage",
+        "desc": "Claim-by-element + willfulness warning"
+      },
+      "invention": {
+        "title": "Invention intake",
+        "desc": "Six-screen triage"
+      },
+      "infringement": {
+        "title": "Infringement triage",
+        "desc": "TM / copyright / patent / trade secret"
+      },
+      "ipClause": {
+        "title": "IP clause review",
+        "desc": "Transfer-defect screen + clause audit"
+      },
+      "oss": {
+        "title": "OSS license review",
+        "desc": "Per-package by deployment mode"
+      },
+      "enforcement": {
+        "title": "Enforcement letters",
+        "desc": "C&D / takedown notices"
+      },
+      "portfolio": {
+        "title": "Portfolio & renewals",
+        "desc": "Register + deadline alerts"
+      },
+      "settings": {
+        "title": "Settings",
+        "desc": "Customize your profile"
+      }
+    },
+    "skillRunner": {
+      "back": "Back to IP",
+      "connecting": "Connecting…",
+      "analyzing": "Analyzing…",
+      "done": "Done",
+      "failed": "Failed",
+      "viewOutput": "View output",
+      "newAnalysis": "New analysis"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "fallbackTitle": "Notification"
+    },
+    "badges": {
+      "classification": {
+        "GREEN": "Green",
+        "YELLOW": "Yellow",
+        "RED": "Red",
+        "PURSUE": "Pursue",
+        "INVESTIGATE": "Investigate",
+        "REJECT": "Reject",
+        "IGNORE": "Ignore",
+        "COMMUNICATE": "Communicate",
+        "CEASE_DESIST": "C&D",
+        "LITIGATE": "Litigate"
+      },
+      "severity": {
+        "blocking": "Blocking",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "reviewType": {
+        "clearance": "Clearance",
+        "fto": "FTO",
+        "invention": "Invention",
+        "infringement": "Infringement",
+        "ip_clause": "IP clause",
+        "oss": "OSS"
+      },
+      "category": {
+        "trademark": "Trademark",
+        "copyright": "Copyright",
+        "patent": "Patent",
+        "trade_secret": "Trade secret",
+        "design": "Design"
+      }
+    },
+    "clearance": {
+      "title": "Trademark clearance",
+      "description": "Inherent-barrier + confusion-factor screening (TM Law §57). Preliminary, not an opinion.",
+      "disclaimer": "Preliminary screening only — never a clearance opinion. The lowest-confidence conclusion is \"needs a full search by counsel.\"",
+      "subjectLabel": "Mark",
+      "subjectPlaceholder": "e.g. SuperBrand",
+      "promptLabel": "Mark + goods/services",
+      "promptPlaceholder": "Describe the mark, goods/services, class, jurisdiction, visual style…",
+      "runLabel": "Run screening"
+    },
+    "fto": {
+      "title": "Patent FTO triage",
+      "description": "Claim-by-element mapping (Patent Law §64) + willfulness warning (§71).",
+      "disclaimer": "Preliminary analysis, not an FTO opinion; does not draft claims. Reading it constitutes knowledge and may bear on willfulness (Patent Law §71). Keep confidential.",
+      "subjectLabel": "Product/process",
+      "subjectPlaceholder": "e.g. a sensor module",
+      "promptLabel": "Tech details + known patents",
+      "promptPlaceholder": "Describe the product/process/function, tech details, jurisdiction, known patents, timeline…",
+      "runLabel": "Run triage"
+    },
+    "invention": {
+      "title": "Invention intake",
+      "description": "Six-screen triage + pursue/investigate/reject.",
+      "subjectLabel": "Invention",
+      "subjectPlaceholder": "e.g. a method for…",
+      "promptLabel": "Invention description",
+      "promptPlaceholder": "Describe the problem, solution, any public disclosure/sale, detectability…",
+      "runLabel": "Run triage"
+    },
+    "infringement": {
+      "title": "Infringement triage",
+      "description": "Four-way by IP type; factor tables, no conclusion.",
+      "categoryLabel": "IP type",
+      "subjectLabel": "Counterparty/product",
+      "subjectPlaceholder": "e.g. a competing product",
+      "promptLabel": "Alleged acts + evidence",
+      "promptPlaceholder": "Describe the suspected infringement, counterparty, evidence, your rights…",
+      "runLabel": "Run triage"
+    },
+    "ipClause": {
+      "title": "IP clause review",
+      "description": "Transfer-defect screen + clause-by-clause audit.",
+      "subjectLabel": "Contract",
+      "subjectPlaceholder": "e.g. a consulting agreement",
+      "promptLabel": "IP clause text",
+      "promptPlaceholder": "Paste the IP-related clauses (assignment/ownership/license/warranty/indemnity/moral rights…)",
+      "runLabel": "Run review"
+    },
+    "oss": {
+      "title": "OSS license review",
+      "description": "Per-package obligations by deployment mode + ship-blocker grading.",
+      "modeLabel": "Deployment mode",
+      "modeSaas": "SaaS",
+      "modeBinary": "Binary",
+      "modeInternal": "Internal",
+      "modeEmbedded": "Embedded",
+      "subjectLabel": "Project/deps",
+      "subjectPlaceholder": "e.g. a backend service",
+      "promptLabel": "Dependency list / licenses",
+      "promptPlaceholder": "Paste package.json / requirements.txt / go.mod / SBOM or per-package licenses…",
+      "runLabel": "Run review"
+    },
+    "reviews": {
+      "back": "Back to IP",
+      "title": "Analysis outputs",
+      "empty": "No records",
+      "unnamed": "Untitled",
+      "inProgress": "In progress…",
+      "tabs": {
+        "all": "All",
+        "clearance": "Clearance",
+        "fto": "FTO",
+        "invention": "Invention",
+        "infringement": "Infringement",
+        "ipClause": "IP clause",
+        "oss": "OSS"
+      },
+      "detail": {
+        "backToList": "Back to list",
+        "notFound": "Not found",
+        "noMemo": "No memo yet"
+      }
+    },
+    "enforcement": {
+      "title": "Enforcement letters",
+      "newMatter": "New matter",
+      "typeLabel": "Type",
+      "modeLabel": "Mode",
+      "counterpartyLabel": "Counterparty",
+      "counterpartyPlaceholder": "e.g. a company",
+      "factsLabel": "Facts",
+      "factsPlaceholder": "Describe the infringement, right at issue, evidence…",
+      "createAndDraft": "Create",
+      "empty": "No matters yet",
+      "noCounterparty": "(no counterparty)",
+      "deadline": "Deadline",
+      "backToList": "Back to list",
+      "draftPrompt": "Please draft the letter for this matter.",
+      "draft": "Draft letter",
+      "redraft": "Redraft",
+      "internalDraft": "Internal draft (with header)",
+      "internalHint": "For attorney review — includes header + source tags.",
+      "outboundLetter": "Outbound version (no header)",
+      "outboundHint": "The version to send — work-product header removed.",
+      "noOutbound": "No outbound version yet",
+      "sendGateTitle": "Send-gate checklist",
+      "markSentHint": "The system never sends — mark only after you dispatch it yourself.",
+      "markSent": "Mark as sent",
+      "matterType": {
+        "cease_desist": "Cease & desist",
+        "takedown": "Takedown"
+      },
+      "modes": {
+        "send": "Send",
+        "receive": "Receive",
+        "respond": "Respond",
+        "counter": "Counter-notice"
+      },
+      "status": {
+        "intake": "Intake",
+        "drafting": "Drafting",
+        "gated": "Gated",
+        "sent": "Sent",
+        "responded": "Responded",
+        "escalated": "Escalated",
+        "closed": "Closed"
+      }
+    },
+    "portfolio": {
+      "title": "IP portfolio",
+      "addAsset": "Add asset",
+      "assetTypeLabel": "Asset type",
+      "assetTitleLabel": "Title",
+      "jurisdictionLabel": "Jurisdiction",
+      "registrationDateLabel": "Registration date",
+      "filingDateLabel": "Filing date",
+      "save": "Save",
+      "renewalReport": "Renewal report",
+      "register": "Register",
+      "empty": "No assets yet",
+      "unnamed": "Untitled",
+      "noUpcoming": "Nothing due in the next 90 days",
+      "due": "due",
+      "buckets": {
+        "grace_lapsed": "🔴 Grace / lapsed",
+        "due_30": "⏰ Due in 30 days",
+        "due_60": "🟠 30-60 days",
+        "due_90": "🟡 60-90 days",
+        "agent_managed": "🌐 Agent-managed",
+        "unknown": "❓ Unknown"
+      },
+      "assetStatus": {
+        "pending": "Pending",
+        "registered": "Registered",
+        "granted": "Granted",
+        "lapsed": "Lapsed",
+        "abandoned": "Abandoned"
+      },
+      "assetType": {
+        "trademark": "Trademark",
+        "patent_invention": "Invention patent",
+        "patent_utility": "Utility model",
+        "patent_design": "Design patent",
+        "copyright": "Copyright",
+        "domain": "Domain",
+        "other": "Other"
+      }
+    },
+    "settings": {
+      "back": "Back to IP",
+      "title": "IP settings",
+      "description": "Adjust your practice profile; each change is saved.",
+      "saved": "Saved",
+      "basicSettings": "Basic settings",
+      "roleLabel": "Your role",
+      "roles": {
+        "attorney": "Attorney",
+        "patentAgent": "Patent agent",
+        "nonAttorneyWithLawyer": "Non-lawyer (with counsel)",
+        "nonAttorneyWithout": "Non-lawyer (no counsel)"
+      },
+      "patentAgentNote": "Patent-agent privilege covers CNIPA patent matters only; non-patent outputs are marked \"non-privileged.\"",
+      "ipScopeLabel": "IP scope (separate by 、)",
+      "ipScopePlaceholder": "Trademark, copyright, patent",
+      "jurisdictionsLabel": "Registration jurisdictions",
+      "jurisdictionsPlaceholder": "CNIPA, Madrid",
+      "stanceLabel": "Default enforcement stance",
+      "stancePlaceholder": "Aggressive / balanced / conservative",
+      "profileSection": "Practice profile (Markdown)",
+      "profileHint": "Injected into every skill prompt; edit directly.",
+      "profilePlaceholder": "# IP practice profile…",
+      "save": "Save settings"
+    },
+    "setup": {
+      "title": "IP cold-start",
+      "description": "A few questions to learn your role, IP scope and enforcement posture.",
+      "steps": {
+        "0": "Role",
+        "1": "Business & scope",
+        "2": "Posture",
+        "3": "Brand watch",
+        "4": "Seed files",
+        "5": "Generate"
+      },
+      "modeLabel": "Setup depth",
+      "quickMode": "Quick (~2 min)",
+      "quickModeHint": "Role + business + generate",
+      "fullMode": "Full (~15 min)",
+      "fullModeHint": "Posture, brand watch, seed files",
+      "yourRole": "Your role",
+      "roles": {
+        "attorney": "Attorney",
+        "patentAgent": "Patent agent",
+        "nonAttorneyWithLawyer": "Non-lawyer (with counsel)",
+        "nonAttorneyWithout": "Non-lawyer (no counsel)"
+      },
+      "patentAgentNote": "Patent-agent privilege covers CNIPA patent matters only.",
+      "companyName": "Company name",
+      "companyNamePlaceholder": "e.g. Acme Tech Co., Ltd.",
+      "industry": "Industry",
+      "industryPlaceholder": "e.g. consumer electronics",
+      "ipScopeLabel": "IP scope",
+      "jurisdictionsLabel": "Registration jurisdictions",
+      "jurisdictionsPlaceholder": "CNIPA, Madrid",
+      "stanceLabel": "Default enforcement stance",
+      "stanceDesc": "Aggressive = early C&D, will litigate; balanced = soft contact first; conservative = assert only with strong odds.",
+      "stances": {
+        "aggressive": "Aggressive",
+        "balanced": "Balanced",
+        "conservative": "Conservative"
+      },
+      "brandMarksLabel": "Monitored marks",
+      "brandMarksPlaceholder": "One mark per line",
+      "seedNote": "Optionally upload portfolio exports, letter templates, OSS policy (skippable for now).",
+      "seedSkip": "You can skip this and add details later in settings.",
+      "readyTitle": "Ready to generate",
+      "readyDesc": "We will compile your practice profile from these answers.",
+      "prevStep": "Back",
+      "nextStep": "Next",
+      "finishSetup": "Finish"
+    }
   }
 }

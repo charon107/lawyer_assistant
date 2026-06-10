@@ -43,6 +43,11 @@ from app.db.models.privacy_profile import PrivacyProfile
 from app.db.models.privacy_review import PrivacyReview
 from app.db.models.privacy_dsar import PrivacyDsar
 from app.db.models.privacy_notification import PrivacyNotification
+from app.db.models.ip_profile import IpProfile
+from app.db.models.ip_review import IpReview
+from app.db.models.ip_enforcement import IpEnforcement
+from app.db.models.ip_portfolio import IpPortfolio
+from app.db.models.ip_notification import IpNotification
 
 __all__ = [
     "User",
@@ -89,4 +94,9 @@ __all__ = [
     "PrivacyReview",
     "PrivacyDsar",
     "PrivacyNotification",
+    "IpProfile",
+    "IpReview",
+    "IpEnforcement",
+    "IpPortfolio",
+    "IpNotification",
 ]

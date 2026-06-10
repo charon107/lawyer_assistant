@@ -1,0 +1,122 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { ArrowLeft } from "lucide-react";
+import { Spinner } from "@/components/ui";
+import { ClassificationBadge, ReviewTypeBadge, SeverityBadge } from "@/components/ip";
+import { ROUTES } from "@/lib/constants";
+import { ipApi } from "@/lib/ip";
+import { cn } from "@/lib/utils";
+import type { IpReview, ReviewType } from "@/types/ip";
+
+export default function IpReviewsPage() {
+  const t = useTranslations("ip");
+
+  const TABS: { value: ReviewType | "all"; label: string }[] = [
+    { value: "all", label: t("reviews.tabs.all") },
+    { value: "clearance", label: t("reviews.tabs.clearance") },
+    { value: "fto", label: t("reviews.tabs.fto") },
+    { value: "invention", label: t("reviews.tabs.invention") },
+    { value: "infringement", label: t("reviews.tabs.infringement") },
+    { value: "ip_clause", label: t("reviews.tabs.ipClause") },
+    { value: "oss", label: t("reviews.tabs.oss") },
+  ];
+
+  const [tab, setTab] = useState<ReviewType | "all">("all");
+  const [items, setItems] = useState<IpReview[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      try {
+        const res = await ipApi.listReviews(0, 100, tab === "all" ? undefined : tab);
+        if (!cancelled) setItems(res.items);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [tab]);
+
+  return (
+    <div className="mx-auto max-w-4xl px-4 py-10">
+      <Link
+        href={ROUTES.IP}
+        className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1.5 text-sm transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        {t("reviews.back")}
+      </Link>
+      <h1 className="mb-6 text-2xl font-bold">{t("reviews.title")}</h1>
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        {TABS.map((tabItem) => (
+          <button
+            key={tabItem.value}
+            type="button"
+            onClick={() => setTab(tabItem.value)}
+            className={cn(
+              "rounded-md border px-3 py-1.5 text-sm transition-colors",
+              tab === tabItem.value
+                ? "border-brand bg-brand/10 text-brand font-medium"
+                : "text-muted-foreground hover:bg-muted",
+            )}
+          >
+            {tabItem.label}
+          </button>
+        ))}
+      </div>
+
+      {error && (
+        <p className="border-destructive/30 bg-destructive/5 text-destructive mb-6 rounded-lg border px-4 py-2.5 text-sm">
+          {error}
+        </p>
+      )}
+
+      {loading ? (
+        <div className="flex min-h-[30vh] items-center justify-center">
+          <Spinner className="text-brand h-6 w-6" />
+        </div>
+      ) : items.length === 0 ? (
+        <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-10 text-center text-sm">
+          {t("reviews.empty")}
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {items.map((r) => (
+            <li key={r.id}>
+              <Link
+                href={`${ROUTES.IP_REVIEWS}/${r.id}`}
+                className="hover:border-brand/40 flex items-start gap-3 rounded-xl border p-4 transition-colors"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <ReviewTypeBadge value={r.review_type} />
+                    <ClassificationBadge value={r.classification} />
+                    <SeverityBadge value={r.severity} />
+                  </div>
+                  <p className="truncate text-sm font-medium">{r.subject || t("reviews.unnamed")}</p>
+                  <p className="text-muted-foreground line-clamp-2 text-xs">
+                    {r.result_summary || t("reviews.inProgress")}
+                  </p>
+                </div>
+                <time className="text-muted-foreground shrink-0 text-xs">
+                  {new Date(r.created_at).toLocaleDateString("zh-CN")}
+                </time>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

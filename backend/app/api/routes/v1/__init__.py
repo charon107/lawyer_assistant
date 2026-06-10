@@ -18,6 +18,8 @@ from app.api.routes.v1 import employment
 from app.api.routes.v1 import employment_ws
 from app.api.routes.v1 import privacy
 from app.api.routes.v1 import privacy_ws
+from app.api.routes.v1 import ip
+from app.api.routes.v1 import ip_ws
 
 v1_router = APIRouter()
 
@@ -63,6 +65,10 @@ v1_router.include_router(employment_ws.router, tags=["employment-ws"])
 # Privacy-legal module (个人信息保护)
 v1_router.include_router(privacy.router, prefix="/privacy", tags=["privacy"])
 v1_router.include_router(privacy_ws.router, tags=["privacy-ws"])
+
+# IP-legal module (知识产权)
+v1_router.include_router(ip.router, prefix="/ip", tags=["ip"])
+v1_router.include_router(ip_ws.router, tags=["ip-ws"])
 
 # Admin: system status (RAG health) and logs
 v1_router.include_router(admin_system.router, prefix="/admin/system", tags=["admin:system"])
