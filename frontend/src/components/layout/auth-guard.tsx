@@ -9,21 +9,21 @@ import { ROUTES } from "@/lib/constants";
 import type { User } from "@/types";
 import { Spinner } from "@/components/ui";
 
-function hasAuthCookie(): boolean {
-  if (typeof document === "undefined") return false;
-  return document.cookie.split(";").some((c) => {
-    const name = c.trim().split("=")[0];
-    return name === "access_token" || name === "refresh_token";
-  });
-}
-
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isAuthenticated, setUser } = useAuthStore();
-  const [checking, setChecking] = useState(!isAuthenticated && !hasAuthCookie());
+  const [checking, setChecking] = useState(!isAuthenticated);
 
   useEffect(() => {
-    if (isAuthenticated) return;
+    // A hydrated/persisted session resolves immediately — clear the spinner.
+    // The auth cookies are httpOnly, so they can never be detected from JS;
+    // gating the loading state on a client-visible cookie left it stuck on
+    // every full reload (zustand rehydrates `isAuthenticated` after first paint,
+    // and the early return below never cleared `checking`).
+    if (isAuthenticated) {
+      setChecking(false);
+      return;
+    }
 
     let cancelled = false;
     const verify = async () => {

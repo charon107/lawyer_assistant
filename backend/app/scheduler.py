@@ -30,6 +30,7 @@ JOB_DEAL_DEBRIEF = "deal_debrief"
 JOB_DATAROOM_WATCHER = "dataroom_watcher"
 JOB_LEAVE_TRACKER = "employment_leave_tracker"
 JOB_PRIVACY_POLICY_SWEEP = "privacy_policy_sweep_reminder"
+JOB_IP_RENEWAL_WATCHER = "ip_renewal_watcher"
 
 
 def _run_in_session(task: Callable[..., object], task_name: str) -> None:
@@ -80,6 +81,12 @@ def _run_privacy_policy_sweep() -> None:
     _run_in_session(privacy_policy_sweep_reminder.run, JOB_PRIVACY_POLICY_SWEEP)
 
 
+def _run_ip_renewal_watcher() -> None:
+    from app.tasks import ip_renewal_watcher
+
+    _run_in_session(ip_renewal_watcher.run, JOB_IP_RENEWAL_WATCHER)
+
+
 def create_scheduler() -> AsyncIOScheduler:
     """Build the scheduler and register the weekly commercial jobs."""
     scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
@@ -120,6 +127,14 @@ def create_scheduler() -> AsyncIOScheduler:
         trigger=CronTrigger(day_of_week="mon", hour=9, minute=23),
         id=JOB_PRIVACY_POLICY_SWEEP,
         name="Privacy policy-sweep reminder",
+        replace_existing=True,
+    )
+    # IP renewal watcher — weekly Monday (09:47, off the 09:07/09:23/09:37 marks).
+    scheduler.add_job(
+        _run_ip_renewal_watcher,
+        trigger=CronTrigger(day_of_week="mon", hour=9, minute=47),
+        id=JOB_IP_RENEWAL_WATCHER,
+        name="IP renewal watcher",
         replace_existing=True,
     )
 

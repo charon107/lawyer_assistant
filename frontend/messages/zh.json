@@ -36,7 +36,8 @@
     "adminUsers": "用户管理",
     "adminConversations": "全部对话",
     "adminLogs": "系统日志",
-    "adminSystem": "系统状态"
+    "adminSystem": "系统状态",
+    "ip": "知识产权"
   },
   "auth": {
     "login": "登录",
@@ -251,18 +252,46 @@
     "unnamed": "（未命名）",
     "inProgress": "进行中",
     "actions": {
-      "triage": { "title": "处理活动分诊", "desc": "判断是否需要 PIA / 是否触发个保法第55条法定评估。" },
-      "dpa": { "title": "DPA 审查（双向）", "desc": "自动识别受托处理者 / 处理者，逐条对照操作手册。" },
-      "pia": { "title": "影响评估 (PIA)", "desc": "按内部格式生成个人信息保护影响评估。" },
-      "dsar": { "title": "主体权利响应", "desc": "验证→定位→豁免→起草确认函与实质回复函。" },
-      "gap": { "title": "法规差距分析", "desc": "新法规 vs 现行处理规则，输出整改计划。" },
-      "policyMonitor": { "title": "处理规则监控", "desc": "扫描漂移或对拟议实践做直接查询。" },
-      "settings": { "title": "实践画像设置", "desc": "更新监管覆盖、DPA 操作手册、DSAR 流程。" }
+      "triage": {
+        "title": "处理活动分诊",
+        "desc": "判断是否需要 PIA / 是否触发个保法第55条法定评估。"
+      },
+      "dpa": {
+        "title": "DPA 审查（双向）",
+        "desc": "自动识别受托处理者 / 处理者，逐条对照操作手册。"
+      },
+      "pia": {
+        "title": "影响评估 (PIA)",
+        "desc": "按内部格式生成个人信息保护影响评估。"
+      },
+      "dsar": {
+        "title": "主体权利响应",
+        "desc": "验证→定位→豁免→起草确认函与实质回复函。"
+      },
+      "gap": {
+        "title": "法规差距分析",
+        "desc": "新法规 vs 现行处理规则，输出整改计划。"
+      },
+      "policyMonitor": {
+        "title": "处理规则监控",
+        "desc": "扫描漂移或对拟议实践做直接查询。"
+      },
+      "settings": {
+        "title": "实践画像设置",
+        "desc": "更新监管覆盖、DPA 操作手册、DSAR 流程。"
+      }
     },
     "setup": {
       "title": "配置个人信息保护模块",
       "description": "告诉我们你的监管覆盖范围、DPA 立场和内部规范，之后所有技能都会自动适配。",
-      "steps": ["角色与场景", "监管覆盖", "DPA 立场", "内部规范", "种子文件", "生成画像"],
+      "steps": [
+        "角色与场景",
+        "监管覆盖",
+        "DPA 立场",
+        "内部规范",
+        "种子文件",
+        "生成画像"
+      ],
       "modeLabel": "配置方式",
       "quickMode": "快速配置",
       "quickModeHint": "仅需 3 步",
@@ -541,5 +570,345 @@
     "documentTypeArticlesOfAssociation": "公司章程",
     "documentTypeMaritalProperty": "婚姻财产协议",
     "documentTypeWillEstate": "遗嘱/继承"
+  },
+  "ip": {
+    "title": "知识产权",
+    "description": "商标、著作权、专利、商业秘密与开源合规",
+    "back": "返回",
+    "unconfiguredTitle": "开始配置知识产权模块",
+    "unconfiguredDesc": "先完成冷启动访谈，学习你的维权姿态、IP 组合与审批矩阵，技能才能给出贴合实践的输出。",
+    "startSetup": "开始配置",
+    "recentOutputs": "最近输出",
+    "viewAll": "查看全部",
+    "noOutputs": "暂无分析输出",
+    "unnamed": "未命名",
+    "inProgress": "进行中…",
+    "actions": {
+      "clearance": {
+        "title": "商标可注册性初筛",
+        "desc": "固有障碍 + 混淆因素初步检索"
+      },
+      "fto": {
+        "title": "专利 FTO 初筛",
+        "desc": "权利要求逐元素 + 故意侵权警告"
+      },
+      "invention": {
+        "title": "发明披露初筛",
+        "desc": "六维筛查 + 三态分流"
+      },
+      "infringement": {
+        "title": "侵权初步分析",
+        "desc": "商标/著作权/专利/商业秘密四态"
+      },
+      "ipClause": {
+        "title": "合同 IP 条款审查",
+        "desc": "转让缺陷盾 + 逐条审计"
+      },
+      "oss": {
+        "title": "开源许可证合规",
+        "desc": "按部署模式逐包分类"
+      },
+      "enforcement": {
+        "title": "维权信函",
+        "desc": "警告函 / 网络传播权通知"
+      },
+      "portfolio": {
+        "title": "组合与续展",
+        "desc": "注册登记册 + 期限预警"
+      },
+      "settings": {
+        "title": "设置",
+        "desc": "调整实务画像"
+      }
+    },
+    "skillRunner": {
+      "back": "返回知识产权",
+      "connecting": "连接中…",
+      "analyzing": "分析中…",
+      "done": "已完成",
+      "failed": "运行失败",
+      "viewOutput": "查看输出",
+      "newAnalysis": "新分析"
+    },
+    "notifications": {
+      "title": "通知",
+      "fallbackTitle": "通知"
+    },
+    "badges": {
+      "classification": {
+        "GREEN": "可推进",
+        "YELLOW": "需注意",
+        "RED": "拦截",
+        "PURSUE": "推进",
+        "INVESTIGATE": "调查",
+        "REJECT": "驳回",
+        "IGNORE": "忽略",
+        "COMMUNICATE": "沟通",
+        "CEASE_DESIST": "警告函",
+        "LITIGATE": "起诉"
+      },
+      "severity": {
+        "blocking": "阻断",
+        "high": "高",
+        "medium": "中",
+        "low": "低"
+      },
+      "reviewType": {
+        "clearance": "商标清查",
+        "fto": "FTO",
+        "invention": "发明披露",
+        "infringement": "侵权分析",
+        "ip_clause": "IP 条款",
+        "oss": "开源"
+      },
+      "category": {
+        "trademark": "商标",
+        "copyright": "著作权",
+        "patent": "专利",
+        "trade_secret": "商业秘密",
+        "design": "外观设计"
+      }
+    },
+    "clearance": {
+      "title": "商标可注册性初筛",
+      "description": "固有障碍筛查 + 混淆可能性因素（商标法§57），初步非意见。",
+      "disclaimer": "这是初步检索，不是注册性意见。绝不得出“可以注册/可以安全使用”的结论；最低信心是“需律师做完整检索”。",
+      "subjectLabel": "商标名称",
+      "subjectPlaceholder": "如：超级品牌",
+      "promptLabel": "商标与商品/服务描述",
+      "promptPlaceholder": "描述商标名称、拟用商品/服务、类别、管辖域、视觉风格…",
+      "runLabel": "开始初筛"
+    },
+    "fto": {
+      "title": "专利自由实施（FTO）初筛",
+      "description": "权利要求逐元素对照（专利法§64）+ 故意侵权警告（§71）。",
+      "disclaimer": "这是初步分析，不是 FTO 意见，不撰写权利要求。阅读本备忘录即构成“知悉”，可能触发专利法§71 故意侵权（最高 5 倍赔偿），请保密。",
+      "subjectLabel": "产品/工艺",
+      "subjectPlaceholder": "如：某传感器模块",
+      "promptLabel": "技术方案与已知专利",
+      "promptPlaceholder": "描述产品/工艺/功能、技术细节、管辖域、已知专利、上市时间…",
+      "runLabel": "开始初筛"
+    },
+    "invention": {
+      "title": "发明披露初筛",
+      "description": "六维筛查（新颖/创造/可授权/公开时间§24/可检测/战略）+ 推进/调查/驳回三态。",
+      "subjectLabel": "发明名称",
+      "subjectPlaceholder": "如：一种…方法",
+      "promptLabel": "发明描述",
+      "promptPlaceholder": "描述发明要解决的问题、技术方案、是否已公开/销售/进代码库、可检测性…",
+      "runLabel": "开始初筛"
+    },
+    "infringement": {
+      "title": "侵权初步分析",
+      "description": "按 IP 类型分四态分析，输出因素表，不下结论。",
+      "categoryLabel": "IP 类型",
+      "subjectLabel": "对方/产品",
+      "subjectPlaceholder": "如：某竞品",
+      "promptLabel": "被诉行为与证据",
+      "promptPlaceholder": "描述疑似侵权行为、对方、证据、己方权利…",
+      "runLabel": "开始分析"
+    },
+    "ipClause": {
+      "title": "合同 IP 条款审查",
+      "description": "转让缺陷盾 + 逐条风险审计（著作人身权§10、专利赔偿§71）。",
+      "subjectLabel": "合同名称",
+      "subjectPlaceholder": "如：某咨询协议",
+      "promptLabel": "合同 IP 条款原文",
+      "promptPlaceholder": "粘贴合同中与 IP 相关的条款原文（转让/归属/许可/保证/赔偿/人身权…）",
+      "runLabel": "开始审查"
+    },
+    "oss": {
+      "title": "开源许可证合规检查",
+      "description": "按部署模式逐包分类许可证义务 + 可否发布分级。",
+      "modeLabel": "部署模式",
+      "modeSaas": "SaaS",
+      "modeBinary": "二进制分发",
+      "modeInternal": "仅内部",
+      "modeEmbedded": "嵌入/固件",
+      "subjectLabel": "项目/依赖树",
+      "subjectPlaceholder": "如：某后端服务",
+      "promptLabel": "依赖清单或许可证信息",
+      "promptPlaceholder": "粘贴 package.json / requirements.txt / go.mod / SBOM 或逐包许可证…",
+      "runLabel": "开始检查"
+    },
+    "reviews": {
+      "back": "返回知识产权",
+      "title": "分析产出",
+      "empty": "暂无记录",
+      "unnamed": "未命名",
+      "inProgress": "进行中…",
+      "tabs": {
+        "all": "全部",
+        "clearance": "商标清查",
+        "fto": "FTO",
+        "invention": "发明披露",
+        "infringement": "侵权分析",
+        "ipClause": "IP 条款",
+        "oss": "开源"
+      },
+      "detail": {
+        "backToList": "返回列表",
+        "notFound": "未找到该记录",
+        "noMemo": "暂无备忘录内容"
+      }
+    },
+    "enforcement": {
+      "title": "维权信函",
+      "newMatter": "新建事项",
+      "typeLabel": "信函类型",
+      "modeLabel": "模式",
+      "counterpartyLabel": "对方当事人",
+      "counterpartyPlaceholder": "如：某公司",
+      "factsLabel": "被诉事实",
+      "factsPlaceholder": "描述侵权事实、涉案权利、证据…",
+      "createAndDraft": "建档",
+      "empty": "暂无维权事项",
+      "noCounterparty": "（未填对方）",
+      "deadline": "期限",
+      "backToList": "返回列表",
+      "draftPrompt": "请根据本档案起草信函。",
+      "draft": "起草信函",
+      "redraft": "重新起草",
+      "internalDraft": "内部草稿（带工作成果抬头）",
+      "internalHint": "供律师审阅，含来源标签与抬头。",
+      "outboundLetter": "对外版本（去抬头）",
+      "outboundHint": "发送给对方/平台的版本，已移除工作成果抬头。",
+      "noOutbound": "尚未生成对外版本",
+      "sendGateTitle": "发送门禁核对",
+      "markSentHint": "系统不代发；确认你已自行发出后再标记。",
+      "markSent": "标记为已发送",
+      "matterType": {
+        "cease_desist": "侵权警告函",
+        "takedown": "网络传播权通知"
+      },
+      "modes": {
+        "send": "发送",
+        "receive": "接收",
+        "respond": "回应",
+        "counter": "反通知"
+      },
+      "status": {
+        "intake": "建档",
+        "drafting": "起草中",
+        "gated": "待门禁",
+        "sent": "已发送",
+        "responded": "已回应",
+        "escalated": "已升级",
+        "closed": "已关闭"
+      }
+    },
+    "portfolio": {
+      "title": "知识产权组合",
+      "addAsset": "新增资产",
+      "assetTypeLabel": "资产类型",
+      "assetTitleLabel": "名称",
+      "jurisdictionLabel": "管辖域",
+      "registrationDateLabel": "注册日期",
+      "filingDateLabel": "申请日期",
+      "save": "保存",
+      "renewalReport": "续展预警",
+      "register": "登记册",
+      "empty": "暂无资产",
+      "unnamed": "未命名",
+      "noUpcoming": "未来 90 天内无到期事项",
+      "due": "到期",
+      "buckets": {
+        "grace_lapsed": "🔴 宽展期/已失效",
+        "due_30": "⏰ 30 日内到期",
+        "due_60": "🟠 30-60 日",
+        "due_90": "🟡 60-90 日",
+        "agent_managed": "🌐 代理代管",
+        "unknown": "❓ 状态不明"
+      },
+      "assetStatus": {
+        "pending": "申请中",
+        "registered": "已注册",
+        "granted": "已授权",
+        "lapsed": "已失效",
+        "abandoned": "已放弃"
+      },
+      "assetType": {
+        "trademark": "商标",
+        "patent_invention": "发明专利",
+        "patent_utility": "实用新型",
+        "patent_design": "外观设计",
+        "copyright": "著作权",
+        "domain": "域名",
+        "other": "其他"
+      }
+    },
+    "settings": {
+      "back": "返回知识产权",
+      "title": "知识产权设置",
+      "description": "调整你的实务画像；改一项即写回。",
+      "saved": "已保存",
+      "basicSettings": "基本设置",
+      "roleLabel": "使用者角色",
+      "roles": {
+        "attorney": "律师",
+        "patentAgent": "专利代理师",
+        "nonAttorneyWithLawyer": "非律师（有律师对接）",
+        "nonAttorneyWithout": "非律师（无律师对接）"
+      },
+      "patentAgentNote": "专利代理师特权仅延及 CNIPA 专利事项；非专利事项输出将标注“非特权”。",
+      "ipScopeLabel": "IP 业务领域组合（顿号分隔）",
+      "ipScopePlaceholder": "商标、著作权、专利",
+      "jurisdictionsLabel": "注册管辖域",
+      "jurisdictionsPlaceholder": "中国大陆（CNIPA）、马德里",
+      "stanceLabel": "默认维权姿态",
+      "stancePlaceholder": "激进 / 适度 / 保守",
+      "profileSection": "实务画像（Markdown）",
+      "profileHint": "注入每个技能的系统提示词；可直接编辑。",
+      "profilePlaceholder": "# 知识产权实务画像…",
+      "save": "保存设置"
+    },
+    "setup": {
+      "title": "知识产权冷启动",
+      "description": "几个问题，学习你的角色、IP 组合与维权姿态。",
+      "steps": {
+        "0": "角色",
+        "1": "业务与组合",
+        "2": "维权姿态",
+        "3": "品牌监测",
+        "4": "种子文件",
+        "5": "生成"
+      },
+      "modeLabel": "配置深度",
+      "quickMode": "快速（约2分钟）",
+      "quickModeHint": "仅角色 + 业务 + 生成",
+      "fullMode": "完整（约15分钟）",
+      "fullModeHint": "含姿态、品牌监测、种子文件",
+      "yourRole": "你的角色",
+      "roles": {
+        "attorney": "律师",
+        "patentAgent": "专利代理师",
+        "nonAttorneyWithLawyer": "非律师（有律师对接）",
+        "nonAttorneyWithout": "非律师（无律师对接）"
+      },
+      "patentAgentNote": "专利代理师特权仅延及 CNIPA 专利事项。",
+      "companyName": "公司名称",
+      "companyNamePlaceholder": "如：某科技有限公司",
+      "industry": "行业",
+      "industryPlaceholder": "如：消费电子",
+      "ipScopeLabel": "IP 业务领域组合",
+      "jurisdictionsLabel": "注册管辖域",
+      "jurisdictionsPlaceholder": "中国大陆（CNIPA）、马德里",
+      "stanceLabel": "默认维权姿态",
+      "stanceDesc": "激进=尽早发警告函、愿起诉；适度=先温和沟通；保守=仅胜算大时主张。",
+      "stances": {
+        "aggressive": "激进",
+        "balanced": "适度",
+        "conservative": "保守"
+      },
+      "brandMarksLabel": "监测标识（换行或顿号分隔）",
+      "brandMarksPlaceholder": "需监测第三方使用的商标，每行一个",
+      "seedNote": "可上传组合导出、信函模板、开源政策供学习（本期可跳过）。",
+      "seedSkip": "本步骤可跳过，稍后在设置中补充。",
+      "readyTitle": "准备生成画像",
+      "readyDesc": "我们将根据你的回答编译实务画像，注入每个技能。",
+      "prevStep": "上一步",
+      "nextStep": "下一步",
+      "finishSetup": "完成配置"
+    }
   }
 }

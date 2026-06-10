@@ -373,6 +373,58 @@ PrivacyNotificationSvc = Annotated[
 ]
 
 
+# === IP-legal Services ===
+
+from app.services.ip_cold_start_service import IpColdStartService
+from app.services.ip_enforcement_service import IpEnforcementService
+from app.services.ip_notification_service import IpNotificationService
+from app.services.ip_portfolio_service import IpPortfolioService
+from app.services.ip_profile_service import IpProfileService
+from app.services.ip_review_service import IpReviewService
+
+
+def get_ip_profile_service(db: DBSession) -> IpProfileService:
+    return IpProfileService(db)
+
+
+IpProfileSvc = Annotated[IpProfileService, Depends(get_ip_profile_service)]
+
+
+def get_ip_cold_start_service(db: DBSession) -> IpColdStartService:
+    return IpColdStartService(db)
+
+
+IpColdStartSvc = Annotated[IpColdStartService, Depends(get_ip_cold_start_service)]
+
+
+def get_ip_review_service(db: DBSession) -> IpReviewService:
+    return IpReviewService(db)
+
+
+IpReviewSvc = Annotated[IpReviewService, Depends(get_ip_review_service)]
+
+
+def get_ip_enforcement_service(db: DBSession) -> IpEnforcementService:
+    return IpEnforcementService(db)
+
+
+IpEnforcementSvc = Annotated[IpEnforcementService, Depends(get_ip_enforcement_service)]
+
+
+def get_ip_portfolio_service(db: DBSession) -> IpPortfolioService:
+    return IpPortfolioService(db)
+
+
+IpPortfolioSvc = Annotated[IpPortfolioService, Depends(get_ip_portfolio_service)]
+
+
+def get_ip_notification_service(db: DBSession) -> IpNotificationService:
+    return IpNotificationService(db)
+
+
+IpNotificationSvc = Annotated[IpNotificationService, Depends(get_ip_notification_service)]
+
+
 # === Authentication Dependencies ===
 
 from app.core.exceptions import AuthenticationError, AuthorizationError
