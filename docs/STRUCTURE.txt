@@ -1,0 +1,43 @@
+LexMind Documentation Structure (Updated 2026-06-10)
+===================================================
+
+docs/
+├── README.md                           # Main navigation hub
+│
+├── architecture/                       # System design & patterns
+│   ├── README.md                       # Architecture index
+│   ├── system-overview.md              # Request flow, directory structure
+│   ├── design-patterns.md              # Common patterns
+│   ├── permissions-rbac.md             # Access control & authentication
+│   └── file-processing.md              # File upload & RAG pipeline
+│
+├── development/                        # Development guides & setup
+│   ├── README.md                       # Development index
+│   ├── getting-started.md              # Setup + configuration + commands
+│   ├── testing.md                      # Testing guide
+│   ├── adding-features.md              # Feature implementation workflow
+│   │
+│   └── guides/                         # How-to guides
+│       ├── README.md                   # Guides index
+│       ├── agent-tools.md              # Add agent tools
+│       ├── api-endpoints.md            # Add API endpoints
+│       ├── customize-prompts.md        # Customize agent prompts
+│       └── ratings-system.md           # Use ratings system
+│
+└── modules/                            # Legal module specifications
+    ├── README.md                       # Modules index
+    ├── overview.md                     # 10 legal modules summary
+    ├── commercial-legal.md             # Commercial contract management
+    ├── employment-legal.md             # Employment & labor law
+    └── privacy-legal.md                # Privacy & data protection
+
+Total Files: 20 markdown files
+Structure: 4 main sections + 20 detailed documents
+Navigation: Each section has its own README for easy browsing
+
+Key Features:
+- Hierarchical navigation with README files at each level
+- Clear separation: architecture → development → modules
+- How-to guides organized under development
+- Complete coverage of 3 active legal modules
+- Getting started guide combines configuration + commands
