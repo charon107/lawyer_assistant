@@ -105,3 +105,6 @@ Thumbs.db
 data/
 .gstack/
 backend/media/
+
+# Tool output (understand-anything code knowledge graph)
+.understand-anything/
