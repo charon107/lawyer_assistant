@@ -77,11 +77,25 @@ export interface LitigationModuleStatusResponse {
   configured: boolean;
 }
 
+export interface ColdStartStepData {
+  answers?: Record<string, string>;
+  seed_files?: string[];
+  completed?: boolean;
+}
+
+export interface ColdStartPartialConfig {
+  steps?: Record<string, ColdStartStepData>;
+  quick_mode?: boolean;
+  latest_step?: number;
+  profile_content?: string;
+  [key: string]: unknown;
+}
+
 export interface ColdStartResponse {
   step: number;
   progress: number;
   completed: boolean;
-  partial_config: Record<string, unknown>;
+  partial_config: ColdStartPartialConfig;
 }
 
 export interface LitigationProfile {
