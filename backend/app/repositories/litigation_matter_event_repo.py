@@ -1,8 +1,9 @@
 """Repository for `litigation_matter_events`. Stateless sync; never commits."""
 
+from datetime import date
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db.models.litigation_matter_event import LitigationMatterEvent
@@ -45,6 +46,39 @@ def list_deadlines_by_user(db: Session, *, user_id: str) -> list[LitigationMatte
         .all()
     )
     return list(rows)
+
+
+def list_recent_status_changes_by_user(
+    db: Session, *, user_id: str, since: date
+) -> list[LitigationMatterEvent]:
+    """近期非期限事件（裁定/开庭/风险重评估等），供 docket-watcher 态势变化桶。"""
+    rows = (
+        db.execute(
+            select(LitigationMatterEvent)
+            .where(
+                LitigationMatterEvent.user_id == user_id,
+                LitigationMatterEvent.event_type != "deadline",
+                LitigationMatterEvent.event_date >= since,
+            )
+            .order_by(LitigationMatterEvent.event_date.desc())
+        )
+        .scalars()
+        .all()
+    )
+    return list(rows)
+
+
+def latest_event_date_by_matter(db: Session, *, user_id: str) -> dict[str, date]:
+    """一次性返回 {matter_id: 最近事件日期}，供 portfolio 聚合避免 N+1。"""
+    rows = db.execute(
+        select(
+            LitigationMatterEvent.matter_id,
+            func.max(LitigationMatterEvent.event_date),
+        )
+        .where(LitigationMatterEvent.user_id == user_id)
+        .group_by(LitigationMatterEvent.matter_id)
+    ).all()
+    return {matter_id: latest for matter_id, latest in rows if latest is not None}
 
 
 def create(db: Session, *, matter_id: str, user_id: str, **fields: Any) -> LitigationMatterEvent:

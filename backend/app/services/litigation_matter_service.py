@@ -4,14 +4,22 @@ from __future__ import annotations
 
 import json
 from datetime import date
+from typing import Any
 
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import AuthorizationError, NotFoundError
 from app.db.models.litigation_matter import LitigationMatter
-from app.repositories import litigation_matter_event_repo, litigation_matter_repo
+from app.db.models.litigation_matter_event import LitigationMatterEvent
+from app.repositories import (
+    litigation_matter_event_repo,
+    litigation_matter_repo,
+    litigation_profile_repo,
+)
 from app.schemas.litigation.matter import LitigationMatterCreate, LitigationMatterUpdate
 from app.schemas.litigation.matter_event import LitigationMatterEventCreate
+
+_NON_LAWYER_ROLES = ("non_lawyer_with_counsel", "non_lawyer_without")
 
 
 class LitigationMatterService:
@@ -52,7 +60,7 @@ class LitigationMatterService:
             if key in fields and isinstance(fields[key], dict):
                 fields[key] = json.dumps(fields[key], ensure_ascii=False)
 
-        # Record field changes as events if status/risk changed
+        # Record a status-change event when status actually changes.
         if "status" in fields and fields["status"] != matter.status:
             litigation_matter_event_repo.create(
                 self.db,
@@ -68,20 +76,27 @@ class LitigationMatterService:
 
         return litigation_matter_repo.update(self.db, matter=matter, **fields)
 
+    def _non_lawyer_review_suffix(self, user_id: str) -> str:
+        """若用户为非律师，返回需律师审查的提示后缀（结案/接受和解等高后果操作）。"""
+        profile = litigation_profile_repo.get_by_user_id(self.db, user_id)
+        if profile and profile.user_role in _NON_LAWYER_ROLES:
+            return " ⚠️ 非律师操作——需执业律师审查后确认。"
+        return ""
+
     def close(self, matter_id: str, *, user_id: str) -> LitigationMatter:
-        """Close a matter — 非律师门禁审查。"""
+        """Close a matter。非律师操作记录律师审查提示（高后果动作不静默放行）。"""
         matter = self.get_owned(matter_id, user_id=user_id)
         if matter.status in ("closed", "archived"):
             return matter
 
-        # Record closing event
+        # Record closing event (with non-lawyer review advisory if applicable).
         litigation_matter_event_repo.create(
             self.db,
             matter_id=matter_id,
             user_id=user_id,
             event_date=date.today(),
             event_type="closing",
-            summary=f"案件结案 (原状态: {matter.status})",
+            summary=f"案件结案 (原状态: {matter.status})。{self._non_lawyer_review_suffix(user_id)}".rstrip(),
         )
 
         return litigation_matter_repo.update(
@@ -91,10 +106,17 @@ class LitigationMatterService:
             closed_date=date.today(),
         )
 
-    def portfolio(self, user_id: str) -> dict:
-        """案件组合概览 — 聚合算术（风险分布/期限/陈旧/7 类异常）。"""
+    def portfolio(self, user_id: str) -> dict[str, Any]:
+        """案件组合概览 — 聚合算术（风险分布/期限/陈旧/7 类异常）。
+
+        一次性取每案最近事件日期（避免 N+1），再在内存中聚合。
+        """
         matters, _ = litigation_matter_repo.list_by_user(
             self.db, user_id=user_id, skip=0, limit=10000
+        )
+        # Single query: {matter_id: latest event date}. Matters absent → no events.
+        latest_event = litigation_matter_event_repo.latest_event_date_by_matter(
+            self.db, user_id=user_id
         )
 
         active = [m for m in matters if m.status not in ("closed", "archived")]
@@ -111,12 +133,9 @@ class LitigationMatterService:
                 by_risk[m.risk] = by_risk.get(m.risk, 0) + 1
             if m.stage:
                 by_stage[m.stage] = by_stage.get(m.stage, 0) + 1
-            # 陈旧度：最近无事件超过 90 天
-            events = litigation_matter_event_repo.list_by_matter(self.db, matter_id=m.id, limit=1)
-            if events:
-                latest = events[0].event_date
-                if latest and (now - latest).days > 90:
-                    stale_count += 1
+            latest = latest_event.get(m.id)
+            if latest and (now - latest).days > 90:
+                stale_count += 1
             if m.next_deadline and m.next_deadline < now:
                 overdue_count += 1
 
@@ -133,13 +152,7 @@ class LitigationMatterService:
                 "stale": stale_count,
                 "overdue": overdue_count,
                 "high_risk": by_risk.get("严重", 0),
-                "no_events": sum(
-                    1
-                    for m in active
-                    if not litigation_matter_event_repo.list_by_matter(
-                        self.db, matter_id=m.id, limit=1
-                    )
-                ),
+                "no_events": sum(1 for m in active if m.id not in latest_event),
                 "no_deadline": sum(1 for m in active if m.next_deadline is None),
                 "no_risk": sum(1 for m in active if not m.risk),
                 "no_stage": sum(1 for m in active if not m.stage),
@@ -154,7 +167,9 @@ class LitigationMatterService:
             self.db, matter_id=matter_id, skip=skip, limit=limit
         )
 
-    def add_event(self, *, matter_id: str, user_id: str, data: LitigationMatterEventCreate):
+    def add_event(
+        self, *, matter_id: str, user_id: str, data: LitigationMatterEventCreate
+    ) -> LitigationMatterEvent:
         self.get_owned(matter_id, user_id=user_id)
         fields = data.model_dump(exclude_none=True)
         for key in ("field_changes", "associated_files"):

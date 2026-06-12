@@ -16,6 +16,7 @@ session + commit.
 """
 
 import logging
+from datetime import date, timedelta
 
 from sqlalchemy.orm import Session
 
@@ -27,7 +28,13 @@ from app.repositories import (
     litigation_profile_repo,
 )
 from app.tasks._common import iter_active_user_ids
-from app.tasks.litigation_deadline_rules import bucket_deadlines, render_docket_report
+from app.tasks.litigation_deadline_rules import (
+    add_status_changes,
+    bucket_deadlines,
+    render_docket_report,
+)
+
+_STATUS_CHANGE_WINDOW_DAYS = 7
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +59,13 @@ def run(db: Session) -> int:
         # Collect legal_hold analyses for this user
         legal_holds = litigation_analysis_repo.list_legal_holds_by_user(db, user_id=user_id)
 
-        buckets = bucket_deadlines(active, deadline_events, legal_holds)
+        buckets = bucket_deadlines(deadline_events, legal_holds)
+
+        # Populate 态势变化 from recent non-deadline events (last 7 days).
+        recent = litigation_matter_event_repo.list_recent_status_changes_by_user(
+            db, user_id=user_id, since=date.today() - timedelta(days=_STATUS_CHANGE_WINDOW_DAYS)
+        )
+        add_status_changes(buckets, recent)
 
         # Always write a notification — even if "无事" for transparency
         has_alerts = buckets.has_alerts()
