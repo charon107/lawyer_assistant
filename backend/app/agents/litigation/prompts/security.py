@@ -95,3 +95,13 @@ SECURITY_MECHANISMS = """\
 律师函是主动发函的工具（原告）/ 接收和分流的文件（被告）。
 大事记是进攻性的（原告）/ 防守性的（被告）。
 """
+
+
+def compose_litigation_prompt(guidance: str, practice_profile_markdown: str | None) -> str:
+    """Compose a skill prompt: optional profile + guidance + shared guardrails."""
+    parts: list[str] = []
+    if practice_profile_markdown:
+        parts.append("## 你正在为以下用户工作\n\n" + practice_profile_markdown.strip())
+    parts.append(guidance)
+    parts.append(SECURITY_MECHANISMS)
+    return "\n\n".join(parts)
