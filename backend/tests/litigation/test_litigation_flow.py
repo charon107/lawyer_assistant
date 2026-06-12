@@ -22,6 +22,7 @@ from app.agents.litigation.agent import (
     create_litigation_agent,
 )
 from app.agents.litigation.deps import LitigationDeps
+from app.agents.litigation.tools.analysis_tools import _normalize_severity, save_analysis
 from app.agents.litigation.tools.law_tools import research_litigation_rules
 from app.core.exceptions import AuthorizationError, NotFoundError, ValidationError
 from app.repositories import (
@@ -342,6 +343,35 @@ class TestLawToolC1Regression:
         assert parsed["topic"] == "证据保全 民诉法§81"
         assert parsed["dispute_profile"] == {"common_courts": ["北京朝阳法院"]}
         assert "note" in parsed
+
+
+# --------------------------------------------------------------------------- #
+# LLM trust boundary: model-provided severity must be normalized before write,
+# else the strict Literal on LitigationAnalysisRead 500s the read endpoints.
+# --------------------------------------------------------------------------- #
+class TestSeverityTrustBoundary:
+    def test_normalize_maps_chinese_and_drops_garbage(self):
+        assert _normalize_severity("严重") == "blocking"
+        assert _normalize_severity("优先") == "high"
+        assert _normalize_severity("BLOCKING") == "blocking"
+        assert _normalize_severity("high") == "high"
+        assert _normalize_severity("not-a-severity") is None
+        assert _normalize_severity(None) is None
+
+    def test_save_analysis_stores_only_allowed_severity(self, db, user_id):
+        from app.repositories import litigation_analysis_repo
+
+        row = litigation_analysis_repo.create(
+            db, user_id=user_id, analysis_type="claim_chart", status="draft"
+        )
+        ctx = SimpleNamespace(deps=LitigationDeps(user_id=user_id, db=db, analysis_id=row.id))
+        save_analysis(ctx, "底线摘要", "全文", severity="严重")  # model emits Chinese
+        refreshed = litigation_analysis_repo.get_by_id(db, row.id)
+        assert refreshed.severity == "blocking"  # normalized, won't 500 the Read Literal
+
+        save_analysis(ctx, "底线", "全文", severity="乱码值")  # unknown → dropped
+        refreshed = litigation_analysis_repo.get_by_id(db, row.id)
+        assert refreshed.severity in (None, "blocking")  # never an invalid Literal value
 
 
 # --------------------------------------------------------------------------- #

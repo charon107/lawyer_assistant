@@ -9,6 +9,33 @@ from pydantic_ai import RunContext
 from app.agents.litigation.deps import LitigationDeps
 from app.repositories import litigation_analysis_repo
 
+# Severity is stored under a strict Literal on LitigationAnalysisRead; an
+# out-of-set value from the (untrusted) model would 500 the analyses read
+# endpoints on serialization. Normalize at this trust boundary before write.
+_ALLOWED_SEVERITY = {"blocking", "high", "medium", "low"}
+_SEVERITY_ALIASES = {
+    "严重": "blocking",
+    "阻断": "blocking",
+    "critical": "blocking",
+    "优先": "high",
+    "常规": "medium",
+    "监控": "low",
+}
+
+
+def _normalize_severity(raw: str | None) -> str | None:
+    """Map model-provided severity to the allowed Literal set, or None if unknown."""
+    if raw is None:
+        return None
+    s = raw.strip()
+    if s in _ALLOWED_SEVERITY:
+        return s
+    return (
+        _SEVERITY_ALIASES.get(s)
+        or _SEVERITY_ALIASES.get(s.lower())
+        or (s.lower() if s.lower() in _ALLOWED_SEVERITY else None)
+    )
+
 
 def read_analysis(ctx: RunContext[LitigationDeps]) -> str:
     """读取当前分析记录详情。
@@ -135,8 +162,9 @@ def save_analysis(
     }
     if result_json is not None:
         fields["result_json"] = result_json
-    if severity is not None:
-        fields["severity"] = severity
+    normalized_severity = _normalize_severity(severity)
+    if normalized_severity is not None:
+        fields["severity"] = normalized_severity
     if classification is not None:
         fields["classification"] = classification
 
