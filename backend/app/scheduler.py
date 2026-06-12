@@ -31,6 +31,7 @@ JOB_DATAROOM_WATCHER = "dataroom_watcher"
 JOB_LEAVE_TRACKER = "employment_leave_tracker"
 JOB_PRIVACY_POLICY_SWEEP = "privacy_policy_sweep_reminder"
 JOB_IP_RENEWAL_WATCHER = "ip_renewal_watcher"
+JOB_LITIGATION_DOCKET_WATCHER = "litigation_docket_watcher"
 
 
 def _run_in_session(task: Callable[..., object], task_name: str) -> None:
@@ -87,6 +88,12 @@ def _run_ip_renewal_watcher() -> None:
     _run_in_session(ip_renewal_watcher.run, JOB_IP_RENEWAL_WATCHER)
 
 
+def _run_litigation_docket_watcher() -> None:
+    from app.tasks import litigation_docket_watcher
+
+    _run_in_session(litigation_docket_watcher.run, JOB_LITIGATION_DOCKET_WATCHER)
+
+
 def create_scheduler() -> AsyncIOScheduler:
     """Build the scheduler and register the weekly commercial jobs."""
     scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
@@ -135,6 +142,14 @@ def create_scheduler() -> AsyncIOScheduler:
         trigger=CronTrigger(day_of_week="mon", hour=9, minute=47),
         id=JOB_IP_RENEWAL_WATCHER,
         name="IP renewal watcher",
+        replace_existing=True,
+    )
+    # Litigation docket watcher — weekly Monday (10:23).
+    scheduler.add_job(
+        _run_litigation_docket_watcher,
+        trigger=CronTrigger(day_of_week="mon", hour=10, minute=23),
+        id=JOB_LITIGATION_DOCKET_WATCHER,
+        name="Litigation docket watcher",
         replace_existing=True,
     )
 

@@ -37,7 +37,8 @@
     "adminConversations": "全部对话",
     "adminLogs": "系统日志",
     "adminSystem": "系统状态",
-    "ip": "知识产权"
+    "ip": "知识产权",
+    "litigation": "争议解决"
   },
   "auth": {
     "login": "登录",

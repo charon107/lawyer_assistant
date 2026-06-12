@@ -20,6 +20,8 @@ from app.api.routes.v1 import privacy
 from app.api.routes.v1 import privacy_ws
 from app.api.routes.v1 import ip
 from app.api.routes.v1 import ip_ws
+from app.api.routes.v1 import litigation
+from app.api.routes.v1 import litigation_ws
 
 v1_router = APIRouter()
 
@@ -69,6 +71,10 @@ v1_router.include_router(privacy_ws.router, tags=["privacy-ws"])
 # IP-legal module (知识产权)
 v1_router.include_router(ip.router, prefix="/ip", tags=["ip"])
 v1_router.include_router(ip_ws.router, tags=["ip-ws"])
+
+# Litigation-legal module (争议解决)
+v1_router.include_router(litigation.router, prefix="/litigation", tags=["litigation"])
+v1_router.include_router(litigation_ws.router, tags=["litigation-ws"])
 
 # Admin: system status (RAG health) and logs
 v1_router.include_router(admin_system.router, prefix="/admin/system", tags=["admin:system"])

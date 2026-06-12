@@ -36,6 +36,14 @@ Each module is a complete domain implementation with its own skills, data models
   - Patent-agent privilege handling (4 work-product header variants)
   - Portfolio renewal tracking with weekly deadline watcher
 
+- **[Litigation Legal (争议解决)](./litigation-legal.md)** — Dispute resolution & litigation lifecycle
+  - 17 core skills: matter intake/update/close/briefing, portfolio status, demand letters (intake/draft/received), subpoena triage, legal hold, chronology, claim chart, OC status, brief-section drafter, deposition prep, privilege-log review
+  - Chinese civil procedure focus (民事诉讼法, 民诉法解释, 证据规定, 执行程序, 民法典时效)
+  - Matter-centric: case main table + append-only event timeline + demand-letter lifecycle
+  - Two work-product headers + China-law confidentiality note (no US work-product doctrine; 律师法§38, 民诉法§67)
+  - Five-group content-separation drafting discipline; conflict gates; send-letter LOUD gate
+  - Weekly docket watcher (deadline arithmetic, no LLM)
+
 ---
 
 ## Development Status
@@ -46,6 +54,7 @@ Each module is a complete domain implementation with its own skills, data models
 | Employment Legal | 🟡 v2.0 Planned | [employment-legal.md](./employment-legal.md) |
 | Privacy Legal | 🟡 v1.0 Planned | [privacy-legal.md](./privacy-legal.md) |
 | IP Legal | 🟡 v1.0 Planned | [ip-legal.md](./ip-legal.md) |
+| Litigation Legal | 🟢 Shipped v0.11 | [litigation-legal.md](./litigation-legal.md) |
 
 ---
 
