@@ -37,7 +37,8 @@
     "adminConversations": "All Conversations",
     "adminLogs": "System Logs",
     "adminSystem": "System Status",
-    "ip": "IP"
+    "ip": "IP",
+    "litigation": "Litigation"
   },
   "auth": {
     "login": "Login",

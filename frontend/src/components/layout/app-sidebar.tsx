@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { APP_NAME, ROUTES } from "@/lib/constants";
 import { useAuth } from "@/hooks";
-import { LayoutDashboard, MessageSquare, UserCircle, Star, List, ScrollText, Activity, UserCog, Handshake, Building2, Users, ShieldCheck, Lightbulb } from "lucide-react";
+import { LayoutDashboard, MessageSquare, UserCircle, Star, List, ScrollText, Activity, UserCog, Handshake, Building2, Users, ShieldCheck, Lightbulb, Scale } from "lucide-react";
 import { ThemeToggle } from "@/components/theme";
 import { LanguageSwitcherCompact } from "@/components/language-switcher";
 
@@ -58,6 +58,7 @@ export function AppSidebar() {
     { name: t("employment"), href: ROUTES.EMPLOYMENT, icon: Users },
     { name: t("privacy"), href: ROUTES.PRIVACY, icon: ShieldCheck },
     { name: t("ip"), href: ROUTES.IP, icon: Lightbulb },
+    { name: t("litigation"), href: ROUTES.LITIGATION, icon: Scale },
     { name: t("conversations"), href: ROUTES.CHAT, icon: MessageSquare },
     { name: t("profile"), href: ROUTES.PROFILE, icon: UserCircle },
   ];
