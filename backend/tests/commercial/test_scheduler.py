@@ -12,6 +12,7 @@ from app.scheduler import (
     JOB_DEAL_DEBRIEF,
     JOB_IP_RENEWAL_WATCHER,
     JOB_LEAVE_TRACKER,
+    JOB_LITIGATION_DOCKET_WATCHER,
     JOB_PRIVACY_POLICY_SWEEP,
     JOB_RENEWAL_WATCHER,
     create_scheduler,
@@ -34,6 +35,7 @@ class TestCreateScheduler:
             JOB_LEAVE_TRACKER,
             JOB_PRIVACY_POLICY_SWEEP,
             JOB_IP_RENEWAL_WATCHER,
+            JOB_LITIGATION_DOCKET_WATCHER,
         }
 
     def test_ip_renewal_watcher_runs_monday_0947(self):

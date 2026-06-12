@@ -48,6 +48,12 @@ from app.db.models.ip_review import IpReview
 from app.db.models.ip_enforcement import IpEnforcement
 from app.db.models.ip_portfolio import IpPortfolio
 from app.db.models.ip_notification import IpNotification
+from app.db.models.litigation_profile import LitigationProfile
+from app.db.models.litigation_matter import LitigationMatter
+from app.db.models.litigation_matter_event import LitigationMatterEvent
+from app.db.models.litigation_demand import LitigationDemand
+from app.db.models.litigation_analysis import LitigationAnalysis
+from app.db.models.litigation_notification import LitigationNotification
 
 __all__ = [
     "User",
@@ -99,4 +105,10 @@ __all__ = [
     "IpEnforcement",
     "IpPortfolio",
     "IpNotification",
+    "LitigationProfile",
+    "LitigationMatter",
+    "LitigationMatterEvent",
+    "LitigationDemand",
+    "LitigationAnalysis",
+    "LitigationNotification",
 ]

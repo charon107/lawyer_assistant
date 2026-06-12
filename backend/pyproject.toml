@@ -79,6 +79,7 @@ ignore = [
     "B905", # zip() without strict= (Python 3.10+ style, not needed)
     "RUF001", # ambiguous unicode chars (Chinese fullwidth punctuation intentional)
     "RUF002", # ambiguous unicode chars in docstrings (Chinese punctuation)
+    "RUF003", # ambiguous unicode chars in comments (Chinese punctuation intentional)
     "RUF012", # mutable class attribute without ClassVar (used in parser base class)
     "RUF059", # unpacked variable never used (CLI destructuring pattern)
 ]

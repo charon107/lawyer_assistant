@@ -425,6 +425,64 @@ def get_ip_notification_service(db: DBSession) -> IpNotificationService:
 IpNotificationSvc = Annotated[IpNotificationService, Depends(get_ip_notification_service)]
 
 
+# === Litigation-legal Services ===
+
+from app.services.litigation_profile_service import LitigationProfileService
+from app.services.litigation_cold_start_service import LitigationColdStartService
+from app.services.litigation_matter_service import LitigationMatterService
+from app.services.litigation_demand_service import LitigationDemandService
+from app.services.litigation_analysis_service import LitigationAnalysisService
+from app.services.litigation_notification_service import LitigationNotificationService
+
+
+def get_litigation_profile_service(db: DBSession) -> LitigationProfileService:
+    return LitigationProfileService(db)
+
+
+LitigationProfileSvc = Annotated[LitigationProfileService, Depends(get_litigation_profile_service)]
+
+
+def get_litigation_cold_start_service(db: DBSession) -> LitigationColdStartService:
+    return LitigationColdStartService(db)
+
+
+LitigationColdStartSvc = Annotated[
+    LitigationColdStartService, Depends(get_litigation_cold_start_service)
+]
+
+
+def get_litigation_matter_service(db: DBSession) -> LitigationMatterService:
+    return LitigationMatterService(db)
+
+
+LitigationMatterSvc = Annotated[LitigationMatterService, Depends(get_litigation_matter_service)]
+
+
+def get_litigation_demand_service(db: DBSession) -> LitigationDemandService:
+    return LitigationDemandService(db)
+
+
+LitigationDemandSvc = Annotated[LitigationDemandService, Depends(get_litigation_demand_service)]
+
+
+def get_litigation_analysis_service(db: DBSession) -> LitigationAnalysisService:
+    return LitigationAnalysisService(db)
+
+
+LitigationAnalysisSvc = Annotated[
+    LitigationAnalysisService, Depends(get_litigation_analysis_service)
+]
+
+
+def get_litigation_notification_service(db: DBSession) -> LitigationNotificationService:
+    return LitigationNotificationService(db)
+
+
+LitigationNotificationSvc = Annotated[
+    LitigationNotificationService, Depends(get_litigation_notification_service)
+]
+
+
 # === Authentication Dependencies ===
 
 from app.core.exceptions import AuthenticationError, AuthorizationError
