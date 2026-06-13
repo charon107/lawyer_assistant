@@ -18,9 +18,8 @@ COPY backend/pyproject.toml backend/uv.lock ./
 # Install dependencies with Aliyun PyPI mirror (no dev deps, CPU-only torch)
 RUN uv sync --frozen --no-dev --index-url https://mirrors.aliyun.com/pypi/simple/
 
-# Pre-download embedding model
-# HF_ENDPOINT set to hf-mirror.com at runtime via docker-compose.prod.yml
-RUN uv run python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-base-zh-v1.5')"
+# Pre-download embedding model via hf-mirror.com (build-time mirror, avoids HF 429 rate-limit)
+RUN HF_ENDPOINT=https://hf-mirror.com uv run python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-base-zh-v1.5')"
 
 # Copy application code
 COPY backend/ .
