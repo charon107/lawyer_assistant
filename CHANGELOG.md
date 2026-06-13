@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.12.0.0] - 2026-06-13
+
+### Added
+
+- **争议解决模块前端对齐（Litigation 前端）**: 将 litigation 模块前端提升到与 ip / privacy 模块一致的规范，补齐后端早已就绪但前端缺失的能力。
+  - **9 个分析类技能页**: 案件简报、大事记、要件分析、调查令分流、证据保全、对方动态、书状片段、询问准备、特权清单——均为可用页面，运行后跳转分析详情。
+  - **律师函创建流**: 新增 `demands/new` 页，覆盖 demand_draft / demand_received 两个 WS 动作（先建律师函记录再流式生成），消除「新建」死链。
+  - **案件事件创建页**: 新增 `matters/[id]/events/new`，可登记事件类型 / 日期 / 摘要 / 到期日 / 期限状态，消除「添加事件」死链。
+  - **共享组件三件套**: 新增 `components/litigation/` —— badges（严重度 / 分析类型 / 案件状态 / 律师函模式与状态 / 风险）、通知区、技能运行器（带可选案件选择器）。
+  - **着陆页改造**: 渲染通知区，QUICK_ACTIONS 扩展到全部技能入口，内联 badge 替换为组件。
+
+### Changed
+
+- **litigation 全量国际化**: 模块内 13 个页面从硬编码中文迁移到 next-intl，`messages/zh.json` 与 `messages/en.json` 各新增完整 `litigation` 翻译块（中英双语，全枚举标签覆盖）。
+
 ## [0.11.0.0] - 2026-06-12
 
 ### Added
