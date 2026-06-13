@@ -37,7 +37,7 @@ export default function LitigationSettingsPage() {
     return <p className="text-muted-foreground p-10 text-center text-sm">{t("settings.needSetup")}</p>;
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-10">
+    <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="mb-6 flex items-center gap-2 text-2xl font-bold">
         <Settings2 className="text-brand h-6 w-6" />
         {t("settings.title")}

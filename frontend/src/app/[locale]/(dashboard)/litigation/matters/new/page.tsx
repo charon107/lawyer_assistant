@@ -49,7 +49,7 @@ export default function NewMatterPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-10">
+    <div className="mx-auto max-w-3xl px-4 py-10">
       <Link
         href={ROUTES.LITIGATION_MATTERS}
         className="text-muted-foreground mb-4 inline-flex items-center gap-1 text-sm hover:underline"
