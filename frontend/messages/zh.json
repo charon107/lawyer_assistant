@@ -911,5 +911,355 @@
       "nextStep": "下一步",
       "finishSetup": "完成配置"
     }
+  },
+  "litigation": {
+    "title": "争议解决",
+    "description": "案件管理 · 律师函 · 证据保全 · 庭审准备",
+    "back": "返回",
+    "unconfiguredTitle": "尚未配置争议解决模块",
+    "unconfiguredDesc": "完成冷启动设置以配置风险校准、当事人角色和文书风格。",
+    "startSetup": "开始设置",
+    "recentOutputs": "最近分析产出",
+    "viewAll": "查看全部",
+    "noOutputs": "暂无分析产出。使用上方工具开始。",
+    "unnamed": "未命名",
+    "inProgress": "处理中…",
+    "stats": {
+      "total": "总案件",
+      "active": "进行中",
+      "overdue": "逾期待办",
+      "highRisk": "高风险"
+    },
+    "actions": {
+      "matters": { "title": "案件管理", "desc": "登记、更新、结案与组合概览" },
+      "demands": { "title": "律师函", "desc": "起草发送或接收分流" },
+      "analyses": { "title": "分析产出", "desc": "简报、大事记、要件分析等" },
+      "matterBriefing": { "title": "案件简报", "desc": "单案深度简报" },
+      "chronology": { "title": "大事记", "desc": "按理论标注重要性" },
+      "claimChart": { "title": "要件分析", "desc": "缺口优先 · 草案非认定" },
+      "subpoena": { "title": "调查令分流", "desc": "分类 + 异议框架" },
+      "legalHold": { "title": "证据保全", "desc": "发出 / 更新 / 解除" },
+      "ocStatus": { "title": "对方动态", "desc": "对手方状态梳理" },
+      "briefSection": { "title": "书状片段", "desc": "起草书状段落" },
+      "depositionPrep": { "title": "询问准备", "desc": "庭审 / 询问提纲" },
+      "privilegeLog": { "title": "特权清单", "desc": "保密 / 特权审查" },
+      "settings": { "title": "设置", "desc": "画像与风险校准" }
+    },
+    "skillRunner": {
+      "back": "返回争议解决",
+      "run": "开始分析",
+      "connecting": "连接中…",
+      "analyzing": "分析中…",
+      "done": "已完成",
+      "failed": "运行失败",
+      "viewOutput": "查看产出",
+      "newAnalysis": "新分析",
+      "matterLabel": "关联案件（可选）",
+      "matterNone": "不限定案件"
+    },
+    "notifications": {
+      "title": "通知",
+      "fallbackTitle": "通知"
+    },
+    "badges": {
+      "severity": {
+        "blocking": "阻断",
+        "high": "高",
+        "medium": "中",
+        "low": "低"
+      },
+      "analysisType": {
+        "matter_briefing": "案件简报",
+        "chronology": "大事记",
+        "claim_chart": "要件分析",
+        "subpoena_triage": "调查令分流",
+        "legal_hold": "证据保全",
+        "oc_status": "对方动态",
+        "brief_section": "书状片段",
+        "deposition_prep": "询问准备",
+        "privilege_log": "特权清单"
+      },
+      "matterStatus": {
+        "active": "进行中",
+        "settled": "和解",
+        "dismissed": "驳回",
+        "judgment_won": "胜诉",
+        "judgment_lost": "败诉",
+        "withdrawn": "撤诉",
+        "closed": "已结案",
+        "archived": "已归档"
+      },
+      "demandMode": {
+        "send": "发送",
+        "receive": "接收"
+      },
+      "demandStatus": {
+        "intake": "受理",
+        "drafting": "起草中",
+        "gated": "待核",
+        "sent": "已发送",
+        "received": "已接收",
+        "responded": "已回复",
+        "escalated": "已升级",
+        "closed": "已关闭"
+      },
+      "risk": {
+        "低": "低",
+        "中": "中",
+        "高": "高",
+        "严重": "严重"
+      }
+    },
+    "matterBriefing": {
+      "title": "案件简报",
+      "description": "单案深度简报——事实、争点、程序态势与策略要点",
+      "promptLabel": "案件背景与简报需求",
+      "promptPlaceholder": "粘贴案件背景、当前进展、想重点了解的争点或决策…",
+      "runLabel": "生成简报"
+    },
+    "chronology": {
+      "title": "大事记",
+      "description": "按诉讼理论标注重要性的时间线梳理",
+      "promptLabel": "事件材料与理论",
+      "promptPlaceholder": "粘贴时间线材料、关键事件、你的诉讼理论…",
+      "runLabel": "生成大事记"
+    },
+    "claimChart": {
+      "title": "要件分析",
+      "description": "缺口优先的请求权 / 抗辩要件比对（草案，非法律认定）",
+      "disclaimer": "本输出为缺口优先的要件梳理草案，供律师判断使用，不构成法律意见或事实认定。",
+      "promptLabel": "请求权 / 抗辩与证据",
+      "promptPlaceholder": "粘贴主张的请求权或抗辩、现有证据、争议要件…",
+      "runLabel": "生成要件分析"
+    },
+    "subpoena": {
+      "title": "调查令分流",
+      "description": "调查令 / 取证请求分类 + 异议框架",
+      "promptLabel": "调查令 / 取证请求内容",
+      "promptPlaceholder": "粘贴收到的调查令、取证范围、签发主体与期限…",
+      "runLabel": "开始分流"
+    },
+    "legalHold": {
+      "title": "证据保全",
+      "description": "证据保全（legal hold）通知的发出 / 更新 / 解除",
+      "promptLabel": "保全范围与背景",
+      "promptPlaceholder": "描述需保全的数据范围、保管人、触发事由…",
+      "runLabel": "生成通知"
+    },
+    "ocStatus": {
+      "title": "对方动态",
+      "description": "对手方状态与近期动作梳理",
+      "promptLabel": "对方信息与近期动作",
+      "promptPlaceholder": "粘贴对方近期来函、动作、已知背景…",
+      "runLabel": "生成梳理"
+    },
+    "briefSection": {
+      "title": "书状片段",
+      "description": "起草书状段落（事实 / 说理 / 请求）",
+      "promptLabel": "书状需求与材料",
+      "promptPlaceholder": "说明书状类型、要点、可引用的事实与证据…",
+      "runLabel": "生成片段"
+    },
+    "depositionPrep": {
+      "title": "询问准备",
+      "description": "庭审 / 调查询问提纲与要点准备",
+      "promptLabel": "询问对象与目标",
+      "promptPlaceholder": "描述询问对象、待证事实、已知矛盾点…",
+      "runLabel": "生成提纲"
+    },
+    "privilegeLog": {
+      "title": "特权清单",
+      "description": "保密 / 特权材料审查与清单（中国法保密说明）",
+      "disclaimer": "中国法下无英美法式的“律师—当事人特权”制度，本输出依据保密义务与证据规则梳理，供判断参考。",
+      "promptLabel": "待审材料与背景",
+      "promptPlaceholder": "粘贴待审文件清单、来源、涉及的保密关系…",
+      "runLabel": "生成清单"
+    },
+    "demands": {
+      "title": "律师函",
+      "new": "新建",
+      "empty": "暂无律师函。",
+      "unspecifiedCounterparty": "未指定对方",
+      "backToList": "返回",
+      "detailTitle": "律师函",
+      "fieldType": "类型",
+      "fieldMode": "模式",
+      "fieldStatus": "状态",
+      "fieldRecommended": "推荐行动",
+      "fieldDeadline": "回复截止",
+      "newTitle": "新建律师函",
+      "counterpartyLabel": "对方当事人",
+      "counterpartyPlaceholder": "如：某某公司",
+      "typeLabel": "类型",
+      "modeLabel": "模式",
+      "modeSend": "发送（起草）",
+      "modeReceive": "接收（分流）",
+      "promptLabel": "背景与诉求",
+      "promptPlaceholder": "粘贴背景事实、诉求，或对方来函内容…",
+      "create": "创建并生成",
+      "creating": "生成中…",
+      "demandType": {
+        "payment": "付款",
+        "breach_cure": "限期纠正",
+        "stop_infringement": "停止侵权",
+        "evidence_preservation": "证据保全",
+        "settlement": "和解",
+        "other": "其他"
+      }
+    },
+    "matters": {
+      "title": "案件管理",
+      "new": "新建案件",
+      "empty": "暂无案件。",
+      "unnamed": "未命名案件",
+      "backToList": "返回案件列表",
+      "newTitle": "新建案件",
+      "createError": "创建失败",
+      "submit": "创建案件",
+      "form": {
+        "caseName": "案件名称",
+        "caseNumber": "案号",
+        "court": "管辖法院",
+        "causeOfAction": "案由",
+        "ourSide": "当事人地位",
+        "counterparty": "对方当事人",
+        "risk": "风险",
+        "stage": "阶段",
+        "initialTheory": "初始案件理论"
+      },
+      "ourSideOpt": {
+        "plaintiff": "原告",
+        "defendant": "被告",
+        "third_party": "第三人"
+      },
+      "stageOpt": {
+        "庭前": "庭前",
+        "证据交换": "证据交换",
+        "庭审": "庭审",
+        "上诉": "上诉",
+        "执行": "执行"
+      },
+      "detail": {
+        "caseNumber": "案号",
+        "court": "法院",
+        "ourSide": "当事人地位",
+        "counterparty": "对方",
+        "status": "状态",
+        "stage": "阶段",
+        "risk": "风险",
+        "causeOfAction": "案由",
+        "filingDate": "立案日",
+        "nextDeadline": "下一期限",
+        "theory": "案件理论"
+      },
+      "timeline": "事件时间线",
+      "addEvent": "添加事件",
+      "noEvents": "暂无事件。",
+      "due": "到期",
+      "eventType": {
+        "procedure": "程序",
+        "evidence": "证据",
+        "substantive": "实体",
+        "strategy": "策略",
+        "risk_reassessment": "风险重估",
+        "party": "当事人",
+        "administrative": "行政事务",
+        "deadline": "期限",
+        "closing": "结案"
+      },
+      "deadlineStatus": {
+        "pending": "待处理",
+        "approaching": "临近",
+        "overdue": "逾期",
+        "met": "已完成",
+        "waived": "已豁免"
+      },
+      "events": {
+        "newTitle": "新建事件",
+        "backToMatter": "返回案件",
+        "typeLabel": "事件类型",
+        "dateLabel": "事件日期",
+        "summaryLabel": "事件摘要",
+        "summaryPlaceholder": "描述发生了什么…",
+        "dueDateLabel": "到期日（可选）",
+        "deadlineStatusLabel": "期限状态（可选）",
+        "noneOption": "无",
+        "submit": "添加事件",
+        "createError": "创建失败"
+      }
+    },
+    "analyses": {
+      "title": "分析产出",
+      "empty": "暂无分析产出。"
+    },
+    "settings": {
+      "title": "争议解决设置",
+      "needSetup": "请先完成冷启动设置。",
+      "practiceSection": "执业角色",
+      "userRole": "使用者",
+      "practiceRole": "执业角色",
+      "partyRole": "当事人",
+      "setupDepth": "设置深度",
+      "riskSection": "风险校准",
+      "riskNote": "当前风险偏好等信息来自冷启动设置。如需修改，请重新运行冷启动或通过 PUT /litigation/profile 直接编辑。",
+      "rerun": "重新运行冷启动"
+    },
+    "setup": {
+      "title": "争议解决 — 冷启动设置",
+      "back": "返回争议解决",
+      "description": "告诉我们你的执业场景和当事人角色，之后案件管理、律师函、庭审技能都会自动适配。",
+      "stepProgress": "第 {current}/{total} 步 — {label}",
+      "quickSuffix": "（快速模式）",
+      "submitError": "提交失败",
+      "selectPlaceholder": "请选择…",
+      "stepLabels": {
+        "0": "执业角色与当事人角色",
+        "1": "公司画像与风险校准",
+        "2": "争议画像",
+        "3": "文书风格与输出",
+        "4": "确认生成"
+      },
+      "userRoleLabel": "使用者角色",
+      "userRoleOpt": {
+        "lawyer": "执业律师 / 法律专业人士",
+        "non_lawyer_with_counsel": "非律师（有律师支持）",
+        "non_lawyer_without": "非律师（无律师支持）"
+      },
+      "practiceRoleLabel": "执业角色",
+      "practiceRoleOpt": {
+        "企业法务": "企业法务",
+        "律所律师": "律所律师",
+        "独立执业": "独立执业",
+        "其他": "其他"
+      },
+      "partyRoleLabel": "当事人默认角色",
+      "partyRoleOpt": {
+        "原告方": "原告方",
+        "被告方": "被告方",
+        "兼顾-默认原告": "兼顾 — 默认原告",
+        "兼顾-默认被告": "兼顾 — 默认被告",
+        "依案件而定": "依案件而定"
+      },
+      "industryLabel": "行业",
+      "industryPlaceholder": "例如：制造业、金融、互联网…",
+      "riskAppetiteLabel": "风险偏好",
+      "riskAppetiteOpt": {
+        "保守": "保守",
+        "适中": "适中",
+        "进取": "进取"
+      },
+      "disputeNotesLabel": "争议画像备注",
+      "docStyleNotesLabel": "文书风格偏好",
+      "disputeNotesPlaceholder": "常见对手、管辖法院、外部律师…",
+      "docStyleNotesPlaceholder": "引用格式、语气偏好…",
+      "confirmIntro": "确认以下设置无误后点击完成：",
+      "confirmPracticeRole": "执业角色",
+      "confirmPartyRole": "当事人角色",
+      "confirmRiskAppetite": "风险偏好",
+      "notSet": "未设置",
+      "prev": "上一步",
+      "next": "下一步",
+      "finish": "完成"
+    }
   }
 }
