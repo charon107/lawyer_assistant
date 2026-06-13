@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button, Card, CardContent, Spinner } from "@/components/ui";
+import { AnalysisTypeBadge, NotificationArea, SeverityBadge } from "@/components/litigation";
 import { ROUTES } from "@/lib/constants";
 import { litigationApi } from "@/lib/litigation";
 import type {
@@ -21,24 +23,34 @@ import {
   FileClock,
   ScrollText,
   Eye,
+  Users,
+  FileText,
+  MessagesSquare,
+  ListChecks,
   ArrowRight,
   Sparkles,
   Settings2,
+  type LucideIcon,
 } from "lucide-react";
 
-const QUICK_ACTIONS = [
-  { href: ROUTES.LITIGATION_MATTERS, icon: Gavel, key: "matters", label: "案件管理", desc: "登记、更新、结案与组合概览" },
-  { href: ROUTES.LITIGATION_DEMANDS, icon: FileWarning, key: "demands", label: "律师函", desc: "起草发送或接收分流" },
-  { href: ROUTES.LITIGATION_ANALYSES, icon: ScrollText, key: "analyses", label: "分析产出", desc: "简报、大事记、要件分析等" },
-  { href: `${ROUTES.LITIGATION}/matter-briefing`, icon: FileSearch, key: "briefing", label: "案件简报", desc: "单案深度简报" },
-  { href: `${ROUTES.LITIGATION}/chronology`, icon: Clock, key: "chronology", label: "大事记", desc: "按理论标注重要性" },
-  { href: `${ROUTES.LITIGATION}/claim-chart`, icon: FileClock, key: "claimChart", label: "要件分析", desc: "缺口优先 · 草案非认定" },
-  { href: `${ROUTES.LITIGATION}/subpoena`, icon: ShieldCheck, key: "subpoena", label: "调查令分流", desc: "分类+异议框架" },
-  { href: `${ROUTES.LITIGATION}/legal-hold`, icon: Eye, key: "legalHold", label: "证据保全", desc: "发出/更新/解除" },
-  { href: ROUTES.LITIGATION_SETTINGS, icon: Settings2, key: "settings", label: "设置", desc: "画像与风险校准" },
+const QUICK_ACTIONS: { href: string; icon: LucideIcon; key: string }[] = [
+  { href: ROUTES.LITIGATION_MATTERS, icon: Gavel, key: "matters" },
+  { href: ROUTES.LITIGATION_DEMANDS, icon: FileWarning, key: "demands" },
+  { href: ROUTES.LITIGATION_ANALYSES, icon: ScrollText, key: "analyses" },
+  { href: ROUTES.LITIGATION_MATTER_BRIEFING, icon: FileSearch, key: "matterBriefing" },
+  { href: ROUTES.LITIGATION_CHRONOLOGY, icon: Clock, key: "chronology" },
+  { href: ROUTES.LITIGATION_CLAIM_CHART, icon: FileClock, key: "claimChart" },
+  { href: ROUTES.LITIGATION_SUBPOENA, icon: ShieldCheck, key: "subpoena" },
+  { href: ROUTES.LITIGATION_LEGAL_HOLD, icon: Eye, key: "legalHold" },
+  { href: ROUTES.LITIGATION_OC_STATUS, icon: Users, key: "ocStatus" },
+  { href: ROUTES.LITIGATION_BRIEF_SECTION, icon: FileText, key: "briefSection" },
+  { href: ROUTES.LITIGATION_DEPOSITION_PREP, icon: MessagesSquare, key: "depositionPrep" },
+  { href: ROUTES.LITIGATION_PRIVILEGE_LOG, icon: ListChecks, key: "privilegeLog" },
+  { href: ROUTES.LITIGATION_SETTINGS, icon: Settings2, key: "settings" },
 ];
 
 export default function LitigationPage() {
+  const t = useTranslations("litigation");
   const router = useRouter();
   const [status, setStatus] = useState<LitigationModuleStatusResponse | null>(null);
   const [analyses, setAnalyses] = useState<LitigationAnalysis[]>([]);
@@ -64,13 +76,15 @@ export default function LitigationPage() {
           }
         }
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "加载失败");
+        if (!cancelled) setError(e instanceof Error ? e.message : t("inProgress"));
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [t]);
 
   if (loading) {
     return (
@@ -85,9 +99,9 @@ export default function LitigationPage() {
       <div className="mb-8">
         <h1 className="mb-1 flex items-center gap-2 text-2xl font-bold">
           <Scale className="text-brand h-6 w-6" />
-          争议解决
+          {t("title")}
         </h1>
-        <p className="text-muted-foreground">案件管理 · 律师函 · 证据保全 · 庭审准备</p>
+        <p className="text-muted-foreground">{t("description")}</p>
       </div>
 
       {error && (
@@ -103,41 +117,43 @@ export default function LitigationPage() {
               <Sparkles className="text-brand h-5 w-5" />
             </div>
             <div>
-              <h2 className="mb-1 text-lg font-semibold">尚未配置争议解决模块</h2>
-              <p className="text-muted-foreground text-sm">完成冷启动设置以配置风险校准、当事人角色和文书风格。</p>
+              <h2 className="mb-1 text-lg font-semibold">{t("unconfiguredTitle")}</h2>
+              <p className="text-muted-foreground text-sm">{t("unconfiguredDesc")}</p>
             </div>
             <Button onClick={() => router.push(ROUTES.LITIGATION_SETUP)}>
-              开始设置
+              {t("startSetup")}
               <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </CardContent>
         </Card>
       ) : (
         <>
+          <NotificationArea />
+
           {portfolio && (
             <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Card>
                 <CardContent className="p-4 text-center">
                   <p className="text-2xl font-bold">{portfolio.total}</p>
-                  <p className="text-muted-foreground text-xs">总案件</p>
+                  <p className="text-muted-foreground text-xs">{t("stats.total")}</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
                   <p className="text-2xl font-bold">{portfolio.active}</p>
-                  <p className="text-muted-foreground text-xs">进行中</p>
+                  <p className="text-muted-foreground text-xs">{t("stats.active")}</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <p className="text-2xl font-bold text-destructive">{portfolio.anomalies.overdue}</p>
-                  <p className="text-muted-foreground text-xs">逾期待办</p>
+                  <p className="text-destructive text-2xl font-bold">{portfolio.anomalies.overdue}</p>
+                  <p className="text-muted-foreground text-xs">{t("stats.overdue")}</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
                   <p className="text-2xl font-bold text-amber-500">{portfolio.anomalies.high_risk}</p>
-                  <p className="text-muted-foreground text-xs">高风险</p>
+                  <p className="text-muted-foreground text-xs">{t("stats.highRisk")}</p>
                 </CardContent>
               </Card>
             </div>
@@ -149,8 +165,8 @@ export default function LitigationPage() {
                 <Card className="hover:border-brand/40 h-full transition-colors">
                   <CardContent className="flex flex-col gap-2 p-5">
                     <a.icon className="text-brand h-5 w-5" />
-                    <h3 className="font-medium">{a.label}</h3>
-                    <p className="text-muted-foreground text-sm">{a.desc}</p>
+                    <h3 className="font-medium">{t(`actions.${a.key}.title`)}</h3>
+                    <p className="text-muted-foreground text-sm">{t(`actions.${a.key}.desc`)}</p>
                   </CardContent>
                 </Card>
               </Link>
@@ -159,19 +175,17 @@ export default function LitigationPage() {
 
           <section>
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold tracking-wide uppercase">
-                最近分析产出
-              </h2>
+              <h2 className="text-sm font-semibold tracking-wide uppercase">{t("recentOutputs")}</h2>
               <Link href={ROUTES.LITIGATION_ANALYSES}>
                 <Button variant="ghost" size="sm">
-                  查看全部
+                  {t("viewAll")}
                   <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
               </Link>
             </div>
             {analyses.length === 0 ? (
               <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-8 text-center text-sm">
-                暂无分析产出。使用上方工具开始。
+                {t("noOutputs")}
               </p>
             ) : (
               <ul className="flex flex-col gap-2">
@@ -183,21 +197,12 @@ export default function LitigationPage() {
                     >
                       <div className="min-w-0 flex-1">
                         <div className="mb-1 flex items-center gap-2">
-                          <span className="rounded bg-brand/10 px-2 py-0.5 text-brand text-xs font-medium">
-                            {a.analysis_type}
-                          </span>
-                          {a.severity && (
-                            <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${
-                              a.severity === "blocking" ? "bg-red-100 text-red-700" :
-                              a.severity === "high" ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600"
-                            }`}>
-                              {a.severity}
-                            </span>
-                          )}
+                          <AnalysisTypeBadge value={a.analysis_type} />
+                          <SeverityBadge value={a.severity} />
                         </div>
-                        <p className="truncate text-sm font-medium">{a.subject || "未命名"}</p>
+                        <p className="truncate text-sm font-medium">{a.subject || t("unnamed")}</p>
                         <p className="text-muted-foreground truncate text-xs">
-                          {a.result_summary || "处理中..."}
+                          {a.result_summary || t("inProgress")}
                         </p>
                       </div>
                       <time className="text-muted-foreground shrink-0 text-xs">

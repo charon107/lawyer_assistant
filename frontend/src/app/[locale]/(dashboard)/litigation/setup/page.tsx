@@ -2,21 +2,22 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button, Card, CardContent, Input, Label, Spinner, Textarea } from "@/components/ui";
 import { ROUTES } from "@/lib/constants";
 import { litigationApi } from "@/lib/litigation";
 import type { ColdStartResponse } from "@/types/litigation";
 import { ArrowLeft, ArrowRight, Check, Scale } from "lucide-react";
 
-const STEP_LABELS = [
-  "执业角色与当事人角色",
-  "公司画像与风险校准",
-  "争议画像",
-  "文书风格与输出",
-  "确认生成",
-];
+const SELECT_CLS = "border-input bg-background w-full rounded-lg border px-3 py-2 text-sm";
+
+const USER_ROLE_OPTS = ["lawyer", "non_lawyer_with_counsel", "non_lawyer_without"] as const;
+const PRACTICE_ROLE_OPTS = ["企业法务", "律所律师", "独立执业", "其他"] as const;
+const PARTY_ROLE_OPTS = ["原告方", "被告方", "兼顾-默认原告", "兼顾-默认被告", "依案件而定"] as const;
+const RISK_APPETITE_OPTS = ["保守", "适中", "进取"] as const;
 
 export default function LitigationSetupPage() {
+  const t = useTranslations("litigation");
   const router = useRouter();
   const [response, setResponse] = useState<ColdStartResponse | null>(null);
   const [quickMode, setQuickMode] = useState(false);
@@ -42,7 +43,7 @@ export default function LitigationSetupPage() {
         router.push(ROUTES.LITIGATION);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "提交失败");
+      setError(e instanceof Error ? e.message : t("setup.submitError"));
     } finally {
       setLoading(false);
     }
@@ -55,7 +56,9 @@ export default function LitigationSetupPage() {
         const r = await litigationApi.getSetupStatus();
         setResponse(r);
         setQuickMode(!!r.partial_config?.quick_mode);
-      } catch { /* empty */ }
+      } catch {
+        /* empty */
+      }
     })();
   });
 
@@ -71,7 +74,7 @@ export default function LitigationSetupPage() {
     <div className="mx-auto max-w-lg px-4 py-10">
       <div className="mb-6 flex items-center gap-3">
         <Scale className="text-brand h-5 w-5" />
-        <h1 className="text-xl font-bold">争议解决 — 冷启动设置</h1>
+        <h1 className="text-xl font-bold">{t("setup.title")}</h1>
       </div>
 
       {/* Progress */}
@@ -83,8 +86,12 @@ export default function LitigationSetupPage() {
           />
         </div>
         <p className="text-muted-foreground mt-2 text-xs">
-          第 {step + 1}/{quickMode ? 3 : 5} 步 — {STEP_LABELS[step]}
-          {quickMode && "（快速模式）"}
+          {t("setup.stepProgress", {
+            current: step + 1,
+            total: quickMode ? 3 : 5,
+            label: t(`setup.stepLabels.${step}`),
+          })}
+          {quickMode && t("setup.quickSuffix")}
         </p>
       </div>
 
@@ -99,48 +106,51 @@ export default function LitigationSetupPage() {
           {step === 0 && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="role">使用者角色</Label>
+                <Label htmlFor="role">{t("setup.userRoleLabel")}</Label>
                 <select
                   id="role"
-                  className="border-input bg-background w-full rounded-lg border px-3 py-2 text-sm"
+                  className={SELECT_CLS}
                   value={answers.user_role || ""}
                   onChange={(e) => setAnswers((a) => ({ ...a, user_role: e.target.value }))}
                 >
-                  <option value="">请选择...</option>
-                  <option value="lawyer">执业律师 / 法律专业人士</option>
-                  <option value="non_lawyer_with_counsel">非律师（有律师支持）</option>
-                  <option value="non_lawyer_without">非律师（无律师支持）</option>
+                  <option value="">{t("setup.selectPlaceholder")}</option>
+                  {USER_ROLE_OPTS.map((o) => (
+                    <option key={o} value={o}>
+                      {t(`setup.userRoleOpt.${o}`)}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="practiceRole">执业角色</Label>
+                <Label htmlFor="practiceRole">{t("setup.practiceRoleLabel")}</Label>
                 <select
                   id="practiceRole"
-                  className="border-input bg-background w-full rounded-lg border px-3 py-2 text-sm"
+                  className={SELECT_CLS}
                   value={answers.practice_role || ""}
                   onChange={(e) => setAnswers((a) => ({ ...a, practice_role: e.target.value }))}
                 >
-                  <option value="">请选择...</option>
-                  <option value="企业法务">企业法务</option>
-                  <option value="律所律师">律所律师</option>
-                  <option value="独立执业">独立执业</option>
-                  <option value="其他">其他</option>
+                  <option value="">{t("setup.selectPlaceholder")}</option>
+                  {PRACTICE_ROLE_OPTS.map((o) => (
+                    <option key={o} value={o}>
+                      {t(`setup.practiceRoleOpt.${o}`)}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="partyRole">当事人默认角色</Label>
+                <Label htmlFor="partyRole">{t("setup.partyRoleLabel")}</Label>
                 <select
                   id="partyRole"
-                  className="border-input bg-background w-full rounded-lg border px-3 py-2 text-sm"
+                  className={SELECT_CLS}
                   value={answers.party_role || ""}
                   onChange={(e) => setAnswers((a) => ({ ...a, party_role: e.target.value }))}
                 >
-                  <option value="">请选择...</option>
-                  <option value="原告方">原告方</option>
-                  <option value="被告方">被告方</option>
-                  <option value="兼顾-默认原告">兼顾 — 默认原告</option>
-                  <option value="兼顾-默认被告">兼顾 — 默认被告</option>
-                  <option value="依案件而定">依案件而定</option>
+                  <option value="">{t("setup.selectPlaceholder")}</option>
+                  {PARTY_ROLE_OPTS.map((o) => (
+                    <option key={o} value={o}>
+                      {t(`setup.partyRoleOpt.${o}`)}
+                    </option>
+                  ))}
                 </select>
               </div>
             </>
@@ -148,49 +158,68 @@ export default function LitigationSetupPage() {
           {step === 1 && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="industry">行业</Label>
+                <Label htmlFor="industry">{t("setup.industryLabel")}</Label>
                 <Input
                   id="industry"
                   value={answers.industry || ""}
                   onChange={(e) => setAnswers((a) => ({ ...a, industry: e.target.value }))}
-                  placeholder="例如：制造业、金融、互联网..."
+                  placeholder={t("setup.industryPlaceholder")}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="riskAppetite">风险偏好</Label>
+                <Label htmlFor="riskAppetite">{t("setup.riskAppetiteLabel")}</Label>
                 <select
                   id="riskAppetite"
-                  className="border-input bg-background w-full rounded-lg border px-3 py-2 text-sm"
+                  className={SELECT_CLS}
                   value={answers.risk_appetite || ""}
                   onChange={(e) => setAnswers((a) => ({ ...a, risk_appetite: e.target.value }))}
                 >
-                  <option value="">请选择...</option>
-                  <option value="保守">保守</option>
-                  <option value="适中">适中</option>
-                  <option value="进取">进取</option>
+                  <option value="">{t("setup.selectPlaceholder")}</option>
+                  {RISK_APPETITE_OPTS.map((o) => (
+                    <option key={o} value={o}>
+                      {t(`setup.riskAppetiteOpt.${o}`)}
+                    </option>
+                  ))}
                 </select>
               </div>
             </>
           )}
           {step >= 2 && step <= 3 && (
             <div className="space-y-2">
-              <Label htmlFor="notes">{step === 2 ? "争议画像备注" : "文书风格偏好"}</Label>
+              <Label htmlFor="notes">
+                {step === 2 ? t("setup.disputeNotesLabel") : t("setup.docStyleNotesLabel")}
+              </Label>
               <Textarea
                 id="notes"
                 rows={4}
                 value={answers.notes || ""}
                 onChange={(e) => setAnswers((a) => ({ ...a, notes: e.target.value }))}
-                placeholder={step === 2 ? "常见对手、管辖法院、外部律师..." : "引用格式、语气偏好..."}
+                placeholder={
+                  step === 2
+                    ? t("setup.disputeNotesPlaceholder")
+                    : t("setup.docStyleNotesPlaceholder")
+                }
               />
             </div>
           )}
           {step === 4 && (
             <div className="text-muted-foreground text-sm">
-              <p className="mb-2">确认以下设置无误后点击完成：</p>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>执业角色：{response.partial_config?.steps?.["0"]?.answers?.practice_role || "未设置"}</li>
-                <li>当事人角色：{response.partial_config?.steps?.["0"]?.answers?.party_role || "未设置"}</li>
-                <li>风险偏好：{response.partial_config?.steps?.["1"]?.answers?.risk_appetite || "未设置"}</li>
+              <p className="mb-2">{t("setup.confirmIntro")}</p>
+              <ul className="list-disc space-y-1 pl-5">
+                <li>
+                  {t("setup.confirmPracticeRole")}：
+                  {response.partial_config?.steps?.["0"]?.answers?.practice_role ||
+                    t("setup.notSet")}
+                </li>
+                <li>
+                  {t("setup.confirmPartyRole")}：
+                  {response.partial_config?.steps?.["0"]?.answers?.party_role || t("setup.notSet")}
+                </li>
+                <li>
+                  {t("setup.confirmRiskAppetite")}：
+                  {response.partial_config?.steps?.["1"]?.answers?.risk_appetite ||
+                    t("setup.notSet")}
+                </li>
               </ul>
             </div>
           )}
@@ -198,18 +227,20 @@ export default function LitigationSetupPage() {
       </Card>
 
       <div className="mt-6 flex justify-between">
-        <Button
-          variant="outline"
-          disabled={loading || step === 0}
-          onClick={() => submit(step - 1)}
-        >
-          <ArrowLeft className="mr-1 h-4 w-4" /> 上一步
+        <Button variant="outline" disabled={loading || step === 0} onClick={() => submit(step - 1)}>
+          <ArrowLeft className="mr-1 h-4 w-4" /> {t("setup.prev")}
         </Button>
         <Button onClick={() => submit(step)} disabled={loading}>
-          {loading ? <Spinner className="h-4 w-4" /> : step === 4 ? (
-            <><Check className="mr-1 h-4 w-4" /> 完成</>
+          {loading ? (
+            <Spinner className="h-4 w-4" />
+          ) : step === 4 ? (
+            <>
+              <Check className="mr-1 h-4 w-4" /> {t("setup.finish")}
+            </>
           ) : (
-            <>下一步 <ArrowRight className="ml-1 h-4 w-4" /></>
+            <>
+              {t("setup.next")} <ArrowRight className="ml-1 h-4 w-4" />
+            </>
           )}
         </Button>
       </div>
