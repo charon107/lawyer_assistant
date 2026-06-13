@@ -18,8 +18,13 @@ COPY backend/pyproject.toml backend/uv.lock ./
 # Install dependencies with Aliyun PyPI mirror (no dev deps, CPU-only torch)
 RUN uv sync --frozen --no-dev --index-url https://mirrors.aliyun.com/pypi/simple/
 
-# Pre-download embedding model via hf-mirror.com (build-time mirror, avoids HF 429 rate-limit)
-RUN HF_ENDPOINT=https://hf-mirror.com uv run python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-base-zh-v1.5')"
+# Best-effort model pre-download: warms the layer cache when the build host can
+# reach HuggingFace. Intentionally non-fatal — CI runners (US/EU) cannot reach
+# hf-mirror.com, and huggingface.co rate-limits anonymous builds. If the step
+# is skipped, the model downloads on first container startup via HF_ENDPOINT
+# (set to hf-mirror.com in docker-compose.prod.yml for the production server).
+RUN uv run python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-base-zh-v1.5')" \
+    || echo "Model pre-download skipped — will download on first container startup."
 
 # Copy application code
 COPY backend/ .
