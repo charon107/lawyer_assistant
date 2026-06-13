@@ -14,6 +14,7 @@ from app.scheduler import (
     JOB_LEAVE_TRACKER,
     JOB_LITIGATION_DOCKET_WATCHER,
     JOB_PRIVACY_POLICY_SWEEP,
+    JOB_REG_CHANGE_MONITOR,
     JOB_RENEWAL_WATCHER,
     create_scheduler,
 )
@@ -36,7 +37,16 @@ class TestCreateScheduler:
             JOB_PRIVACY_POLICY_SWEEP,
             JOB_IP_RENEWAL_WATCHER,
             JOB_LITIGATION_DOCKET_WATCHER,
+            JOB_REG_CHANGE_MONITOR,
         }
+
+    def test_reg_change_monitor_runs_monday_1037(self):
+        scheduler = create_scheduler()
+        trigger = scheduler.get_job(JOB_REG_CHANGE_MONITOR).trigger
+        assert isinstance(trigger, CronTrigger)
+        assert _field(trigger, "day_of_week") == "mon"
+        assert _field(trigger, "hour") == "10"
+        assert _field(trigger, "minute") == "37"
 
     def test_ip_renewal_watcher_runs_monday_0947(self):
         scheduler = create_scheduler()

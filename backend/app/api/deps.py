@@ -483,6 +483,72 @@ LitigationNotificationSvc = Annotated[
 ]
 
 
+# === Regulatory-legal Services ===
+
+from app.services.regulatory_analysis_service import RegulatoryAnalysisService
+from app.services.regulatory_cold_start_service import RegulatoryColdStartService
+from app.services.regulatory_comment_service import RegulatoryCommentService
+from app.services.regulatory_gap_service import RegulatoryGapService
+from app.services.regulatory_notification_service import RegulatoryNotificationService
+from app.services.regulatory_profile_service import RegulatoryProfileService
+from app.services.regulatory_reg_item_service import RegulatoryRegItemService
+
+
+def get_regulatory_profile_service(db: DBSession) -> RegulatoryProfileService:
+    return RegulatoryProfileService(db)
+
+
+RegulatoryProfileSvc = Annotated[RegulatoryProfileService, Depends(get_regulatory_profile_service)]
+
+
+def get_regulatory_cold_start_service(db: DBSession) -> RegulatoryColdStartService:
+    return RegulatoryColdStartService(db)
+
+
+RegulatoryColdStartSvc = Annotated[
+    RegulatoryColdStartService, Depends(get_regulatory_cold_start_service)
+]
+
+
+def get_regulatory_reg_item_service(db: DBSession) -> RegulatoryRegItemService:
+    return RegulatoryRegItemService(db)
+
+
+RegulatoryRegItemSvc = Annotated[RegulatoryRegItemService, Depends(get_regulatory_reg_item_service)]
+
+
+def get_regulatory_analysis_service(db: DBSession) -> RegulatoryAnalysisService:
+    return RegulatoryAnalysisService(db)
+
+
+RegulatoryAnalysisSvc = Annotated[
+    RegulatoryAnalysisService, Depends(get_regulatory_analysis_service)
+]
+
+
+def get_regulatory_gap_service(db: DBSession) -> RegulatoryGapService:
+    return RegulatoryGapService(db)
+
+
+RegulatoryGapSvc = Annotated[RegulatoryGapService, Depends(get_regulatory_gap_service)]
+
+
+def get_regulatory_comment_service(db: DBSession) -> RegulatoryCommentService:
+    return RegulatoryCommentService(db)
+
+
+RegulatoryCommentSvc = Annotated[RegulatoryCommentService, Depends(get_regulatory_comment_service)]
+
+
+def get_regulatory_notification_service(db: DBSession) -> RegulatoryNotificationService:
+    return RegulatoryNotificationService(db)
+
+
+RegulatoryNotificationSvc = Annotated[
+    RegulatoryNotificationService, Depends(get_regulatory_notification_service)
+]
+
+
 # === Authentication Dependencies ===
 
 from app.core.exceptions import AuthenticationError, AuthorizationError

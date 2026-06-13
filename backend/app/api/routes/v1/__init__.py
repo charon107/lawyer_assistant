@@ -22,6 +22,8 @@ from app.api.routes.v1 import ip
 from app.api.routes.v1 import ip_ws
 from app.api.routes.v1 import litigation
 from app.api.routes.v1 import litigation_ws
+from app.api.routes.v1 import regulatory
+from app.api.routes.v1 import regulatory_ws
 
 v1_router = APIRouter()
 
@@ -75,6 +77,10 @@ v1_router.include_router(ip_ws.router, tags=["ip-ws"])
 # Litigation-legal module (争议解决)
 v1_router.include_router(litigation.router, prefix="/litigation", tags=["litigation"])
 v1_router.include_router(litigation_ws.router, tags=["litigation-ws"])
+
+# Regulatory-legal module (监管合规)
+v1_router.include_router(regulatory.router, prefix="/regulatory", tags=["regulatory"])
+v1_router.include_router(regulatory_ws.router, tags=["regulatory-ws"])
 
 # Admin: system status (RAG health) and logs
 v1_router.include_router(admin_system.router, prefix="/admin/system", tags=["admin:system"])
