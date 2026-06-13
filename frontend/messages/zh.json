@@ -38,7 +38,8 @@
     "adminLogs": "系统日志",
     "adminSystem": "系统状态",
     "ip": "知识产权",
-    "litigation": "争议解决"
+    "litigation": "争议解决",
+    "regulatory": "监管合规"
   },
   "auth": {
     "login": "登录",
@@ -931,19 +932,58 @@
       "highRisk": "高风险"
     },
     "actions": {
-      "matters": { "title": "案件管理", "desc": "登记、更新、结案与组合概览" },
-      "demands": { "title": "律师函", "desc": "起草发送或接收分流" },
-      "analyses": { "title": "分析产出", "desc": "简报、大事记、要件分析等" },
-      "matterBriefing": { "title": "案件简报", "desc": "单案深度简报" },
-      "chronology": { "title": "大事记", "desc": "按理论标注重要性" },
-      "claimChart": { "title": "要件分析", "desc": "缺口优先 · 草案非认定" },
-      "subpoena": { "title": "调查令分流", "desc": "分类 + 异议框架" },
-      "legalHold": { "title": "证据保全", "desc": "发出 / 更新 / 解除" },
-      "ocStatus": { "title": "对方动态", "desc": "对手方状态梳理" },
-      "briefSection": { "title": "书状片段", "desc": "起草书状段落" },
-      "depositionPrep": { "title": "询问准备", "desc": "庭审 / 询问提纲" },
-      "privilegeLog": { "title": "特权清单", "desc": "保密 / 特权审查" },
-      "settings": { "title": "设置", "desc": "画像与风险校准" }
+      "matters": {
+        "title": "案件管理",
+        "desc": "登记、更新、结案与组合概览"
+      },
+      "demands": {
+        "title": "律师函",
+        "desc": "起草发送或接收分流"
+      },
+      "analyses": {
+        "title": "分析产出",
+        "desc": "简报、大事记、要件分析等"
+      },
+      "matterBriefing": {
+        "title": "案件简报",
+        "desc": "单案深度简报"
+      },
+      "chronology": {
+        "title": "大事记",
+        "desc": "按理论标注重要性"
+      },
+      "claimChart": {
+        "title": "要件分析",
+        "desc": "缺口优先 · 草案非认定"
+      },
+      "subpoena": {
+        "title": "调查令分流",
+        "desc": "分类 + 异议框架"
+      },
+      "legalHold": {
+        "title": "证据保全",
+        "desc": "发出 / 更新 / 解除"
+      },
+      "ocStatus": {
+        "title": "对方动态",
+        "desc": "对手方状态梳理"
+      },
+      "briefSection": {
+        "title": "书状片段",
+        "desc": "起草书状段落"
+      },
+      "depositionPrep": {
+        "title": "询问准备",
+        "desc": "庭审 / 询问提纲"
+      },
+      "privilegeLog": {
+        "title": "特权清单",
+        "desc": "保密 / 特权审查"
+      },
+      "settings": {
+        "title": "设置",
+        "desc": "画像与风险校准"
+      }
     },
     "skillRunner": {
       "back": "返回争议解决",
@@ -1260,6 +1300,250 @@
       "prev": "上一步",
       "next": "下一步",
       "finish": "完成"
+    }
+  },
+  "regulatory": {
+    "title": "监管合规",
+    "description": "法规动态监测 · 政策差距分析 · 合规差距追踪",
+    "inProgress": "处理中",
+    "unnamed": "（未命名）",
+    "unconfiguredTitle": "开始配置监管合规模块",
+    "unconfiguredDesc": "通过冷启动访谈学习你关注的监管机构、政策库与重要性阈值，再启用各项技能。",
+    "startSetup": "开始配置",
+    "recentOutputs": "最近产出",
+    "viewAll": "查看全部",
+    "noOutputs": "暂无分析产出",
+    "stats": {
+      "items": "法规动态",
+      "openGaps": "开放差距",
+      "pendingComments": "待决征集"
+    },
+    "actions": {
+      "feed": {
+        "title": "法规动态",
+        "desc": "查看监测到的法规动态，或立即检查"
+      },
+      "policyDiff": {
+        "title": "政策差异分析",
+        "desc": "对比法规变化与政策库，逐要求分析差距"
+      },
+      "gaps": {
+        "title": "差距追踪器",
+        "desc": "逾期/即将到期/开放/观察事项分区追踪"
+      },
+      "comments": {
+        "title": "意见征集",
+        "desc": "征求意见稿决策记录与截止跟踪"
+      },
+      "policyRedraft": {
+        "title": "政策重述草案",
+        "desc": "起草带标记修订的政策重述（不覆盖源）"
+      },
+      "analyses": {
+        "title": "分析产出",
+        "desc": "policy-diff / policy-redraft 历史"
+      },
+      "settings": {
+        "title": "设置",
+        "desc": "监测清单 / 政策库 / 阈值 / 源配置"
+      }
+    },
+    "notifications": {
+      "title": "通知",
+      "fallbackTitle": "通知"
+    },
+    "badges": {
+      "materiality": {
+        "always": "始终重要",
+        "review": "值得审阅",
+        "fyi": "仅供参考"
+      },
+      "itemType": {
+        "regulation": "正式规章",
+        "normative": "规范性文件",
+        "nprm": "征求意见稿",
+        "pre_rule": "预征求意见",
+        "enforcement": "执法处罚",
+        "guidance": "监管指引",
+        "speech": "领导讲话",
+        "settlement": "和解整改",
+        "other": "其他"
+      },
+      "severity": {
+        "blocking": "阻断",
+        "high": "高",
+        "medium": "中",
+        "low": "低"
+      },
+      "analysisType": {
+        "policy_diff": "政策差异",
+        "policy_redraft": "政策重述"
+      },
+      "gapType": {
+        "none": "无差距",
+        "partial": "部分差距",
+        "full": "完全差距",
+        "new-policy": "需新政策",
+        "watch": "观察",
+        "comment-decision": "征集决策"
+      },
+      "gapStatus": {
+        "open": "开放",
+        "in-progress": "进行中",
+        "closed": "已关闭",
+        "risk-accepted": "风险接受"
+      },
+      "decision": {
+        "undecided": "待决定",
+        "filing": "拟提交",
+        "not-filing": "不提交",
+        "filed": "已提交",
+        "waived": "放弃"
+      },
+      "verification": {
+        "verified": "已验证",
+        "unverified": "未验证"
+      }
+    },
+    "skillRunner": {
+      "back": "返回监管合规",
+      "itemLabel": "关联法规动态（可选）",
+      "itemNone": "不关联",
+      "run": "运行",
+      "connecting": "连接中…",
+      "analyzing": "分析中…",
+      "done": "已完成",
+      "failed": "运行失败",
+      "viewOutput": "查看产出",
+      "newAnalysis": "新建分析"
+    },
+    "setup": {
+      "back": "返回监管合规",
+      "title": "冷启动配置",
+      "description": "六步学习你的监管实务画像。",
+      "submitError": "提交失败，请重试。",
+      "prev": "上一步",
+      "next": "下一步",
+      "finish": "完成",
+      "notSet": "（未设置）",
+      "confirmIntro": "确认并生成画像",
+      "confirmUserRole": "使用者角色",
+      "confirmPracticeSetting": "执业设置",
+      "stepLabels": {
+        "0": "角色与设置",
+        "1": "监测清单",
+        "2": "重要度阈值",
+        "3": "政策库",
+        "4": "动态源",
+        "5": "确认"
+      },
+      "userRoleLabel": "你的角色",
+      "userRoleOpt": {
+        "lawyer": "律师 / 法律专业人士",
+        "non_lawyer_with_counsel": "非律师（有律师对接）",
+        "non_lawyer_without": "非律师（无律师对接）"
+      },
+      "practiceSettingLabel": "执业设置",
+      "watchlistLabel": "监测清单（关注的监管机构）",
+      "watchlistPlaceholder": "如：国家网信办、市场监管总局、工信部…（每行一个，附关注原因）",
+      "thresholdLabel": "重要度阈值（核心校准）",
+      "thresholdHint": "描述什么对你「始终重要 / 值得审阅 / 仅供参考」——行业关键词、监管机构等。",
+      "thresholdPlaceholder": "如：涉及「数据出境」「个人信息」的正式规章 → 始终重要；行业外执法 → 仅供参考…",
+      "libraryLabel": "政策库索引",
+      "libraryPlaceholder": "如：隐私政策（负责人：张三）、数据安全政策（负责人：李四）…",
+      "feedLabel": "动态源配置",
+      "feedHint": "免费基线源（中国政府网 / 国家法律法规数据库等）；HTML-only 部委站需手动录入。",
+      "feedPlaceholder": "如：中国政府网公告、flk.npc.gov.cn…"
+    },
+    "policyDiff": {
+      "title": "政策差异分析",
+      "description": "对比法规变化与政策库，逐要求分析差距并交接追踪器。",
+      "promptLabel": "法规内容 / 指令",
+      "promptPlaceholder": "粘贴法规文本，或描述要对比的法规变化与目标政策…",
+      "disclaimer": "本技能先验证法规现行有效；无法验证则输出加未验证横幅。差距将交接至追踪器（按法条引用去重）。"
+    },
+    "policyRedraft": {
+      "title": "政策重述草案",
+      "description": "起草带标记修订的政策重述备忘录。",
+      "promptLabel": "差距 + 当前政策 + 法规",
+      "promptPlaceholder": "提供差距（GAP-ID 或描述）、当前已批准政策文本、法规文本…",
+      "disclaimer": "产出为建议草案而非编辑：写入新文件，绝不覆盖源政策，也不在追踪器关闭差距。"
+    },
+    "feed": {
+      "back": "返回监管合规",
+      "title": "法规动态",
+      "description": "监测到的法规动态按重要度分层；可立即检查或手动粘贴录入。",
+      "manualPaste": "手动录入",
+      "checkNow": "立即检查",
+      "checkPrompt": "立即检查已配置的法规动态源，按重要性过滤并报告新增内容。",
+      "checking": "检查中…",
+      "checkDone": "检查完成",
+      "pasteTitle": "标题",
+      "pasteRegulator": "监管机构",
+      "pasteText": "法规文本",
+      "pastePlaceholder": "粘贴法规 / 公告文本…",
+      "pasteSave": "保存",
+      "empty": "暂无法规动态。点「立即检查」或「手动录入」开始。"
+    },
+    "gaps": {
+      "back": "返回监管合规",
+      "title": "差距追踪器",
+      "description": "合规差距按到期状态分区；观察事项（前瞻性）单独呈现，不混入合规差距。",
+      "empty": "暂无差距。",
+      "dashboardHint": "开放差距较多，建议在仪表板集中处理。",
+      "observationNote": "前瞻性，非合规差距",
+      "due": "到期",
+      "owner": "负责人",
+      "close": "关闭",
+      "acceptRisk": "风险接受",
+      "closePrompt": "请输入关闭说明（resolution）：",
+      "acceptByPrompt": "风险接受人：",
+      "acceptRationalePrompt": "风险接受理由：",
+      "buckets": {
+        "overdue": "🔴 已逾期",
+        "due_soon": "🟠 30 天内到期",
+        "open_gaps": "🟡 开放",
+        "in_progress": "进行中",
+        "observations": "👀 观察事项",
+        "recently_closed": "最近关闭"
+      }
+    },
+    "comments": {
+      "back": "返回监管合规",
+      "title": "意见征集追踪器",
+      "description": "征求意见稿决策记录与截止跟踪。",
+      "pending": "{n} 项 30 天内待决定",
+      "empty": "暂无意见征集。",
+      "deadline": "截止",
+      "rationalePrompt": "决策理由（可选）："
+    },
+    "analyses": {
+      "back": "返回监管合规",
+      "title": "分析产出",
+      "empty": "暂无分析产出。",
+      "notFound": "未找到该分析产出。",
+      "scopeLimited": "⚠️ 范围限制：本次分析按要求排除了部分政策章节。",
+      "statusUnverified": "⚠️ 法规状态未验证：截止日期据发布法规推定，请独立核实。",
+      "tabs": {
+        "all": "全部",
+        "policy_diff": "政策差异",
+        "policy_redraft": "政策重述"
+      }
+    },
+    "settings": {
+      "back": "返回监管合规",
+      "title": "设置",
+      "description": "维护监测清单 / 政策库 / 重要度阈值 / 动态源配置（JSON）。",
+      "notConfigured": "尚未配置，请先完成冷启动。",
+      "save": "保存",
+      "saved": "已保存",
+      "invalidJson": "{field} 不是合法 JSON。",
+      "fields": {
+        "watchlist": "监测清单",
+        "policy_library": "政策库索引",
+        "materiality_threshold": "重要度阈值",
+        "feed_config": "动态源配置"
+      }
     }
   }
 }

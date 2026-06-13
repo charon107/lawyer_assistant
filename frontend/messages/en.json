@@ -38,7 +38,8 @@
     "adminLogs": "System Logs",
     "adminSystem": "System Status",
     "ip": "IP",
-    "litigation": "Litigation"
+    "litigation": "Litigation",
+    "regulatory": "Regulatory"
   },
   "auth": {
     "login": "Login",
@@ -931,19 +932,58 @@
       "highRisk": "High risk"
     },
     "actions": {
-      "matters": { "title": "Matters", "desc": "Register, update, close, portfolio overview" },
-      "demands": { "title": "Demand letters", "desc": "Draft to send or triage incoming" },
-      "analyses": { "title": "Analyses", "desc": "Briefings, chronologies, claim charts, etc." },
-      "matterBriefing": { "title": "Matter briefing", "desc": "Deep single-matter briefing" },
-      "chronology": { "title": "Chronology", "desc": "Materiality tagged by theory" },
-      "claimChart": { "title": "Claim chart", "desc": "Gap-first · draft, not findings" },
-      "subpoena": { "title": "Subpoena triage", "desc": "Classify + objection framework" },
-      "legalHold": { "title": "Legal hold", "desc": "Issue / update / release" },
-      "ocStatus": { "title": "Opposing counsel", "desc": "Counterparty status review" },
-      "briefSection": { "title": "Brief section", "desc": "Draft brief passages" },
-      "depositionPrep": { "title": "Examination prep", "desc": "Hearing / examination outline" },
-      "privilegeLog": { "title": "Privilege log", "desc": "Confidentiality / privilege review" },
-      "settings": { "title": "Settings", "desc": "Profile & risk calibration" }
+      "matters": {
+        "title": "Matters",
+        "desc": "Register, update, close, portfolio overview"
+      },
+      "demands": {
+        "title": "Demand letters",
+        "desc": "Draft to send or triage incoming"
+      },
+      "analyses": {
+        "title": "Analyses",
+        "desc": "Briefings, chronologies, claim charts, etc."
+      },
+      "matterBriefing": {
+        "title": "Matter briefing",
+        "desc": "Deep single-matter briefing"
+      },
+      "chronology": {
+        "title": "Chronology",
+        "desc": "Materiality tagged by theory"
+      },
+      "claimChart": {
+        "title": "Claim chart",
+        "desc": "Gap-first · draft, not findings"
+      },
+      "subpoena": {
+        "title": "Subpoena triage",
+        "desc": "Classify + objection framework"
+      },
+      "legalHold": {
+        "title": "Legal hold",
+        "desc": "Issue / update / release"
+      },
+      "ocStatus": {
+        "title": "Opposing counsel",
+        "desc": "Counterparty status review"
+      },
+      "briefSection": {
+        "title": "Brief section",
+        "desc": "Draft brief passages"
+      },
+      "depositionPrep": {
+        "title": "Examination prep",
+        "desc": "Hearing / examination outline"
+      },
+      "privilegeLog": {
+        "title": "Privilege log",
+        "desc": "Confidentiality / privilege review"
+      },
+      "settings": {
+        "title": "Settings",
+        "desc": "Profile & risk calibration"
+      }
     },
     "skillRunner": {
       "back": "Back to litigation",
@@ -1260,6 +1300,250 @@
       "prev": "Back",
       "next": "Next",
       "finish": "Finish"
+    }
+  },
+  "regulatory": {
+    "title": "Regulatory Compliance",
+    "description": "Regulatory monitoring · policy-diff analysis · compliance-gap tracking",
+    "inProgress": "In progress",
+    "unnamed": "(untitled)",
+    "unconfiguredTitle": "Set up the regulatory module",
+    "unconfiguredDesc": "A cold-start interview learns the regulators you watch, your policy library and materiality thresholds before enabling the skills.",
+    "startSetup": "Start setup",
+    "recentOutputs": "Recent outputs",
+    "viewAll": "View all",
+    "noOutputs": "No analysis outputs yet",
+    "stats": {
+      "items": "Reg items",
+      "openGaps": "Open gaps",
+      "pendingComments": "Pending consultations"
+    },
+    "actions": {
+      "feed": {
+        "title": "Reg feed",
+        "desc": "Review monitored regulatory developments, or check now"
+      },
+      "policyDiff": {
+        "title": "Policy diff",
+        "desc": "Compare a regulation against your policy library, requirement by requirement"
+      },
+      "gaps": {
+        "title": "Gap tracker",
+        "desc": "Overdue / due-soon / open / observation buckets"
+      },
+      "comments": {
+        "title": "Consultations",
+        "desc": "Comment-period decisions and deadline tracking"
+      },
+      "policyRedraft": {
+        "title": "Policy redraft",
+        "desc": "Draft a marked-up policy redraft (never overwrites the source)"
+      },
+      "analyses": {
+        "title": "Analyses",
+        "desc": "policy-diff / policy-redraft history"
+      },
+      "settings": {
+        "title": "Settings",
+        "desc": "Watchlist / policy library / thresholds / feed config"
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "fallbackTitle": "Notification"
+    },
+    "badges": {
+      "materiality": {
+        "always": "Always material",
+        "review": "Worth reviewing",
+        "fyi": "FYI"
+      },
+      "itemType": {
+        "regulation": "Regulation",
+        "normative": "Normative doc",
+        "nprm": "Consultation",
+        "pre_rule": "Pre-rule",
+        "enforcement": "Enforcement",
+        "guidance": "Guidance",
+        "speech": "Speech",
+        "settlement": "Settlement",
+        "other": "Other"
+      },
+      "severity": {
+        "blocking": "Blocking",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "analysisType": {
+        "policy_diff": "Policy diff",
+        "policy_redraft": "Policy redraft"
+      },
+      "gapType": {
+        "none": "No gap",
+        "partial": "Partial",
+        "full": "Full",
+        "new-policy": "New policy",
+        "watch": "Watch",
+        "comment-decision": "Comment decision"
+      },
+      "gapStatus": {
+        "open": "Open",
+        "in-progress": "In progress",
+        "closed": "Closed",
+        "risk-accepted": "Risk accepted"
+      },
+      "decision": {
+        "undecided": "Undecided",
+        "filing": "Filing",
+        "not-filing": "Not filing",
+        "filed": "Filed",
+        "waived": "Waived"
+      },
+      "verification": {
+        "verified": "Verified",
+        "unverified": "Unverified"
+      }
+    },
+    "skillRunner": {
+      "back": "Back to Regulatory",
+      "itemLabel": "Linked reg item (optional)",
+      "itemNone": "None",
+      "run": "Run",
+      "connecting": "Connecting...",
+      "analyzing": "Analyzing...",
+      "done": "Done",
+      "failed": "Run failed",
+      "viewOutput": "View output",
+      "newAnalysis": "New analysis"
+    },
+    "setup": {
+      "back": "Back to Regulatory",
+      "title": "Cold-start setup",
+      "description": "Six steps to learn your regulatory practice profile.",
+      "submitError": "Submit failed, please retry.",
+      "prev": "Back",
+      "next": "Next",
+      "finish": "Finish",
+      "notSet": "(not set)",
+      "confirmIntro": "Confirm and generate profile",
+      "confirmUserRole": "User role",
+      "confirmPracticeSetting": "Practice setting",
+      "stepLabels": {
+        "0": "Role & setting",
+        "1": "Watchlist",
+        "2": "Materiality",
+        "3": "Policy library",
+        "4": "Feeds",
+        "5": "Confirm"
+      },
+      "userRoleLabel": "Your role",
+      "userRoleOpt": {
+        "lawyer": "Lawyer / legal professional",
+        "non_lawyer_with_counsel": "Non-lawyer (with counsel)",
+        "non_lawyer_without": "Non-lawyer (no counsel)"
+      },
+      "practiceSettingLabel": "Practice setting",
+      "watchlistLabel": "Watchlist (regulators you monitor)",
+      "watchlistPlaceholder": "e.g. CAC, SAMR, MIIT... (one per line, with why you watch it)",
+      "thresholdLabel": "Materiality thresholds (core calibration)",
+      "thresholdHint": "Describe what is Always material / Worth reviewing / FYI - industry keywords, regulators, etc.",
+      "thresholdPlaceholder": "e.g. regulations on data export / personal information -> Always material; out-of-industry enforcement -> FYI...",
+      "libraryLabel": "Policy library index",
+      "libraryPlaceholder": "e.g. Privacy Policy (owner: Zhang), Data Security Policy (owner: Li)...",
+      "feedLabel": "Feed sources",
+      "feedHint": "Free baseline sources (gov.cn / flk.npc.gov.cn etc.); HTML-only ministry sites need manual entry.",
+      "feedPlaceholder": "e.g. gov.cn announcements, flk.npc.gov.cn..."
+    },
+    "policyDiff": {
+      "title": "Policy diff",
+      "description": "Compare a regulation against your policy library and hand gaps to the tracker.",
+      "promptLabel": "Regulation / instruction",
+      "promptPlaceholder": "Paste the regulation text, or describe the change and target policies...",
+      "disclaimer": "This skill verifies the regulation is in force first; if it cannot, the output carries an unverified banner. Gaps are handed to the tracker (deduped by citation)."
+    },
+    "policyRedraft": {
+      "title": "Policy redraft",
+      "description": "Draft a marked-up policy-redraft memo.",
+      "promptLabel": "Gap + current policy + regulation",
+      "promptPlaceholder": "Provide the gap (GAP-ID or description), the current approved policy text, and the regulation text...",
+      "disclaimer": "The output is a proposed draft, not an edit: it writes a new file, never overwrites the source policy, and never closes a gap in the tracker."
+    },
+    "feed": {
+      "back": "Back to Regulatory",
+      "title": "Reg feed",
+      "description": "Monitored developments bucketed by materiality; check now or paste in manually.",
+      "manualPaste": "Manual entry",
+      "checkNow": "Check now",
+      "checkPrompt": "Check the configured regulatory feed sources now, filter by materiality and report what is new.",
+      "checking": "Checking...",
+      "checkDone": "Check complete",
+      "pasteTitle": "Title",
+      "pasteRegulator": "Regulator",
+      "pasteText": "Regulation text",
+      "pastePlaceholder": "Paste regulation / announcement text...",
+      "pasteSave": "Save",
+      "empty": "No reg items yet. Use Check now or Manual entry to start."
+    },
+    "gaps": {
+      "back": "Back to Regulatory",
+      "title": "Gap tracker",
+      "description": "Compliance gaps bucketed by due status; observations (forward-looking) are shown separately, never mixed into compliance gaps.",
+      "empty": "No gaps.",
+      "dashboardHint": "Many open gaps - consider a dashboard to work through them.",
+      "observationNote": "forward-looking, not a compliance gap",
+      "due": "Due",
+      "owner": "Owner",
+      "close": "Close",
+      "acceptRisk": "Accept risk",
+      "closePrompt": "Enter the resolution:",
+      "acceptByPrompt": "Accepted by:",
+      "acceptRationalePrompt": "Acceptance rationale:",
+      "buckets": {
+        "overdue": "🔴 Overdue",
+        "due_soon": "🟠 Due within 30 days",
+        "open_gaps": "🟡 Open",
+        "in_progress": "In progress",
+        "observations": "👀 Observations",
+        "recently_closed": "Recently closed"
+      }
+    },
+    "comments": {
+      "back": "Back to Regulatory",
+      "title": "Consultation tracker",
+      "description": "Comment-period decisions and deadline tracking.",
+      "pending": "{n} pending within 30 days",
+      "empty": "No consultations.",
+      "deadline": "Deadline",
+      "rationalePrompt": "Decision rationale (optional):"
+    },
+    "analyses": {
+      "back": "Back to Regulatory",
+      "title": "Analyses",
+      "empty": "No analysis outputs.",
+      "notFound": "Analysis not found.",
+      "scopeLimited": "⚠️ Scope limited: some policy sections were excluded by request.",
+      "statusUnverified": "⚠️ Regulation status unverified: deadlines are inferred from the published regulation - verify independently.",
+      "tabs": {
+        "all": "All",
+        "policy_diff": "Policy diff",
+        "policy_redraft": "Policy redraft"
+      }
+    },
+    "settings": {
+      "back": "Back to Regulatory",
+      "title": "Settings",
+      "description": "Maintain watchlist / policy library / materiality thresholds / feed config (JSON).",
+      "notConfigured": "Not configured yet - finish cold-start first.",
+      "save": "Save",
+      "saved": "Saved",
+      "invalidJson": "{field} is not valid JSON.",
+      "fields": {
+        "watchlist": "Watchlist",
+        "policy_library": "Policy library",
+        "materiality_threshold": "Materiality thresholds",
+        "feed_config": "Feed config"
+      }
     }
   }
 }
