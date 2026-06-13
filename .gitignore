@@ -103,6 +103,7 @@ Thumbs.db
 
 # Project specific
 data/
+docs/
 .gstack/
 backend/media/
 
