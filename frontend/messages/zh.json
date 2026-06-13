@@ -1206,6 +1206,8 @@
     },
     "setup": {
       "title": "争议解决 — 冷启动设置",
+      "back": "返回争议解决",
+      "description": "告诉我们你的执业场景和当事人角色，之后案件管理、律师函、庭审技能都会自动适配。",
       "stepProgress": "第 {current}/{total} 步 — {label}",
       "quickSuffix": "（快速模式）",
       "submitError": "提交失败",

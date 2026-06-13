@@ -1206,6 +1206,8 @@
     },
     "setup": {
       "title": "Litigation — cold-start setup",
+      "back": "Back to Litigation",
+      "description": "Tell us your practice role and default party position — case management, demand letters, and hearing skills will adapt automatically.",
       "stepProgress": "Step {current}/{total} — {label}",
       "quickSuffix": " (quick mode)",
       "submitError": "Submission failed",
