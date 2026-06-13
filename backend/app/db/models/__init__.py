@@ -54,6 +54,12 @@ from app.db.models.litigation_matter_event import LitigationMatterEvent
 from app.db.models.litigation_demand import LitigationDemand
 from app.db.models.litigation_analysis import LitigationAnalysis
 from app.db.models.litigation_notification import LitigationNotification
+from app.db.models.regulatory_profile import RegulatoryProfile
+from app.db.models.regulatory_reg_item import RegulatoryRegItem
+from app.db.models.regulatory_analysis import RegulatoryAnalysis
+from app.db.models.regulatory_gap import RegulatoryGap
+from app.db.models.regulatory_comment import RegulatoryComment
+from app.db.models.regulatory_notification import RegulatoryNotification
 
 __all__ = [
     "User",
@@ -111,4 +117,10 @@ __all__ = [
     "LitigationDemand",
     "LitigationAnalysis",
     "LitigationNotification",
+    "RegulatoryProfile",
+    "RegulatoryRegItem",
+    "RegulatoryAnalysis",
+    "RegulatoryGap",
+    "RegulatoryComment",
+    "RegulatoryNotification",
 ]

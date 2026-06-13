@@ -32,6 +32,7 @@ JOB_LEAVE_TRACKER = "employment_leave_tracker"
 JOB_PRIVACY_POLICY_SWEEP = "privacy_policy_sweep_reminder"
 JOB_IP_RENEWAL_WATCHER = "ip_renewal_watcher"
 JOB_LITIGATION_DOCKET_WATCHER = "litigation_docket_watcher"
+JOB_REG_CHANGE_MONITOR = "regulatory_reg_change_monitor"
 
 
 def _run_in_session(task: Callable[..., object], task_name: str) -> None:
@@ -94,6 +95,12 @@ def _run_litigation_docket_watcher() -> None:
     _run_in_session(litigation_docket_watcher.run, JOB_LITIGATION_DOCKET_WATCHER)
 
 
+def _run_reg_change_monitor() -> None:
+    from app.tasks import regulatory_reg_change_monitor
+
+    _run_in_session(regulatory_reg_change_monitor.run, JOB_REG_CHANGE_MONITOR)
+
+
 def create_scheduler() -> AsyncIOScheduler:
     """Build the scheduler and register the weekly commercial jobs."""
     scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
@@ -150,6 +157,14 @@ def create_scheduler() -> AsyncIOScheduler:
         trigger=CronTrigger(day_of_week="mon", hour=10, minute=23),
         id=JOB_LITIGATION_DOCKET_WATCHER,
         name="Litigation docket watcher",
+        replace_existing=True,
+    )
+    # Regulatory reg-change monitor — weekly Monday (10:37, off the 10:07/10:23 marks).
+    scheduler.add_job(
+        _run_reg_change_monitor,
+        trigger=CronTrigger(day_of_week="mon", hour=10, minute=37),
+        id=JOB_REG_CHANGE_MONITOR,
+        name="Regulatory reg-change monitor",
         replace_existing=True,
     )
 
