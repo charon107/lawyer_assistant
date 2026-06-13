@@ -911,5 +911,353 @@
       "nextStep": "Next",
       "finishSetup": "Finish"
     }
+  },
+  "litigation": {
+    "title": "Litigation",
+    "description": "Matters · demand letters · legal holds · hearing prep",
+    "back": "Back",
+    "unconfiguredTitle": "Litigation module not configured",
+    "unconfiguredDesc": "Complete the cold-start setup to configure risk calibration, party role, and document style.",
+    "startSetup": "Start setup",
+    "recentOutputs": "Recent analyses",
+    "viewAll": "View all",
+    "noOutputs": "No analyses yet. Start with a tool above.",
+    "unnamed": "Untitled",
+    "inProgress": "Processing…",
+    "stats": {
+      "total": "Total",
+      "active": "Active",
+      "overdue": "Overdue",
+      "highRisk": "High risk"
+    },
+    "actions": {
+      "matters": { "title": "Matters", "desc": "Register, update, close, portfolio overview" },
+      "demands": { "title": "Demand letters", "desc": "Draft to send or triage incoming" },
+      "analyses": { "title": "Analyses", "desc": "Briefings, chronologies, claim charts, etc." },
+      "matterBriefing": { "title": "Matter briefing", "desc": "Deep single-matter briefing" },
+      "chronology": { "title": "Chronology", "desc": "Materiality tagged by theory" },
+      "claimChart": { "title": "Claim chart", "desc": "Gap-first · draft, not findings" },
+      "subpoena": { "title": "Subpoena triage", "desc": "Classify + objection framework" },
+      "legalHold": { "title": "Legal hold", "desc": "Issue / update / release" },
+      "ocStatus": { "title": "Opposing counsel", "desc": "Counterparty status review" },
+      "briefSection": { "title": "Brief section", "desc": "Draft brief passages" },
+      "depositionPrep": { "title": "Examination prep", "desc": "Hearing / examination outline" },
+      "privilegeLog": { "title": "Privilege log", "desc": "Confidentiality / privilege review" },
+      "settings": { "title": "Settings", "desc": "Profile & risk calibration" }
+    },
+    "skillRunner": {
+      "back": "Back to litigation",
+      "run": "Start analysis",
+      "connecting": "Connecting…",
+      "analyzing": "Analyzing…",
+      "done": "Done",
+      "failed": "Run failed",
+      "viewOutput": "View output",
+      "newAnalysis": "New analysis",
+      "matterLabel": "Linked matter (optional)",
+      "matterNone": "No specific matter"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "fallbackTitle": "Notification"
+    },
+    "badges": {
+      "severity": {
+        "blocking": "Blocking",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "analysisType": {
+        "matter_briefing": "Matter briefing",
+        "chronology": "Chronology",
+        "claim_chart": "Claim chart",
+        "subpoena_triage": "Subpoena triage",
+        "legal_hold": "Legal hold",
+        "oc_status": "Opposing counsel",
+        "brief_section": "Brief section",
+        "deposition_prep": "Examination prep",
+        "privilege_log": "Privilege log"
+      },
+      "matterStatus": {
+        "active": "Active",
+        "settled": "Settled",
+        "dismissed": "Dismissed",
+        "judgment_won": "Won",
+        "judgment_lost": "Lost",
+        "withdrawn": "Withdrawn",
+        "closed": "Closed",
+        "archived": "Archived"
+      },
+      "demandMode": {
+        "send": "Send",
+        "receive": "Receive"
+      },
+      "demandStatus": {
+        "intake": "Intake",
+        "drafting": "Drafting",
+        "gated": "Gated",
+        "sent": "Sent",
+        "received": "Received",
+        "responded": "Responded",
+        "escalated": "Escalated",
+        "closed": "Closed"
+      },
+      "risk": {
+        "低": "Low",
+        "中": "Medium",
+        "高": "High",
+        "严重": "Severe"
+      }
+    },
+    "matterBriefing": {
+      "title": "Matter briefing",
+      "description": "Deep single-matter briefing — facts, issues, procedural posture, strategy",
+      "promptLabel": "Matter background & briefing needs",
+      "promptPlaceholder": "Paste the matter background, current status, issues or decisions to focus on…",
+      "runLabel": "Generate briefing"
+    },
+    "chronology": {
+      "title": "Chronology",
+      "description": "Timeline with materiality tagged by litigation theory",
+      "promptLabel": "Event materials & theory",
+      "promptPlaceholder": "Paste timeline materials, key events, your litigation theory…",
+      "runLabel": "Generate chronology"
+    },
+    "claimChart": {
+      "title": "Claim chart",
+      "description": "Gap-first claim / defense element mapping (draft, not a legal finding)",
+      "disclaimer": "This output is a gap-first element draft for attorney judgment; it is not a legal opinion or a finding of fact.",
+      "promptLabel": "Claims / defenses & evidence",
+      "promptPlaceholder": "Paste the asserted claims or defenses, available evidence, disputed elements…",
+      "runLabel": "Generate claim chart"
+    },
+    "subpoena": {
+      "title": "Subpoena triage",
+      "description": "Classify subpoena / evidence requests + objection framework",
+      "promptLabel": "Subpoena / evidence request content",
+      "promptPlaceholder": "Paste the received subpoena, scope, issuing authority and deadline…",
+      "runLabel": "Start triage"
+    },
+    "legalHold": {
+      "title": "Legal hold",
+      "description": "Issue / update / release of legal hold notices",
+      "promptLabel": "Hold scope & context",
+      "promptPlaceholder": "Describe the data scope to preserve, custodians, triggering event…",
+      "runLabel": "Generate notice"
+    },
+    "ocStatus": {
+      "title": "Opposing counsel",
+      "description": "Counterparty status and recent activity review",
+      "promptLabel": "Counterparty info & recent activity",
+      "promptPlaceholder": "Paste the counterparty's recent letters, actions, known background…",
+      "runLabel": "Generate review"
+    },
+    "briefSection": {
+      "title": "Brief section",
+      "description": "Draft brief passages (facts / argument / prayer)",
+      "promptLabel": "Brief needs & materials",
+      "promptPlaceholder": "State the brief type, key points, facts and evidence to cite…",
+      "runLabel": "Generate section"
+    },
+    "depositionPrep": {
+      "title": "Examination prep",
+      "description": "Hearing / examination outline and key-point preparation",
+      "promptLabel": "Examinee & objectives",
+      "promptPlaceholder": "Describe the examinee, facts to prove, known contradictions…",
+      "runLabel": "Generate outline"
+    },
+    "privilegeLog": {
+      "title": "Privilege log",
+      "description": "Confidentiality / privilege material review and log (PRC-law note)",
+      "disclaimer": "PRC law has no common-law attorney-client privilege; this output is organized under confidentiality duties and evidence rules for reference.",
+      "promptLabel": "Materials to review & context",
+      "promptPlaceholder": "Paste the document list to review, sources, confidentiality relationships involved…",
+      "runLabel": "Generate log"
+    },
+    "demands": {
+      "title": "Demand letters",
+      "new": "New",
+      "empty": "No demand letters yet.",
+      "unspecifiedCounterparty": "Counterparty not set",
+      "backToList": "Back",
+      "detailTitle": "Demand letter",
+      "fieldType": "Type",
+      "fieldMode": "Mode",
+      "fieldStatus": "Status",
+      "fieldRecommended": "Recommended action",
+      "fieldDeadline": "Response deadline",
+      "newTitle": "New demand letter",
+      "counterpartyLabel": "Counterparty",
+      "counterpartyPlaceholder": "e.g. Acme Corp",
+      "typeLabel": "Type",
+      "modeLabel": "Mode",
+      "modeSend": "Send (draft)",
+      "modeReceive": "Receive (triage)",
+      "promptLabel": "Background & demand",
+      "promptPlaceholder": "Paste the background facts and demand, or the incoming letter content…",
+      "create": "Create & generate",
+      "creating": "Generating…",
+      "demandType": {
+        "payment": "Payment",
+        "breach_cure": "Cure breach",
+        "stop_infringement": "Stop infringement",
+        "evidence_preservation": "Evidence preservation",
+        "settlement": "Settlement",
+        "other": "Other"
+      }
+    },
+    "matters": {
+      "title": "Matters",
+      "new": "New matter",
+      "empty": "No matters yet.",
+      "unnamed": "Untitled matter",
+      "backToList": "Back to matters",
+      "newTitle": "New matter",
+      "createError": "Failed to create",
+      "submit": "Create matter",
+      "form": {
+        "caseName": "Case name",
+        "caseNumber": "Case number",
+        "court": "Court",
+        "causeOfAction": "Cause of action",
+        "ourSide": "Our side",
+        "counterparty": "Counterparty",
+        "risk": "Risk",
+        "stage": "Stage",
+        "initialTheory": "Initial case theory"
+      },
+      "ourSideOpt": {
+        "plaintiff": "Plaintiff",
+        "defendant": "Defendant",
+        "third_party": "Third party"
+      },
+      "stageOpt": {
+        "庭前": "Pre-trial",
+        "证据交换": "Discovery",
+        "庭审": "Trial",
+        "上诉": "Appeal",
+        "执行": "Enforcement"
+      },
+      "detail": {
+        "caseNumber": "Case number",
+        "court": "Court",
+        "ourSide": "Our side",
+        "counterparty": "Counterparty",
+        "status": "Status",
+        "stage": "Stage",
+        "risk": "Risk",
+        "causeOfAction": "Cause of action",
+        "filingDate": "Filing date",
+        "nextDeadline": "Next deadline",
+        "theory": "Case theory"
+      },
+      "timeline": "Event timeline",
+      "addEvent": "Add event",
+      "noEvents": "No events yet.",
+      "due": "Due",
+      "eventType": {
+        "procedure": "Procedure",
+        "evidence": "Evidence",
+        "substantive": "Substantive",
+        "strategy": "Strategy",
+        "risk_reassessment": "Risk reassessment",
+        "party": "Party",
+        "administrative": "Administrative",
+        "deadline": "Deadline",
+        "closing": "Closing"
+      },
+      "deadlineStatus": {
+        "pending": "Pending",
+        "approaching": "Approaching",
+        "overdue": "Overdue",
+        "met": "Met",
+        "waived": "Waived"
+      },
+      "events": {
+        "newTitle": "New event",
+        "backToMatter": "Back to matter",
+        "typeLabel": "Event type",
+        "dateLabel": "Event date",
+        "summaryLabel": "Summary",
+        "summaryPlaceholder": "Describe what happened…",
+        "dueDateLabel": "Due date (optional)",
+        "deadlineStatusLabel": "Deadline status (optional)",
+        "noneOption": "None",
+        "submit": "Add event",
+        "createError": "Failed to create"
+      }
+    },
+    "analyses": {
+      "title": "Analyses",
+      "empty": "No analyses yet."
+    },
+    "settings": {
+      "title": "Litigation settings",
+      "needSetup": "Please complete the cold-start setup first.",
+      "practiceSection": "Practice role",
+      "userRole": "User",
+      "practiceRole": "Practice role",
+      "partyRole": "Party",
+      "setupDepth": "Setup depth",
+      "riskSection": "Risk calibration",
+      "riskNote": "Risk preferences come from the cold-start setup. To change them, re-run the cold start or edit directly via PUT /litigation/profile.",
+      "rerun": "Re-run cold start"
+    },
+    "setup": {
+      "title": "Litigation — cold-start setup",
+      "stepProgress": "Step {current}/{total} — {label}",
+      "quickSuffix": " (quick mode)",
+      "submitError": "Submission failed",
+      "selectPlaceholder": "Select…",
+      "stepLabels": {
+        "0": "Practice & party role",
+        "1": "Company profile & risk calibration",
+        "2": "Dispute profile",
+        "3": "Document style & output",
+        "4": "Confirm & generate"
+      },
+      "userRoleLabel": "User role",
+      "userRoleOpt": {
+        "lawyer": "Practicing lawyer / legal professional",
+        "non_lawyer_with_counsel": "Non-lawyer (with counsel)",
+        "non_lawyer_without": "Non-lawyer (without counsel)"
+      },
+      "practiceRoleLabel": "Practice role",
+      "practiceRoleOpt": {
+        "企业法务": "In-house counsel",
+        "律所律师": "Law-firm lawyer",
+        "独立执业": "Solo practitioner",
+        "其他": "Other"
+      },
+      "partyRoleLabel": "Default party role",
+      "partyRoleOpt": {
+        "原告方": "Plaintiff side",
+        "被告方": "Defendant side",
+        "兼顾-默认原告": "Both — default plaintiff",
+        "兼顾-默认被告": "Both — default defendant",
+        "依案件而定": "Case by case"
+      },
+      "industryLabel": "Industry",
+      "industryPlaceholder": "e.g. manufacturing, finance, internet…",
+      "riskAppetiteLabel": "Risk appetite",
+      "riskAppetiteOpt": {
+        "保守": "Conservative",
+        "适中": "Moderate",
+        "进取": "Aggressive"
+      },
+      "disputeNotesLabel": "Dispute profile notes",
+      "docStyleNotesLabel": "Document style preferences",
+      "disputeNotesPlaceholder": "Common opponents, courts, outside counsel…",
+      "docStyleNotesPlaceholder": "Citation format, tone preferences…",
+      "confirmIntro": "Confirm the settings below, then finish:",
+      "confirmPracticeRole": "Practice role",
+      "confirmPartyRole": "Party role",
+      "confirmRiskAppetite": "Risk appetite",
+      "notSet": "Not set",
+      "prev": "Back",
+      "next": "Next",
+      "finish": "Finish"
+    }
   }
 }
